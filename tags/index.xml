@@ -1,14 +1,51 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Tags on Sergei Egorov&#39;s personal website</title>
+    <title>Tags on A guy with &#39;Ego&#39; in name</title>
     <link>https://bsideup.github.io/tags/</link>
-    <description>Recent content in Tags on Sergei Egorov&#39;s personal website</description>
+    <description>Recent content in Tags on A guy with &#39;Ego&#39; in name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
+    <lastBuildDate>Wed, 26 Dec 2018 17:56:42 +0100</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Docker</title>
+      <link>https://bsideup.github.io/tags/docker/</link>
+      <pubDate>Wed, 26 Dec 2018 17:56:42 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/docker/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Gradle</title>
+      <link>https://bsideup.github.io/tags/gradle/</link>
+      <pubDate>Wed, 26 Dec 2018 17:56:42 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/gradle/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Java</title>
+      <link>https://bsideup.github.io/tags/java/</link>
+      <pubDate>Wed, 26 Dec 2018 17:56:42 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/java/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Native</title>
+      <link>https://bsideup.github.io/tags/native/</link>
+      <pubDate>Wed, 26 Dec 2018 17:56:42 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/native/</guid>
+      <description></description>
+    </item>
     
   </channel>
 </rss>
