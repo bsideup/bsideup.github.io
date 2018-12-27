@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  JNI cross-compilation with Docker · A guy with &#39;Ego&#39; in name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/jni-cross-compilation/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">JNI cross-compilation with Docker</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2018-12-26T17:56:42&#43;01:00'>
+                December 26, 2018
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/gradle/">gradle</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/native/">native</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/docker/">docker</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p><center>
+<img src="https://bsideup.github.io/images/jni-cross-compilation/toolchains.jpg" alt="Toolchains" />
+</center></p>
+
+<p>As a JVM guy, I got used to <a href="https://en.wikipedia.org/wiki/Write_once,_run_anywhere" target="_blank">&ldquo;write once, run everywhere&rdquo;</a> paradigm. But recently I got an interesting challenge to solve.<br />
+I was working on a <a href="https://github.com/reactor/BlockHound" target="_blank">debugging tool</a> for <a href="http://projectreactor.io" target="_blank">Project Reactor</a> and part of it is implemented as a native library for Java, using <a href="https://en.wikipedia.org/wiki/Java_Native_Interface" target="_blank">JNI</a> technology.</p>
+
+<p>I did some C++ in the past but never thought how hard is it, to cross-compile a library for 3 major platforms (Windows, Linux and Mac), both locally and on CI environment (from where we perform the releases). And, since Googling didn&rsquo;t really help, I decided to share my findings here.</p>
+
+<h1 id="first-attempt-clang-llvm-and-all-that-jazz">First attempt - Clang, LLVM and all that Jazz</h1>
+
+<p>Of course I started with &ldquo;half-VM&rdquo; solution, LLVM with Bitcode. You compile your C++ into something they call &ldquo;Bitcode&rdquo;, sounds almost like Java&rsquo;s bytecode, right? Nope.</p>
+
+<p>Apparently, Clang&rsquo;s Bitcode <a href="https://stackoverflow.com/questions/14258194/llvm-bitcode-cross-platform" target="_blank">is not really cross-platform</a>, and even if you manage to compile into a &ldquo;cross-platform&rdquo; Bitcode, you still have to link it. And, despire the fact that everyone is talking about &ldquo;Clang&rdquo; as an &ldquo;easy to cross-compile&rdquo; tool, my experience was far from &ldquo;easy&rdquo; word.<br />
+I will just leave it here: <a href="https://clang.llvm.org/docs/CrossCompilation.html" target="_blank">https://clang.llvm.org/docs/CrossCompilation.html</a></p>
+
+<h1 id="second-attempt-hey-google-what-about-docker">Second attempt - &ldquo;Hey Google, what about Docker?&rdquo;</h1>
+
+<p>My first attempt (as well as my <a href="https://twitter.com/mcclure111/status/1078176148582998017" target="_blank">whining about C++</a>, toolchains, Clang vs GCC, etc&hellip;) was observed by others who were sitting in DockerCon EU 2018&rsquo;s speakers room, and <a href="https://twitter.com/sirlatrom" target="_blank">Sune @sirlatrom Keller</a> was like: &ldquo;Why don&rsquo;t you run it in Docker?&rdquo;. Although the idea was nice, I wasn&rsquo;t sure that I can run everything inside a container without changing the development workflow. But&hellip;</p>
+
+<p>If you Google for &ldquo;c++ Docker cross-compile&rdquo;, most probably you will find this image:<br />
+<a href="https://github.com/dockcross/dockcross" target="_blank">https://github.com/dockcross/dockcross</a></p>
+
+<p>When I clicked the link, I had this warm &ldquo;A-ha, solved with Docker!&rdquo; feeling. But, unfortunatelly, I haven&rsquo;t figured out how to use it with my use case, plus <a href="https://github.com/dockcross/dockcross/commit/9d4f4dce73faab271926c92b1e4b8039d6eb63a9" target="_blank">it is lacking Mac OS X support</a>.</p>
+
+<h1 id="the-best-place-to-hide-a-dead-body-is-page-two-of-google">The Best Place to Hide a Dead Body is Page Two of Google</h1>
+
+<p><center>
+<img src="https://bsideup.github.io/images/jni-cross-compilation/google_results.jpg" alt="Page two" />
+</center>
+I was about to start configuring our CI solution to build on 3 platforms and then aggregate it into a final JAR (I always wanted to try <a href="http://concourse-ci.org" target="_blank">Concourse CI</a>, it&rsquo;s pipelines sound great for it, just take a look at this one: <a href="https://ci.spring.io/teams/r2dbc/pipelines/r2dbc" target="_blank">https://ci.spring.io/teams/r2dbc/pipelines/r2dbc</a>). But that would bring a significant infrastructure overhead, and I decided to go to the most mystery place in the world - the Page Two of Google results 😅</p>
+
+<p>Apparently, there is another project:<br />
+<a href="https://github.com/multiarch/crossbuild" target="_blank">https://github.com/multiarch/crossbuild</a></p>
+
+<p>It contains a rich set of toolchains, provides &ldquo;all-in-one&rdquo; image (although it might be a bad thing for some, having to download ~1Gb image) and super easy to use! Here is an example:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker run -v <span style="color:#8be9fd;font-style:italic">$PWD</span>:/workdir -e <span style="color:#8be9fd;font-style:italic">CROSS_TRIPLE</span><span style="color:#ff79c6">=</span>windows multiarch/crossbuild make
+
+$ file helloworld
+helloworld: PE32+ executable <span style="color:#ff79c6">(</span>console<span style="color:#ff79c6">)</span> x86-64, <span style="color:#ff79c6">for</span> MS Windows</code></pre></div>
+<p>Changing <code>CROSS_TRIPLE</code> to <code>darwin</code> (or non-alias triple <code>x86_64-apple-darwin</code>) will produce a binary for Mac OS X. Simple, huh?</p>
+
+<h1 id="cmake-cross-compilation">CMake &amp; cross-compilation</h1>
+
+<p>I am using CMake to compile my C++ projects, and there were a few properties I had to set depending on platform to make it work.</p>
+
+<h4 id="mac-os-x">Mac OS X</h4>
+
+<p>If you&rsquo;re building a library, most probably you expect it to have <code>.dylib</code> suffix (so that the JVM can load it with <code>System.load</code>). But, since we&rsquo;re running inside Linux environment, I was getting <code>.so</code> instead.<br />
+Setting <code>-DCMAKE_SYSTEM_NAME=Darwin</code> fixed the problem.</p>
+
+<p>Also, unfortunatelly, the Mac toolchain inside the image is a bit old, and we need to force LibC++:<br />
+<code>-DCMAKE_CXX_FLAGS=-stdlib=libc++</code></p>
+
+<h4 id="windows">Windows</h4>
+
+<p>By default, you will get linkage error with something like <code>Unknown flag &quot;-rdynamic&quot;</code>. To fix it, you need to hint CMake with:<br />
+<code>-DCMAKE_SYSTEM_NAME=Windows</code>.</p>
+
+<h1 id="jni-cross-compilation">JNI &amp; cross-compilation</h1>
+
+<p>Since I was aiming to build a JNI library, I had to deal with platform-specific headers. There is <code>JNI</code> module in CMake but it doesn&rsquo;t help because even if we install JDK inside the image it will only contain Linux headers.<br />
+Luckily, there is <a href="http://adoptopenjdk.net" target="_blank">AdoptOpenJDK project</a> where you can get OSS friendly builds of OpenJDK, including the headers for each platform. Here is a snippet I was using to include them:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cmake" data-lang="cmake"><span style="color:#8be9fd;font-style:italic">include_directories</span>(<span style="color:#f1fa8c">src/main/headers</span>)
+<span style="color:#8be9fd;font-style:italic">if</span>(<span style="color:#f1fa8c">WIN32</span>)
+    <span style="color:#8be9fd;font-style:italic">include_directories</span>(<span style="color:#f1fa8c">src/main/headers/win32</span>)
+<span style="color:#8be9fd;font-style:italic">endif</span>()
+<span style="color:#8be9fd;font-style:italic">if</span>(<span style="color:#f1fa8c">APPLE</span>)
+    <span style="color:#8be9fd;font-style:italic">include_directories</span>(<span style="color:#f1fa8c">src/main/headers/darwin</span>)
+<span style="color:#8be9fd;font-style:italic">endif</span>()
+<span style="color:#8be9fd;font-style:italic">if</span>(<span style="color:#f1fa8c">UNIX</span> <span style="color:#f1fa8c">AND</span> <span style="color:#f1fa8c">NOT</span> <span style="color:#f1fa8c">APPLE</span>)
+    <span style="color:#8be9fd;font-style:italic">include_directories</span>(<span style="color:#f1fa8c">src/main/headers/linux</span>)
+<span style="color:#8be9fd;font-style:italic">endif</span>()</code></pre></div>
+<h1 id="bonus-gradle-with-dockerized-toolchain">Bonus: Gradle with dockerized toolchain</h1>
+
+<p>🤪 Don&rsquo;t ask why, but I was also using Gradle to run the build (the project is multi-module and most of the code is in Java, not C++).
+However, it simply delegates to CMake with <a href="https://github.com/awrichar/gradle-external-build" target="_blank"><code>com.cisco.external-build</code> plugin</a>.
+Apparently, you can easily run the build inside Docker with it!</p>
+
+<p>First, you need to prepare a fake toolchain:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ bat toolchain/*
+───────┬────────────────────────────────────────────────────────────────────────────
+       │ File: toolchain/cmake
+───────┼────────────────────────────────────────────────────────────────────────────
+   <span style="color:#bd93f9">1</span>   │ <span style="color:#f1fa8c">`</span>dirname <span style="color:#f1fa8c">&#34;</span><span style="color:#8be9fd;font-style:italic">$0</span><span style="color:#f1fa8c">&#34;</span><span style="color:#f1fa8c">`</span>/run_in_docker.sh <span style="color:#f1fa8c">`</span>basename <span style="color:#f1fa8c">&#34;</span><span style="color:#8be9fd;font-style:italic">$0</span><span style="color:#f1fa8c">&#34;</span><span style="color:#f1fa8c">`</span> <span style="color:#8be9fd;font-style:italic">$@</span>
+───────┴────────────────────────────────────────────────────────────────────────────
+───────┬────────────────────────────────────────────────────────────────────────────
+       │ File: toolchain/make
+───────┼────────────────────────────────────────────────────────────────────────────
+   <span style="color:#bd93f9">1</span>   │ <span style="color:#f1fa8c">`</span>dirname <span style="color:#f1fa8c">&#34;</span><span style="color:#8be9fd;font-style:italic">$0</span><span style="color:#f1fa8c">&#34;</span><span style="color:#f1fa8c">`</span>/run_in_docker.sh <span style="color:#f1fa8c">`</span>basename <span style="color:#f1fa8c">&#34;</span><span style="color:#8be9fd;font-style:italic">$0</span><span style="color:#f1fa8c">&#34;</span><span style="color:#f1fa8c">`</span> <span style="color:#8be9fd;font-style:italic">$@</span>
+───────┴────────────────────────────────────────────────────────────────────────────
+───────┬────────────────────────────────────────────────────────────────────────────
+       │ File: toolchain/run_in_docker.sh
+───────┼────────────────────────────────────────────────────────────────────────────
+   <span style="color:#bd93f9">1</span>   │ docker run -i --rm <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>   <span style="color:#bd93f9">2</span>   │     -v <span style="color:#8be9fd;font-style:italic">$PROJECT_ROOT_DIR</span>:<span style="color:#8be9fd;font-style:italic">$PROJECT_ROOT_DIR</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>   <span style="color:#bd93f9">3</span>   │     -w <span style="color:#8be9fd;font-style:italic">$PWD</span> <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>   <span style="color:#bd93f9">4</span>   │     -e CROSS_TRIPLE <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>   <span style="color:#bd93f9">5</span>   │     multiarch/crossbuild <span style="color:#f1fa8c">\
+</span><span style="color:#f1fa8c"></span>   <span style="color:#bd93f9">6</span>   │     <span style="color:#f1fa8c">&#34;</span><span style="color:#8be9fd;font-style:italic">$@</span><span style="color:#f1fa8c">&#34;</span>
+───────┴────────────────────────────────────────────────────────────────────────────</code></pre></div>
+<p>Here we simply delegate <code>cmake</code> and <code>make</code> to <code>multiarch/crossbuild</code> Docker container.<br />
+Note <code>-e CROSS_TRIPLE</code> flag, it is something like &ldquo;pass host&rsquo;s <code>CROSS_TRIPLE</code> into a container&rdquo;.</p>
+
+<p>Now you need to tell External Build Plugin to use our toolchain instead of system&rsquo;s one and make it build for 3 platforms at once.
+Here is my <code>build.gradle</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-gradle" data-lang="gradle">plugins <span style="color:#ff79c6">{</span>
+    id <span style="color:#f1fa8c">&#39;com.cisco.external-build&#39;</span> version <span style="color:#f1fa8c">&#39;1.14&#39;</span>
+<span style="color:#ff79c6">}</span>
+
+model <span style="color:#ff79c6">{</span>
+    platforms <span style="color:#ff79c6">{</span>
+        osx <span style="color:#ff79c6">{</span>
+            operatingSystem <span style="color:#f1fa8c">&#39;osx&#39;</span>
+            architecture <span style="color:#f1fa8c">&#39;x86-64&#39;</span>
+        <span style="color:#ff79c6">}</span>
+
+        linux <span style="color:#ff79c6">{</span>
+            operatingSystem <span style="color:#f1fa8c">&#39;linux&#39;</span>
+            architecture <span style="color:#f1fa8c">&#39;x86-64&#39;</span>
+        <span style="color:#ff79c6">}</span>
+
+        windows <span style="color:#ff79c6">{</span>
+            operatingSystem <span style="color:#f1fa8c">&#39;windows&#39;</span>
+            architecture <span style="color:#f1fa8c">&#39;x86-64&#39;</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+
+    components <span style="color:#ff79c6">{</span>
+        MyLibrary<span style="color:#ff79c6">(</span>com<span style="color:#ff79c6">.</span><span style="color:#50fa7b">cisco</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">gradle</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">externalbuild</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ExternalNativeLibrarySpec</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            targetPlatform <span style="color:#f1fa8c">&#34;osx&#34;</span>
+            targetPlatform <span style="color:#f1fa8c">&#34;linux&#34;</span>
+            targetPlatform <span style="color:#f1fa8c">&#34;windows&#34;</span>
+
+            buildConfig<span style="color:#ff79c6">(</span>com<span style="color:#ff79c6">.</span><span style="color:#50fa7b">cisco</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">gradle</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">externalbuild</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">tasks</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">CMake</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                cmakeExecutable <span style="color:#50fa7b">file</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;toolchain/cmake&#34;</span><span style="color:#ff79c6">)</span> <span style="color:#6272a4">// (1)
+</span><span style="color:#6272a4"></span>                executable <span style="color:#50fa7b">file</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;toolchain/make&#34;</span><span style="color:#ff79c6">)</span> <span style="color:#6272a4">// (2)
+</span><span style="color:#6272a4"></span>                environment <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">[</span>
+                        <span style="color:#f1fa8c">&#39;PROJECT_ROOT_DIR&#39;</span><span style="color:#ff79c6">:</span> rootProject<span style="color:#ff79c6">.</span><span style="color:#50fa7b">projectDir</span><span style="color:#ff79c6">,</span>
+                        <span style="color:#f1fa8c">&#39;CROSS_TRIPLE&#39;</span><span style="color:#ff79c6">:</span> binary<span style="color:#ff79c6">.</span><span style="color:#50fa7b">targetPlatform</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">name</span><span style="color:#ff79c6">,</span> <span style="color:#6272a4">// (3)
+</span><span style="color:#6272a4"></span>                <span style="color:#ff79c6">]</span>
+
+                <span style="color:#6272a4">// See &#34;CMake &amp; cross-compilation&#34; section
+</span><span style="color:#6272a4"></span>                <span style="color:#ff79c6">switch</span> <span style="color:#ff79c6">(</span>binary<span style="color:#ff79c6">.</span><span style="color:#50fa7b">targetPlatform</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">operatingSystem</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">name</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                    <span style="color:#ff79c6">case</span> <span style="color:#f1fa8c">&#34;osx&#34;</span><span style="color:#ff79c6">:</span>
+                        cmakeArgs<span style="color:#ff79c6">(</span>
+                                <span style="color:#f1fa8c">&#39;-DCMAKE_SYSTEM_NAME=Darwin&#39;</span><span style="color:#ff79c6">,</span>
+                                <span style="color:#f1fa8c">&#39;-DCMAKE_CXX_FLAGS=-stdlib=libc++&#39;</span><span style="color:#ff79c6">,</span>
+                        <span style="color:#ff79c6">)</span>
+                        <span style="color:#ff79c6">break</span><span style="color:#ff79c6">;</span>
+                    <span style="color:#ff79c6">case</span> <span style="color:#f1fa8c">&#34;windows&#34;</span><span style="color:#ff79c6">:</span>
+                        cmakeArgs<span style="color:#ff79c6">(</span>
+                                <span style="color:#f1fa8c">&#39;-DCMAKE_SYSTEM_NAME=Windows&#39;</span><span style="color:#ff79c6">,</span>
+                        <span style="color:#ff79c6">)</span>
+                        <span style="color:#ff79c6">break</span><span style="color:#ff79c6">;</span>
+                <span style="color:#ff79c6">}</span>
+
+                cmakeRoot <span style="color:#f1fa8c">&#39;.&#39;</span>
+                workingDir <span style="color:#50fa7b">file</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;${buildDir}/ext/${binary.targetPlatform.name}&#34;</span><span style="color:#ff79c6">)</span>
+
+                inputs<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dir</span> <span style="color:#f1fa8c">&#39;toolchain&#39;</span>
+                inputs<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dir</span> <span style="color:#f1fa8c">&#39;src&#39;</span>
+                inputs<span style="color:#ff79c6">.</span><span style="color:#50fa7b">file</span> <span style="color:#f1fa8c">&#39;CMakeLists.txt&#39;</span>
+                outputs<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dir</span> workingDir
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>(1), (2): here we override <code>cmake</code> and <code>make</code> commands, this is where the magic happens. Otherwise, it will use system&rsquo;s.<br />
+(3): we use target platform&rsquo;s name as <code>CROSS_TRIPLE</code> env variable.</p>
+
+<h1 id="result">Result</h1>
+
+<p>Now we can easily build our JNI library for Windows, Mac and Linux, on a single machine with Docker instead of a farm of hard to maintain CI nodes.</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2018
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+
+  </body>
+
+</html>
