@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  Easy Java delegates with Lombok · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/easy_java_delegates/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Easy Java delegates with Lombok</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-01-04T15:17:30&#43;01:00'>
+                January 4, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              3 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/lombok/">lombok</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p>Ever wanted to override a method of an object instance in Java?</p>
+
+<p>Let&rsquo;s say you want to implement a custom <code>Scheduler</code> hook for <a href="https://projectreactor.io/" target="_blank">Project Reactor</a>. You start with <a href="https://projectreactor.io/docs/core/3.2.3.RELEASE/api/reactor/core/scheduler/Schedulers.html#addExecutorServiceDecorator-java.lang.String-java.util.function.BiFunction-" target="_blank">Schedulers.addExecutorServiceDecorator</a>, implement a <code>BiFunction</code> accepting <code>Scheduler</code>&rsquo;s instance and <code>ScheduledExecutorService</code> and you need to return another <code>ScheduledExecutorService</code> instance where with <code>schedule*</code> methods wrapped with your code.</p>
+
+<p>A straightforward approach would be to create a new class, implement all methods of <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ScheduledExecutorService.html" target="_blank">ScheduledExecutorService</a> interface, and delegate most of them to the instance of <code>ScheduledExecutorService</code> we received as an argument. <a href="https://en.wikipedia.org/wiki/Delegation_pattern" target="_blank">This pattern</a> is called &ldquo;Delegation&rdquo;.</p>
+
+<p>But if you check the interface, you will see that you have to implement <strong>17</strong> methods, while you want to override only 4 of them. Is it not only error-prone, but a lot of boilerplate!<br />
+Well, <strong>17</strong> is fairly okay, imagine you have to delegate <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/TransferQueue.html" target="_blank">TransferQueue</a> (<strong>36</strong> methods)? No, I&rsquo;m too lazy and not getting paid for the number of lines I wrote!</p>
+
+<h2 id="project-lombok-to-the-rescue">Project Lombok to the rescue!</h2>
+
+<p>When I hear &ldquo;Java&rdquo; and &ldquo;boilerplate&rdquo; in one sentence, I usually think of <a href="https://projectlombok.org/" target="_blank">Project Lombok</a>. What I like about it is that you don&rsquo;t have to change your language/tooling/IDE/buildsystem to remove a lot of boilerplate from your Java code. Definitelly check it if you never did before!</p>
+
+<p>There are many features in Lombok, but we will focus on <a href="https://projectlombok.org/features/experimental/Delegate" target="_blank">@Delegate</a> annotation. It looks somewhat like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">ExcludesDelegateExample</span> <span style="color:#ff79c6">{</span>
+  <span style="color:#8be9fd">long</span> counter <span style="color:#ff79c6">=</span> 0L<span style="color:#ff79c6">;</span>
+
+  <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">interface</span> <span style="color:#50fa7b">Add</span> <span style="color:#ff79c6">{</span> <span style="color:#6272a4">// (2)
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">boolean</span> <span style="color:#50fa7b">add</span><span style="color:#ff79c6">(</span>String x<span style="color:#ff79c6">);</span>
+    <span style="color:#8be9fd">boolean</span> <span style="color:#50fa7b">addAll</span><span style="color:#ff79c6">(</span>Collection<span style="color:#ff79c6">&lt;?</span> <span style="color:#8be9fd;font-style:italic">extends</span> String<span style="color:#ff79c6">&gt;</span> x<span style="color:#ff79c6">);</span>
+  <span style="color:#ff79c6">}</span>
+
+  @Delegate<span style="color:#ff79c6">(</span>excludes<span style="color:#ff79c6">=</span>Add<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">)</span> <span style="color:#6272a4">// (1)
+</span><span style="color:#6272a4"></span>  <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">final</span> Collection<span style="color:#ff79c6">&lt;</span>String<span style="color:#ff79c6">&gt;</span> collection <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> ArrayList<span style="color:#ff79c6">&lt;</span>String<span style="color:#ff79c6">&gt;();</span>
+
+  <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">boolean</span> <span style="color:#50fa7b">add</span><span style="color:#ff79c6">(</span>String item<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span> <span style="color:#6272a4">// (3)
+</span><span style="color:#6272a4"></span>    counter<span style="color:#ff79c6">++;</span>
+    <span style="color:#ff79c6">return</span> collection<span style="color:#ff79c6">.</span><span style="color:#50fa7b">add</span><span style="color:#ff79c6">(</span>item<span style="color:#ff79c6">);</span>
+  <span style="color:#ff79c6">}</span>
+
+  <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">boolean</span> <span style="color:#50fa7b">addAll</span><span style="color:#ff79c6">(</span>Collection<span style="color:#ff79c6">&lt;?</span> <span style="color:#8be9fd;font-style:italic">extends</span> String<span style="color:#ff79c6">&gt;</span> col<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span> <span style="color:#ff79c6">(</span>4<span style="color:#ff79c6">)</span>
+    counter <span style="color:#ff79c6">+=</span> col<span style="color:#ff79c6">.</span><span style="color:#50fa7b">size</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">return</span> collection<span style="color:#ff79c6">.</span><span style="color:#50fa7b">addAll</span><span style="color:#ff79c6">(</span>col<span style="color:#ff79c6">);</span>
+  <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>No, wait! This is not the end of the article yet!:)</p>
+
+<p>What we have here?<br />
+(1): Here we define <code>@Delegate</code> annotation on top of the field. All methods of the <code>Collection</code> interface will be delegated to this field, except the excludes. It will also add <code>Collection</code> interface to the <code>ExcludesDelegateExample</code> class&rsquo; signature.<br />
+(2): This interface defines which methods Lombok should not delegate. You will have to implement them, otherwise you get a compilation error.<br />
+(3): Our custom <code>add</code> method increments a counter before calling the original method.</p>
+
+<p>Not bad, huh? I could end the article here, but there is one trick I use to avoid writing interfaces for the <code>excludes</code> property.</p>
+
+<h2 id="override-it">Override it!</h2>
+
+<p>While <code>excludes</code> work for simple examples, I feel uncomfortable having to create another interface, look up for the methods, copy them into it, etc&hellip;<br />
+Maybe one day Lombok will automatically detect implemented methods. Until that happens, there is (IMO) a much cleaner approach (unless you feel bad about creating more classes).</p>
+
+<p>First, simply create a dummy delegate, without any exclusions:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@RequiredArgsConstructor
+<span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">DelegatingScheduledExecutorService</span> <span style="color:#8be9fd;font-style:italic">implements</span> ScheduledExecutorService <span style="color:#ff79c6">{</span>
+
+  @Delegate
+  <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">final</span> ScheduledExecutorService delegate<span style="color:#ff79c6">;</span>
+
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Now we can use this class to override any method we want, with Java&rsquo;s standard method overriding:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">WrappingScheduledExecutorService</span> <span style="color:#8be9fd;font-style:italic">extends</span> DelegatingScheduledExecutorService <span style="color:#ff79c6">{</span>
+
+  <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">WrappingScheduledExecutorService</span><span style="color:#ff79c6">(</span>ScheduledExecutorService delegate<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">(</span>delegate<span style="color:#ff79c6">);</span>
+  <span style="color:#ff79c6">}</span>
+
+  @Override
+  <span style="color:#8be9fd;font-style:italic">public</span> ScheduledFuture<span style="color:#ff79c6">&lt;?&gt;</span> schedule<span style="color:#ff79c6">(</span>Runnable command<span style="color:#ff79c6">,</span> <span style="color:#8be9fd">long</span> delay<span style="color:#ff79c6">,</span> TimeUnit unit<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    command <span style="color:#ff79c6">=</span> wrap<span style="color:#ff79c6">(</span>command<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">return</span> <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">schedule</span><span style="color:#ff79c6">(</span>command<span style="color:#ff79c6">,</span> delay<span style="color:#ff79c6">,</span> unit<span style="color:#ff79c6">);</span>
+  <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Another good thing about this approach is that you can reuse <code>DelegatingScheduledExecutorService</code> in case you have multiple versions of such delegate.</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

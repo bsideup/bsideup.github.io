@@ -6,10 +6,21 @@
     <description>Recent content on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 26 Dec 2018 17:56:42 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 04 Jan 2019 15:17:30 +0100</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Easy Java delegates with Lombok</title>
+      <link>https://bsideup.github.io/posts/easy_java_delegates/</link>
+      <pubDate>Fri, 04 Jan 2019 15:17:30 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/easy_java_delegates/</guid>
+      <description>Ever wanted to override a method of an object instance in Java?
+Let&amp;rsquo;s say you want to implement a custom Scheduler hook for Project Reactor. You start with Schedulers.addExecutorServiceDecorator, implement a BiFunction accepting Scheduler&amp;rsquo;s instance and ScheduledExecutorService and you need to return another ScheduledExecutorService instance where with schedule* methods wrapped with your code.
+A straightforward approach would be to create a new class, implement all methods of ScheduledExecutorService interface, and delegate most of them to the instance of ScheduledExecutorService we received as an argument.</description>
+    </item>
     
     <item>
       <title>JNI cross-compilation with Docker</title>

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Java on A guy with &#39;Ego&#39; in his name</title>
-    <link>https://bsideup.github.io/tags/java/</link>
-    <description>Recent content in Java on A guy with &#39;Ego&#39; in his name</description>
+    <title>Lombok on A guy with &#39;Ego&#39; in his name</title>
+    <link>https://bsideup.github.io/tags/lombok/</link>
+    <description>Recent content in Lombok on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Fri, 04 Jan 2019 15:17:30 +0100</lastBuildDate>
     
-	<atom:link href="https://bsideup.github.io/tags/java/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://bsideup.github.io/tags/lombok/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -20,17 +20,6 @@
       <description>Ever wanted to override a method of an object instance in Java?
 Let&amp;rsquo;s say you want to implement a custom Scheduler hook for Project Reactor. You start with Schedulers.addExecutorServiceDecorator, implement a BiFunction accepting Scheduler&amp;rsquo;s instance and ScheduledExecutorService and you need to return another ScheduledExecutorService instance where with schedule* methods wrapped with your code.
 A straightforward approach would be to create a new class, implement all methods of ScheduledExecutorService interface, and delegate most of them to the instance of ScheduledExecutorService we received as an argument.</description>
-    </item>
-    
-    <item>
-      <title>JNI cross-compilation with Docker</title>
-      <link>https://bsideup.github.io/posts/jni-cross-compilation/</link>
-      <pubDate>Wed, 26 Dec 2018 17:56:42 +0100</pubDate>
-      
-      <guid>https://bsideup.github.io/posts/jni-cross-compilation/</guid>
-      <description>As a JVM guy, I got used to &amp;ldquo;write once, run everywhere&amp;rdquo; paradigm. But recently I got an interesting challenge to solve.
-I was working on a debugging tool for Project Reactor and part of it is implemented as a native library for Java, using JNI technology.
-I did some C++ in the past but never thought how hard is it, to cross-compile a library for 3 major platforms (Windows, Linux and Mac), both locally and on CI environment (from where we perform the releases).</description>
     </item>
     
   </channel>
