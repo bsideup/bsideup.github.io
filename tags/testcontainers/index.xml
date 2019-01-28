@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Testcontainers on A guy with &#39;Ego&#39; in his name</title>
+    <link>https://bsideup.github.io/tags/testcontainers/</link>
+    <description>Recent content in Testcontainers on A guy with &#39;Ego&#39; in his name</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 23 Jan 2019 13:58:43 +0100</lastBuildDate>
+    
+	<atom:link href="https://bsideup.github.io/tags/testcontainers/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>My favourite GitHub bots</title>
+      <link>https://bsideup.github.io/posts/github_bots/</link>
+      <pubDate>Wed, 23 Jan 2019 13:58:43 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/github_bots/</guid>
+      <description>Year 2018 was an eye-opening year for me as an OSS project maintainer. The reason is due to the emerge of GitHub bots.
+Maintaining a project on GitHub could be a challenging task, expecially when the project becomes popular. Issue management, releases, follow-ups, dependency management, oh my!
+But, as most of the developers, we&amp;rsquo;re lazy enough and spend time automating things.
+Dependabot https://github.com/apps/dependabot
+There are many nice bots, but Dependabot is a real &amp;ldquo;Good Boy Bot&amp;rdquo;!</description>
+    </item>
+    
+  </channel>
+</rss>

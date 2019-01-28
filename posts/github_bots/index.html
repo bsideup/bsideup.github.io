@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  My favourite GitHub bots · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/github_bots/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">My favourite GitHub bots</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-01-23T13:58:43&#43;01:00'>
+                January 23, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/oss/">oss</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/github/">github</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/bots/">bots</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/testcontainers/">testcontainers</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p>Year 2018 was an eye-opening year for me as an OSS project maintainer. The reason is due to the emerge of GitHub bots.</p>
+
+<p>Maintaining a project on GitHub could be a challenging task, expecially when the project becomes popular.
+Issue management, releases, follow-ups, dependency management, oh my!<br />
+But, as most of the developers, we&rsquo;re lazy enough and spend time automating things.</p>
+
+<h1 id="dependabot">Dependabot</h1>
+
+<p><a href="https://github.com/apps/dependabot" target="_blank">https://github.com/apps/dependabot</a><br />
+<img src="https://bsideup.github.io/images/github_bots/dependabot_logo.png" alt="Dependabot logo" /></p>
+
+<p>There are many nice bots, but Dependabot is a real &ldquo;Good <del>Boy</del> Bot&rdquo;!</p>
+
+<p>Have you ever discovered that one of your dependencies is so outdated, that you can&rsquo;t just change it to the latest version,
+but instead you need to painfully update the version of it release-by-release?<br />
+Perhapts you never update your dependencies? =P</p>
+
+<p>Anyways, Dependabot is one of the easiest wins from the bots, but the win is huge!<br />
+From <a href="https://dependabot.com" target="_blank">Dependabot&rsquo;s website</a>:</p>
+
+<blockquote>
+<p>Dependabot creates pull requests to keep your dependencies secure and up-to-date.</p>
+</blockquote>
+
+<p>Yup, that&rsquo;s it. But behind this simple statement is a great effort done by developers of this wonderful project!</p>
+
+<p>It will automatiically discover your project&rsquo;s type and the locations of dependency definitions.
+You&rsquo;re using NodeJS with NPM or YARN? Easy!<br />
+Maybe Golang with go.mod / dep?<br />
+Feeling Rust-y? =P<br />
+Ever updated Dockerfile&rsquo;s base image?<br />
+Or you like to challenge the bots and your project&rsquo;s dependencies are managed with <strong>imperative</strong> Gradle scripts?</p>
+
+<p>All these and many more platforms are supported by Dependabot:<br />
+<a href="https://dependabot.com/#languages" target="_blank">https://dependabot.com/#languages</a></p>
+
+<p>This is how a PR may look like:
+<img src="https://bsideup.github.io/images/github_bots/dependabot_pr.png" alt="Dependabot PR" /></p>
+
+<p>It will also work if the version is defined as a property,
+or managed with <a href="https://github.com/spring-gradle-plugins/dependency-management-plugin" target="_blank">Spring&rsquo;s Dependency Management Plugin</a>.</p>
+
+<p>You receive PRs automatically, every day or week (how you configure it).<br />
+You may instruct it to automatically merge the PR if it passed all checks (e.g. CI status).</p>
+
+<p>Recently they added a &ldquo;configuration as code&rdquo; option with YAML file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># .dependabot/config.yml</span>
+
+<span style="color:#6272a4"># See https://github.com/dependabot/feedback/issues/70 for current (beta) configurability</span>
+version: <span style="color:#bd93f9">1</span>
+update_configs:
+  - package_manager: <span style="color:#f1fa8c">&#34;java:gradle&#34;</span>
+    directory: <span style="color:#f1fa8c">&#34;/core&#34;</span>
+    update_schedule: <span style="color:#f1fa8c">&#34;daily&#34;</span>
+
+  - package_manager: <span style="color:#f1fa8c">&#34;java:maven&#34;</span>
+    directory: <span style="color:#f1fa8c">&#34;/examples&#34;</span>
+    update_schedule: <span style="color:#f1fa8c">&#34;daily&#34;</span>
+    automerged_updates:
+      - match: { dependency_type: <span style="color:#f1fa8c">&#34;development&#34;</span>, update_type: <span style="color:#f1fa8c">&#34;all&#34;</span> }
+      - match: { dependency_type: <span style="color:#f1fa8c">&#34;production&#34;</span>, update_type: <span style="color:#f1fa8c">&#34;all&#34;</span> }</code></pre></div>
+<p>After we added Dependabot to <a href="https://github.com/testcontainers/testcontainers-java" target="_blank">the Testcontainers project</a>
+we received <a href="https://github.com/testcontainers/testcontainers-java/pulls?q=is%3Apr+label%3Adependencies+is%3Aclosed" target="_blank">more than 100 PRs from Dependabot</a>
+and now I can&rsquo;t imagine updating those dependencies by hands.</p>
+
+<h1 id="release-drafter">Release Drafter</h1>
+
+<p><a href="https://github.com/apps/release-drafter" target="_blank">https://github.com/apps/release-drafter</a></p>
+
+<p>Having proper release changelogs is very important for any OSS project.
+Otherwise, what motivates people to update their dependency? (well, unless they use Dependabot 😜)</p>
+
+<p><a href="https://github.com/toolmantim/release-drafter" target="_blank">Release Drafter</a> is an Open Source,
+<a href="https://github.com/probot/probot" target="_blank">Probot</a>-based bot for drafting your next release notes as pull requests are merged into master.</p>
+
+<p>Here is an example of a release draft generated by the Release Drafter bot:
+<img src="https://bsideup.github.io/images/github_bots/drafted_release.png" alt="Drafted Release example" /></p>
+
+<p>Thanks to <a href="https://github.com/toolmantim/release-drafter/pull/92" target="_blank">Richard North&rsquo;s contribution</a> you can even template the version!<br />
+Here is an example config from Testcontainers (the exact config it used to generate the notes from a previous screenshot):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># .github/release-drafter.yml</span>
+name-template: $NEXT_PATCH_VERSION
+tag-template: $NEXT_PATCH_VERSION
+template: <span style="color:#f1fa8c">|
+</span><span style="color:#f1fa8c">    # What&#39;s Changed
+</span><span style="color:#f1fa8c">    $CHANGES</span>
+categories:
+  - title: 🚀 Features
+    label: type/feature
+  - title: 🐛 Bug Fixes
+    label: type/bug
+  - title: 📖 Documentation
+    label: type/docs
+  - title: 📦 Dependency updates
+    label: dependencies</code></pre></div>
+<p>As you can see, you can use your own labels &amp; titles to categorize the changes. How cool is that?</p>
+
+<h1 id="delete-merged-branch">Delete Merged Branch</h1>
+
+<p><a href="https://github.com/apps/delete-merged-branch" target="_blank">https://github.com/apps/delete-merged-branch</a></p>
+
+<p>This bot is an ultra simple one, yet very helpful to keep your repository clean.</p>
+
+<p>Although GitHub displays &ldquo;Delete merged branch&rdquo; button after you merge a PR originated from the same repo,
+people tend to forget to do it.<br />
+The result: a lot of stale branches. And it ain&rsquo;t helping reading your repository!</p>
+
+<p>From the bot&rsquo;s description:</p>
+
+<blockquote>
+<p>A GitHub app that automatically deletes a branch after it&rsquo;s merged. That&rsquo;s it, enjoy!</p>
+</blockquote>
+
+<h1 id="stale">Stale</h1>
+
+<p><a href="https://github.com/apps/stale/" target="_blank">https://github.com/apps/stale/</a></p>
+
+<p>It is joyful to see people submitting their usage, issues or PRs to your project&hellip; unless it is not 😅</p>
+
+<p>Some issues are invalid, require more input or not valid anymore.<br />
+Some PRs never get finished by the authors, and it is okay.</p>
+
+<p>But it is not okay to keep them forever, because it will create a false feeling that the project has a lot of issues,
+or that the maintainers are never merge the PRs.</p>
+
+<p>Stale is another <a href="https://github.com/probot/probot" target="_blank">Probot</a>-based bot.
+It solves the issue very elegantly by &ldquo;pinging&rdquo; the authors after a configurable period of time,
+and closes unanswered issues automatically:</p>
+
+<p><img src="https://bsideup.github.io/images/github_bots/stale_comment.png" alt="Stale comment" /></p>
+
+<p>There are enough options to make it user-friendly and personalize it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># .github/stale.yml</span>
+
+<span style="color:#6272a4"># Number of days of inactivity before an issue becomes stale</span>
+daysUntilStale: <span style="color:#bd93f9">60</span>
+<span style="color:#6272a4"># Number of days of inactivity before a stale issue is closed</span>
+daysUntilClose: <span style="color:#bd93f9">7</span>
+<span style="color:#6272a4"># Issues with these labels will never be considered stale</span>
+exemptLabels:
+  - pinned
+  - security
+<span style="color:#6272a4"># Label to use when marking an issue as stale</span>
+staleLabel: wontfix
+<span style="color:#6272a4"># Comment to post when marking an issue as stale. Set to `false` to disable</span>
+markComment: <span style="color:#f1fa8c">&gt;
+</span><span style="color:#f1fa8c">  This issue has been automatically marked as stale because it has not had
+</span><span style="color:#f1fa8c">  recent activity. It will be closed if no further activity occurs. Thank you
+</span><span style="color:#f1fa8c">  for your contributions.</span>
+<span style="color:#6272a4"># Comment to post when closing a stale issue. Set to `false` to disable</span>
+closeComment: <span style="color:#ff79c6">false</span></code></pre></div>
+<h1 id="final-words">Final words</h1>
+
+<p>Thanks for GitHub&rsquo;s apps platform, adding bots to your project is super easy and can be done with a few clicks in UI.</p>
+
+<p>But the amount of time the Testcontainers team saved is incredible, and I am not sure that without them we would be able
+to maintain this popular (2k stars, probably nothing for NodeJS repos, but indeed something for Java) project with the
+same speed as we did with.</p>
+
+<p>Not to mention that all these bots are free for the OSS projects!</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

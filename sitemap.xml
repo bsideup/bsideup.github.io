@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://bsideup.github.io/posts/github_bots/</loc>
+    <lastmod>2019-01-23T13:58:43+01:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/easy_java_delegates/</loc>
     <lastmod>2019-01-04T15:17:30+01:00</lastmod>
   </url>
@@ -14,7 +19,13 @@
   
   <url>
     <loc>https://bsideup.github.io/</loc>
-    <lastmod>2019-01-04T15:17:30+01:00</lastmod>
+    <lastmod>2019-01-23T13:58:43+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/bots/</loc>
+    <lastmod>2019-01-23T13:58:43+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -30,6 +41,12 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/tags/github/</loc>
+    <lastmod>2019-01-23T13:58:43+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/tags/gradle/</loc>
     <lastmod>2018-12-26T17:56:42+01:00</lastmod>
     <priority>0</priority>
@@ -37,7 +54,7 @@
   
   <url>
     <loc>https://bsideup.github.io/tags/java/</loc>
-    <lastmod>2019-01-04T15:17:30+01:00</lastmod>
+    <lastmod>2019-01-23T13:58:43+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -54,14 +71,26 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/tags/oss/</loc>
+    <lastmod>2019-01-23T13:58:43+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/</loc>
-    <lastmod>2019-01-04T15:17:30+01:00</lastmod>
+    <lastmod>2019-01-23T13:58:43+01:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://bsideup.github.io/tags/</loc>
-    <lastmod>2018-12-26T17:56:42+01:00</lastmod>
+    <lastmod>2019-01-23T13:58:43+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/testcontainers/</loc>
+    <lastmod>2019-01-23T13:58:43+01:00</lastmod>
     <priority>0</priority>
   </url>
   

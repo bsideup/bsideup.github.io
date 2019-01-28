@@ -6,10 +6,19 @@
     <description>Recent content in Tags on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 26 Dec 2018 17:56:42 +0100</lastBuildDate>
+    <lastBuildDate>Wed, 23 Jan 2019 13:58:43 +0100</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Bots</title>
+      <link>https://bsideup.github.io/tags/bots/</link>
+      <pubDate>Wed, 23 Jan 2019 13:58:43 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/bots/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Docker</title>
@@ -17,6 +26,15 @@
       <pubDate>Wed, 26 Dec 2018 17:56:42 +0100</pubDate>
       
       <guid>https://bsideup.github.io/tags/docker/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Github</title>
+      <link>https://bsideup.github.io/tags/github/</link>
+      <pubDate>Wed, 23 Jan 2019 13:58:43 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/github/</guid>
       <description></description>
     </item>
     
@@ -32,7 +50,7 @@
     <item>
       <title>Java</title>
       <link>https://bsideup.github.io/tags/java/</link>
-      <pubDate>Fri, 04 Jan 2019 15:17:30 +0100</pubDate>
+      <pubDate>Wed, 23 Jan 2019 13:58:43 +0100</pubDate>
       
       <guid>https://bsideup.github.io/tags/java/</guid>
       <description></description>
@@ -53,6 +71,24 @@
       <pubDate>Wed, 26 Dec 2018 17:56:42 +0100</pubDate>
       
       <guid>https://bsideup.github.io/tags/native/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Oss</title>
+      <link>https://bsideup.github.io/tags/oss/</link>
+      <pubDate>Wed, 23 Jan 2019 13:58:43 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/oss/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Testcontainers</title>
+      <link>https://bsideup.github.io/tags/testcontainers/</link>
+      <pubDate>Wed, 23 Jan 2019 13:58:43 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/testcontainers/</guid>
       <description></description>
     </item>
     
