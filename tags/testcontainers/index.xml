@@ -6,10 +6,22 @@
     <description>Recent content in Testcontainers on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 23 Jan 2019 13:58:43 +0100</lastBuildDate>
+    <lastBuildDate>Thu, 31 Jan 2019 13:29:11 +0100</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/tags/testcontainers/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>The Builder pattern vs Java syntax</title>
+      <link>https://bsideup.github.io/posts/builders_vs_java/</link>
+      <pubDate>Thu, 31 Jan 2019 13:29:11 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/builders_vs_java/</guid>
+      <description>The Builder pattern is one of the most popular patterns in Java.
+It is simple, helps to keep objects immutable, and can be generated with tools like Project Lombok&amp;rsquo;s @Builder or Immutables, to name a few.
+Example of a fluent variant of the pattern:
+public class User { private final String firstName; private final String lastName; User(String firstName, String lastName) { this.firstName = firstName; this.lastName = lastName; } public static Builder builder() { return new Builder(); } public static class Builder { String firstName; String lastName; Builder firstName(String value) { this.</description>
+    </item>
     
     <item>
       <title>My favourite GitHub bots</title>
