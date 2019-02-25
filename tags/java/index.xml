@@ -30,7 +30,7 @@ public class User { private final String firstName; private final String lastNam
       
       <guid>https://bsideup.github.io/posts/github_bots/</guid>
       <description>Year 2018 was an eye-opening year for me as an OSS project maintainer. The reason is due to the emerge of GitHub bots.
-Maintaining a project on GitHub could be a challenging task, expecially when the project becomes popular. Issue management, releases, follow-ups, dependency management, oh my!
+Maintaining a project on GitHub could be a challenging task, especially when the project becomes popular. Issue management, releases, follow-ups, dependency management, oh my!
 But, as most of the developers, we&amp;rsquo;re lazy enough and spend time automating things.
 Dependabot https://github.com/apps/dependabot
 There are many nice bots, but Dependabot is a real &amp;ldquo;Good Boy Bot&amp;rdquo;!</description>
