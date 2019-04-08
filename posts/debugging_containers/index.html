@@ -166,6 +166,8 @@ config<span style="color:#ff79c6">.</span><span style="color:#50fa7b">setWorkerC
 var tcpProxy <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> TcpProxy<span style="color:#ff79c6">(</span>config<span style="color:#ff79c6">);</span>
 tcpProxy<span style="color:#ff79c6">.</span><span style="color:#50fa7b">start</span><span style="color:#ff79c6">();</span>
 System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Running VNC proxy on vnc://localhost:5900, password: &#39;secret&#39;&#34;</span><span style="color:#ff79c6">);</span></code></pre></div>
+<p>The <code>TcpProxy</code> from <a href="https://github.com/terma/java-nio-tcp-proxy" target="_blank">https://github.com/terma/java-nio-tcp-proxy</a> will attempt to bind port <code>5900</code> and log if it fails, without failing the tests.</p>
+
 <p>Now, if I start this test again and connect with VNC, I will see this:
 <center>
 <img src="https://bsideup.github.io/images/debugging_containers/vnc.png" alt="VNC" />
