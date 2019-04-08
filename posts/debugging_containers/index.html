@@ -99,9 +99,9 @@
       <div>
         
 
-<p>One of the best things Docker gave us was the port randomization. You no longer have to care about the conflicts, <strong>especially</strong> on CI environments.</p>
+<p>One of the best things Docker gave us was the port randomization. You no longer have to care about possible conflicts, <strong>especially</strong> on CI environments.</p>
 
-<p>But it also created a big confusion for many users who got used to Redis on port <code>6379</code>, or Java debugger on <code>5005</code>. Many tools are not container aware and expect things on static ports.</p>
+<p>But it also created a big confusion for many users who got used to Redis listening on port <code>6379</code>, or the Java debugger on <code>5005</code>. Many tools are not container aware and expect things on static ports.</p>
 
 <p>Well, we can&rsquo;t change the whole world (yet), but maybe there is something we can do for the Testcontainers users?</p>
 
@@ -113,7 +113,7 @@
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">testCompile <span style="color:#f1fa8c">&#39;org.testcontainers:selenium:1.11.1&#39;</span>
 testCompile <span style="color:#f1fa8c">&#39;org.seleniumhq.selenium:selenium-server:3.141.59&#39;</span></code></pre></div>
 <p>Now, we start Chrome inside a container with <a href="https://www.testcontainers.org/modules/webdriver_containers/" target="_blank">Testcontainers&rsquo; Selenium integration</a>.<br />
-We will iterate all visible same-domain links in the Testcontainers&rsquo; documentation and click a random one every N seconds:</p>
+We will iterate over all visible same-domain links in the Testcontainers&rsquo; documentation and click a random one every N seconds:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">var container <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> BrowserWebDriverContainer<span style="color:#ff79c6">&lt;&gt;()</span>
         <span style="color:#ff79c6">.</span><span style="color:#50fa7b">withCapabilities</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> ChromeOptions<span style="color:#ff79c6">());</span>
 
@@ -143,11 +143,11 @@ driver<span style="color:#ff79c6">.</span><span style="color:#50fa7b">get</span>
         <span style="color:#6272a4">// ¯\_(ツ)_/¯
 </span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">}</span>
 <span style="color:#ff79c6">}</span></code></pre></div>
-<p>A typical code, nothing fancy here.</p>
+<p>Some typical code, nothing fancy here.</p>
 
-<p>But isn&rsquo;t it nice to be able to see what is going on inside the container with Chrome? Luckily, Selenium Docker images have VNC configured, and all we need is to connect with our favourite VNC client. But, every time we start the test, the port will be randomly selected, and our VNC client will not be able to reconnect!</p>
+<p>But isn&rsquo;t it nice to be able to see what is going on with Chrome inside the container? Luckily, Selenium Docker images have VNC configured, and all we need is to connect using our favorite VNC client. Sadly, every time we start the test, the port will be randomly selected, and our VNC client will not be able to reconnect!</p>
 
-<p>Of course VNC isn&rsquo;t going something we will be doing on a CI environment, but it would be nice to have it locally, on a static port. So, what if instead of statically mapping the port in Docker, what if we instead start a local proxy on a static port and redirect everything to the random port, and gracefully handle the port conflict instead? Easy as a pie!</p>
+<p>Of course VNC isn&rsquo;t going something we will be using on a CI environment, but it would be nice to have it locally, on a static port. So, what if instead of statically mapping the port in Docker, we instead start a local proxy on a static port and redirect everything to the random port, while gracefully handling the port conflict instead? Easy as a pie!</p>
 
 <p>Let&rsquo;s add one more dependency:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">testCompile <span style="color:#f1fa8c">&#39;com.github.terma:javaniotcpproxy:1.5&#39;</span></code></pre></div>
@@ -168,17 +168,17 @@ tcpProxy<span style="color:#ff79c6">.</span><span style="color:#50fa7b">start</s
 System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Running VNC proxy on vnc://localhost:5900, password: &#39;secret&#39;&#34;</span><span style="color:#ff79c6">);</span></code></pre></div>
 <p>The <code>TcpProxy</code> from <a href="https://github.com/terma/java-nio-tcp-proxy" target="_blank">https://github.com/terma/java-nio-tcp-proxy</a> will attempt to bind port <code>5900</code> and log if it fails, without failing the tests.</p>
 
-<p>Now, if I start this test again and connect with VNC, I will see this:
+<p>Now, if we start this test again and connect with VNC, we will see this:
 <center>
 <img src="https://bsideup.github.io/images/debugging_containers/vnc.png" alt="VNC" />
 </center></p>
 
-<p>But there is more! If I restart the test, it will reconnect because a new proxy will start and listen on the same <code>5900</code> port:
+<p>But there is more! If we restart the test, it will reconnect because a new proxy will start and listen on the same <code>5900</code> port:
 <center>
 <img src="https://bsideup.github.io/images/debugging_containers/vnc_reconnect.png" alt="VNC reconnect" />
 </center></p>
 
-<p>You may say &ldquo;proxy is slow&rdquo;, but, at least on my machine, I was watching it clicking the URLs without any lag, everything was smooth and I was even able to click things while it is running.</p>
+<p>You may say &ldquo;using a proxy is generally slow&rdquo;, but, at least on my machine, I was watching it clicking the URLs without any lag, everything was smooth and I was even able to click things while it is running.</p>
 
 <h1 id="bonus-attaching-a-java-debugger">Bonus - attaching a Java debugger</h1>
 

@@ -17,8 +17,8 @@
       <pubDate>Mon, 08 Apr 2019 15:52:05 +0200</pubDate>
       
       <guid>https://bsideup.github.io/posts/debugging_containers/</guid>
-      <description>One of the best things Docker gave us was the port randomization. You no longer have to care about the conflicts, especially on CI environments.
-But it also created a big confusion for many users who got used to Redis on port 6379, or Java debugger on 5005. Many tools are not container aware and expect things on static ports.
+      <description>One of the best things Docker gave us was the port randomization. You no longer have to care about possible conflicts, especially on CI environments.
+But it also created a big confusion for many users who got used to Redis listening on port 6379, or the Java debugger on 5005. Many tools are not container aware and expect things on static ports.
 Well, we can&amp;rsquo;t change the whole world (yet), but maybe there is something we can do for the Testcontainers users?</description>
     </item>
     
