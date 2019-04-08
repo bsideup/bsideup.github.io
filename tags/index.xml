@@ -21,6 +21,15 @@
     </item>
     
     <item>
+      <title>Debugging</title>
+      <link>https://bsideup.github.io/tags/debugging/</link>
+      <pubDate>Mon, 08 Apr 2019 15:52:05 +0200</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/debugging/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Docker</title>
       <link>https://bsideup.github.io/tags/docker/</link>
       <pubDate>Wed, 26 Dec 2018 17:56:42 +0100</pubDate>
@@ -50,7 +59,7 @@
     <item>
       <title>Java</title>
       <link>https://bsideup.github.io/tags/java/</link>
-      <pubDate>Thu, 31 Jan 2019 13:29:11 +0100</pubDate>
+      <pubDate>Mon, 08 Apr 2019 15:52:05 +0200</pubDate>
       
       <guid>https://bsideup.github.io/tags/java/</guid>
       <description></description>
@@ -86,7 +95,7 @@
     <item>
       <title>Testcontainers</title>
       <link>https://bsideup.github.io/tags/testcontainers/</link>
-      <pubDate>Thu, 31 Jan 2019 13:29:11 +0100</pubDate>
+      <pubDate>Mon, 08 Apr 2019 15:52:05 +0200</pubDate>
       
       <guid>https://bsideup.github.io/tags/testcontainers/</guid>
       <description></description>
