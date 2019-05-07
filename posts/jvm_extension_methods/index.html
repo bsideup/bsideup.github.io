@@ -210,11 +210,16 @@ There is a bunch of helpful extensions in Kotlin&rsquo;s stdlib.</p>
 
 <hr />
 
-<p>But the truth is&hellip; I think none of them are good and should be implemented in Java 😱</p>
+<p>But the truth is&hellip; I think none of them are good and Java should implement them like that 😱</p>
 
 <h1 id="can-it-be-better">Can it be better?</h1>
 
-<p>I&rsquo;m sure there are many other JVM languages, but these are top popular ones, and they all have the same thing in common: callsite syntax.</p>
+<p>I&rsquo;m sure there are many other JVM languages, but these are top popular ones, so I will focus on them.</p>
+
+<p>What&rsquo;s wrong with Groovy? Global nature!<br />
+With Kotlin &amp; Scala? They must be defined in the same language, can&rsquo;t use existing libraries.</p>
+
+<p>Also, they all have the same thing in common: callsite syntax.</p>
 
 <p>No matter which language it is, it looks like this:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">myObj<span style="color:#ff79c6">.</span><span style="color:#50fa7b">myExtensionMethods</span><span style="color:#ff79c6">(</span>arg1<span style="color:#ff79c6">,</span> arg2<span style="color:#ff79c6">,</span> arg3<span style="color:#ff79c6">)</span></code></pre></div>
