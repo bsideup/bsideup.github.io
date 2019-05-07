@@ -6,10 +6,21 @@
     <description>Recent content in Lombok on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 04 Jan 2019 15:17:30 +0100</lastBuildDate>
+    <lastBuildDate>Tue, 07 May 2019 17:37:23 +0200</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/tags/lombok/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>The sad state of extension methods in the JVM ecosystem</title>
+      <link>https://bsideup.github.io/posts/jvm_extension_methods/</link>
+      <pubDate>Tue, 07 May 2019 17:37:23 +0200</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/jvm_extension_methods/</guid>
+      <description>Most of my time I write Java code. It isn&amp;rsquo;t perfect, yet I find it good enough as my primary language. But sometimes I dream about the future of Java.
+Given the latest activities around the Java language design (See Project Amber), the future looks brighter JEP-by-JEP, but one feature I really miss which isn&amp;rsquo;t discussed by Amber is&amp;hellip; Extension methods.
+The problem Java language was heavily influenced by the OOP design.</description>
+    </item>
     
     <item>
       <title>Easy Java delegates with Lombok</title>

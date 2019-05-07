@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://bsideup.github.io/posts/jvm_extension_methods/</loc>
+    <lastmod>2019-05-07T17:37:23+02:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/debugging_containers/</loc>
     <lastmod>2019-04-08T15:52:05+02:00</lastmod>
   </url>
@@ -29,7 +34,7 @@
   
   <url>
     <loc>https://bsideup.github.io/</loc>
-    <lastmod>2019-04-08T15:52:05+02:00</lastmod>
+    <lastmod>2019-05-07T17:37:23+02:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -69,14 +74,32 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/tags/groovy/</loc>
+    <lastmod>2019-05-07T17:37:23+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/tags/java/</loc>
-    <lastmod>2019-04-08T15:52:05+02:00</lastmod>
+    <lastmod>2019-05-07T17:37:23+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/jvm/</loc>
+    <lastmod>2019-05-07T17:37:23+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/kotlin/</loc>
+    <lastmod>2019-05-07T17:37:23+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://bsideup.github.io/tags/lombok/</loc>
-    <lastmod>2019-01-04T15:17:30+01:00</lastmod>
+    <lastmod>2019-05-07T17:37:23+02:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -94,7 +117,7 @@
   
   <url>
     <loc>https://bsideup.github.io/posts/</loc>
-    <lastmod>2019-04-08T15:52:05+02:00</lastmod>
+    <lastmod>2019-05-07T17:37:23+02:00</lastmod>
     <priority>0</priority>
   </url>
   

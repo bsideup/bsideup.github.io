@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  The sad state of extension methods in the JVM ecosystem · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/jvm_extension_methods/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">The sad state of extension methods in the JVM ecosystem</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-05-07T17:37:23&#43;02:00'>
+                May 7, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              8 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/jvm/">jvm</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/groovy/">groovy</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/kotlin/">kotlin</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/lombok/">lombok</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p>Most of my time I write Java code. It isn&rsquo;t perfect, yet I find it good enough as my primary language.
+But sometimes I dream about the future of Java.<br />
+Given the latest activities around the Java language design (See <a href="https://openjdk.java.net/projects/amber/" target="_blank">Project Amber</a>),
+the future looks brighter JEP-by-JEP, but one feature I really miss which isn&rsquo;t discussed by Amber is&hellip; Extension methods.</p>
+
+<h1 id="the-problem">The problem</h1>
+
+<p>Java language was heavily influenced by the OOP design. We have a class, we have instances of this class.
+The class defines his methods, can be extended and have more methods. Simple.</p>
+
+<p>Consider <code>java.lang.String</code> class. It has around 60+ methods defined, and some of them are purely utility methods like <code>String#toUpperCase()</code>.</p>
+
+<p>We can instantiate it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">var s <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> String<span style="color:#ff79c6">(</span>bytes<span style="color:#ff79c6">);</span></code></pre></div>
+<p>We can of course call the methods of it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>s<span style="color:#ff79c6">.</span><span style="color:#50fa7b">toUpperCase</span><span style="color:#ff79c6">());</span></code></pre></div>
+<p>But how does this class scale?<br />
+Imagine if we have 500 different utility methods defined in <code>java.lang.String</code>?<br />
+Somebody mentioned &ldquo;modular Java&rdquo;?<br />
+Plus, there always will be some method that is missing but somebody wants it.</p>
+
+<h1 id="what-we-have-in-java">What we have in Java</h1>
+
+<p>String manipulations is a very common thing, and there are utility libraries like Apache Commons or Guava that help to perform common operations on Strings:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">var myString <span style="color:#ff79c6">=</span> StringUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">leftPad</span><span style="color:#ff79c6">(</span>Strings<span style="color:#ff79c6">.</span><span style="color:#50fa7b">repeat</span><span style="color:#ff79c6">(</span>StringUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">swapCase</span><span style="color:#ff79c6">(</span>StringUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">chomp</span><span style="color:#ff79c6">(</span>s<span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34; &#34;</span><span style="color:#ff79c6">)),</span> 3<span style="color:#ff79c6">),</span> 80<span style="color:#ff79c6">);</span></code></pre></div>
+<p>Thanks to static methods, we can easily apply methods that are not defined in <code>java.lang.String</code>. Yay! But&hellip;</p>
+
+<p>You must have noted that my blog engine rendered that example with a vertical scrollbar. It is indeed pretty long!<br />
+We can try to improve it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">var myString <span style="color:#ff79c6">=</span> StringUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">leftPad</span><span style="color:#ff79c6">(</span>
+    Strings<span style="color:#ff79c6">.</span><span style="color:#50fa7b">repeat</span><span style="color:#ff79c6">(</span>
+        StringUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">swapCase</span><span style="color:#ff79c6">(</span>
+            StringUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">chomp</span><span style="color:#ff79c6">(</span>s<span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34; &#34;</span><span style="color:#ff79c6">)</span>
+        <span style="color:#ff79c6">),</span>
+        3
+    <span style="color:#ff79c6">),</span>
+    80
+<span style="color:#ff79c6">);</span></code></pre></div>
+<p>While it helps a bit, it is still way too far from being perfect!
+Utility class&rsquo; name makes it harder to focus on the code, and methods&rsquo; arguments are hard to follow.</p>
+
+<p>Can you say what (and how) this code is doing after spending 2 seconds reading it? I don&rsquo;t.</p>
+
+<p>One can say &ldquo;use static imports&rdquo;:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">var myString <span style="color:#ff79c6">=</span> leftPad<span style="color:#ff79c6">(</span>repeat<span style="color:#ff79c6">(</span>swapCase<span style="color:#ff79c6">(</span>chomp<span style="color:#ff79c6">(</span>s<span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34; &#34;</span><span style="color:#ff79c6">)),</span> 3<span style="color:#ff79c6">),</span> 80<span style="color:#ff79c6">);</span></code></pre></div>
+<p>But IMO it only makes the code harder to read.</p>
+
+<ul>
+<li>You have to know where the method is defined now.</li>
+<li>Is it a method from the current class?</li>
+<li>Or maybe from his parent?</li>
+<li>Or maybe this is an interface default method?</li>
+<li>What if there is a method with the same name in the class hierarchy?</li>
+</ul>
+
+<p>Luckily, Java isn&rsquo;t the only language in the JVM ecosystem, and we can take a look how this problem is solved in other JVM languages.</p>
+
+<h1 id="in-other-languages">In other languages</h1>
+
+<h2 id="groovy">Groovy</h2>
+
+<p>One of the biggest advantages of Groovy when it was introduced to the Java community were the extension modules and default methods:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy"><span style="color:#8be9fd">def</span> file <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> <span style="color:#50fa7b">File</span><span style="color:#ff79c6">(...)</span>
+<span style="color:#8be9fd">def</span> contents <span style="color:#ff79c6">=</span> file<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getText</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#39;utf-8&#39;</span><span style="color:#ff79c6">)</span></code></pre></div>
+<p>Where:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#6272a4">// ResourceGroovyMethods.java registered via o.c.groovy.runtime.ExtensionModule
+</span><span style="color:#6272a4"></span><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">ResourceGroovyMethods</span> <span style="color:#ff79c6">{</span>
+
+    <span style="color:#6272a4">// ...
+</span><span style="color:#6272a4"></span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> String <span style="color:#50fa7b">getText</span><span style="color:#ff79c6">(</span>File file<span style="color:#ff79c6">,</span> String charset<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> IOException <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> IOGroovyMethods<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getText</span><span style="color:#ff79c6">(</span>newReader<span style="color:#ff79c6">(</span>file<span style="color:#ff79c6">,</span> charset<span style="color:#ff79c6">));</span>
+    <span style="color:#ff79c6">}</span>
+
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Now, once such extension methods are defined, we can call them on instances without having to modify the JDK.<br />
+Remember <code>list.forEach { println(it) }</code>? This is an extension method too!</p>
+
+<p>Note that it uses the global registry of extension methods. Two modules define the same method? Oh well&hellip;</p>
+
+<h2 id="kotlin">Kotlin</h2>
+
+<p>Kotlin extension functions are easier to define because they are not global, but importable and operate on <code>this</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#6272a4">// listExtensions.kt
+</span><span style="color:#6272a4"></span><span style="color:#ff79c6">fun</span> <span style="color:#50fa7b">MutableList</span>&lt;Int&gt;.swap(index1: Int, index2: Int) {
+    <span style="color:#ff79c6">val</span> tmp = <span style="color:#ff79c6">this</span><span style="color:#50fa7b">[index1]</span> <span style="color:#6272a4">// &#39;this&#39; corresponds to the list
+</span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">this</span><span style="color:#50fa7b">[index1]</span> = <span style="color:#ff79c6">this</span><span style="color:#50fa7b">[index2]</span>
+    <span style="color:#ff79c6">this</span><span style="color:#50fa7b">[index2]</span> = tmp
+}</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-kotlin" data-lang="kotlin"><span style="color:#ff79c6">import</span> listExtensions.swap
+
+<span style="color:#ff79c6">val</span> l = mutableListOf(<span style="color:#bd93f9">1</span>, <span style="color:#bd93f9">2</span>, <span style="color:#bd93f9">3</span>)
+l.swap(<span style="color:#bd93f9">0</span>, <span style="color:#bd93f9">2</span>) <span style="color:#6272a4">// &#39;this&#39; inside &#39;swap()&#39; will hold the value of &#39;l&#39;</span></code></pre></div>
+<p>You decide which function to import, and different Kotlin files may use different extension methods.<br />
+There is a bunch of helpful extensions in Kotlin&rsquo;s stdlib.</p>
+
+<p>Note that unlike Groovy, you can&rsquo;t write your extension functions in Java. Only in Kotlin.</p>
+
+<h2 id="scala">Scala</h2>
+
+<p>I have very little experience in Scala, so I just googled the topic and this is what I found:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala"><span style="color:#ff79c6">implicit</span> <span style="color:#ff79c6">class</span> <span style="color:#50fa7b">ExtendedInt</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">val</span> value<span style="color:#ff79c6">:</span> <span style="color:#8be9fd">Int</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">extends</span> <span style="color:#50fa7b">AnyVal</span> <span style="color:#ff79c6">{</span>
+  <span style="color:#ff79c6">def</span> sumWith<span style="color:#ff79c6">(</span>other<span style="color:#ff79c6">:</span><span style="color:#8be9fd">Int</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">=</span> value <span style="color:#ff79c6">+</span> other
+<span style="color:#ff79c6">}</span></code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-scala" data-lang="scala"><span style="color:#ff79c6">var</span> myInt <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">1.</span>sumWith<span style="color:#ff79c6">(</span><span style="color:#bd93f9">2</span><span style="color:#ff79c6">)</span></code></pre></div>
+<p><del>Me being me: of course there is <code>implicit</code>! Everything is implicit in Scala 😅</del></p>
+
+<hr />
+
+<p>But the truth is&hellip; I think none of them are good and should be implemented in Java 😱</p>
+
+<h1 id="can-it-be-better">Can it be better?</h1>
+
+<p>I&rsquo;m sure there are many other JVM languages, but these are top popular ones, and they all have the same thing in common: callsite syntax.</p>
+
+<p>No matter which language it is, it looks like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">myObj<span style="color:#ff79c6">.</span><span style="color:#50fa7b">myExtensionMethods</span><span style="color:#ff79c6">(</span>arg1<span style="color:#ff79c6">,</span> arg2<span style="color:#ff79c6">,</span> arg3<span style="color:#ff79c6">)</span></code></pre></div>
+<p>It creates a bunch of problems:</p>
+
+<ul>
+<li>if you&rsquo;re not using an IDE (e.g. reviewing it on GitHub), you need to know from where this method comes from - the original object or some extension</li>
+<li>if there is a method with the same name in the object, which one will be selected? Up to the language.</li>
+<li>it ain&rsquo;t making IDEs life easier</li>
+<li>as a maintainer of various OSS libraries, I find it bad because some junior developers (and sometimes not even junior ones) think that these methods
+are defined in the library which defines the original type, and may flood your issue tracker with unrelated stuff.</li>
+</ul>
+
+<p>But does it really have to use the same syntax as a normal method call?</p>
+
+<p>When I was working with JavaScript (and RxJS), I came across <a href="https://github.com/tc39/proposal-bind-operator" target="_blank">the bind operator proposal</a> which looks like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#8be9fd;font-style:italic">function</span> toStringWithPrefix(prefix) {
+    <span style="color:#ff79c6">return</span> prefix <span style="color:#ff79c6">+</span> <span style="color:#ff79c6">this</span>
+}
+
+<span style="color:#8be9fd;font-style:italic">let</span> s <span style="color:#ff79c6">=</span> email.indexOf(<span style="color:#f1fa8c">&#34;@&#34;</span>)<span style="color:#ff79c6">::</span>toStringWithPrefix(<span style="color:#f1fa8c">&#34;@ symbol location is: &#34;</span>)
+</code></pre></div>
+<p>And it gets replaced with:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#8be9fd;font-style:italic">let</span> s <span style="color:#ff79c6">=</span> toStringWithPrefix.call(email.indexOf(<span style="color:#f1fa8c">&#34;@&#34;</span>), <span style="color:#f1fa8c">&#34;@ symbol location is &#34;</span>)
+</code></pre></div>
+<p>As you can see, it uses a different syntax (double colon) to separate normal calls from &ldquo;extensions&rdquo;.</p>
+
+<p>Due to the use of <code>this</code>, The JS community later have decided to focus on another proposal, <a href="https://github.com/tc39/proposal-pipeline-operator" target="_blank">The pipe operator</a>, which also uses a different syntax:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#8be9fd;font-style:italic">function</span> toStringWithPrefix(prefix) {
+    <span style="color:#6272a4">// Returns lambda
+</span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">return</span> self =&gt; prefix <span style="color:#ff79c6">+</span> self
+}
+
+<span style="color:#8be9fd;font-style:italic">let</span> s <span style="color:#ff79c6">=</span> email.indexOf(<span style="color:#f1fa8c">&#34;@&#34;</span>) <span style="color:#ff79c6">|&gt;</span> toStringWithPrefix(<span style="color:#f1fa8c">&#34;@ symbol location is: &#34;</span>)
+</code></pre></div>
+<p>You may question the operator&rsquo;s syntax, but the idea of <strong>not</strong> using the method call syntax is nice!<br />
+And it works with some existing libraries like Lodash too!</p>
+
+<p>I guess JavaScript folks have had enough fun with the prototypes and same-syntax extensions 😅</p>
+
+<h1 id="back-to-java">Back to Java</h1>
+
+<blockquote>
+<p>⚠️ <strong>WARNING!</strong><br />
+this section is just the result of my (sick?) imagination and nothing else.<br />
+it does not exist (at least not yet), nor planned AFAIK.</p>
+</blockquote>
+
+<p>How can we apply this knowledge to Java? Let&rsquo;s define the requirements:</p>
+
+<ul>
+<li>It should not be global</li>
+<li>The syntax should give us clear understanding that we&rsquo;re calling an extension method, for the readability <strong>and</strong> IDEs</li>
+<li>Ideally, it should support existing Java libraries like Apache Commons or Guava, so that they can be used &ldquo;as is&rdquo;</li>
+<li>Extra points if it can be done without changing the JVM spec / JVM implementation</li>
+<li>It should works with nulls too!</li>
+<li>Other JVM languages should be able to call these methods</li>
+</ul>
+
+<h2 id="extension-method-definition">Extension method definition</h2>
+
+<p>For the definition, I like how Groovy/Lombok does it.</p>
+
+<p>Here is an example from <a href="https://projectlombok.org/features/experimental/ExtensionMethod" target="_blank">Project Lombok</a>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"> <span style="color:#ff79c6">import</span> lombok.experimental.ExtensionMethod<span style="color:#ff79c6">;</span>
+
+@ExtensionMethod<span style="color:#ff79c6">({</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">util</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Arrays</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">,</span> Extensions<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">})</span>
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">ExtensionMethodExample</span> <span style="color:#ff79c6">{</span>
+  <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">test</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd">int</span><span style="color:#ff79c6">[]</span> intArray <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">{</span> 5<span style="color:#ff79c6">,</span> 3<span style="color:#ff79c6">,</span> 8<span style="color:#ff79c6">,</span> 2 <span style="color:#ff79c6">};</span>
+    intArray<span style="color:#ff79c6">.</span><span style="color:#50fa7b">sort</span><span style="color:#ff79c6">();</span> <span style="color:#6272a4">// nice!
+</span><span style="color:#6272a4"></span>
+    String iAmNull <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span>
+    iAmNull<span style="color:#ff79c6">.</span><span style="color:#50fa7b">toTitleCase</span><span style="color:#ff79c6">();</span> <span style="color:#6272a4">// null
+</span><span style="color:#6272a4"></span>    <span style="color:#f1fa8c">&#34;hELlO, WORlD!&#34;</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">toTitleCase</span><span style="color:#ff79c6">();</span> <span style="color:#6272a4">// Hello, world!
+</span><span style="color:#6272a4"></span>  <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+
+<span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">Extensions</span> <span style="color:#ff79c6">{</span>  
+  <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> String <span style="color:#50fa7b">toTitleCase</span><span style="color:#ff79c6">(</span>String self<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>self <span style="color:#ff79c6">==</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">||</span> self<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isEmpty</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">return</span> in<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">return</span> <span style="color:#f1fa8c">&#34;&#34;</span>
+        <span style="color:#ff79c6">+</span> Character<span style="color:#ff79c6">.</span><span style="color:#50fa7b">toTitleCase</span><span style="color:#ff79c6">(</span>self<span style="color:#ff79c6">.</span><span style="color:#50fa7b">charAt</span><span style="color:#ff79c6">(</span>0<span style="color:#ff79c6">))</span>
+        <span style="color:#ff79c6">+</span> self<span style="color:#ff79c6">.</span><span style="color:#50fa7b">substring</span><span style="color:#ff79c6">(</span>1<span style="color:#ff79c6">).</span><span style="color:#50fa7b">toLowerCase</span><span style="color:#ff79c6">();</span>
+  <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>What we have here:</p>
+
+<ul>
+<li>The <code>toTitleCase</code> extension method is defined as a static method</li>
+<li>It works with nulls</li>
+<li>We can reuse existing utility methods like the <code>java.util.Arrays</code> class</li>
+</ul>
+
+<p>What&rsquo;s left:</p>
+
+<ul>
+<li>it still looks like a regular method call</li>
+<li>We cannot use individual methods due to <code>@ExtensionMethod</code> annotation</li>
+</ul>
+
+<h2 id="ux">UX</h2>
+
+<p>While I really liked the <code>::</code> syntax from JS, it is already used in Java for the method references.<br />
+Since this part is an imaginary one, I will stick to <code>::</code> due to a lack of any other good option for now:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@ExtensionMethod<span style="color:#ff79c6">({</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">util</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Arrays</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">,</span> Extensions<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">})</span>
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">ExtensionMethodExample</span> <span style="color:#ff79c6">{</span>
+  <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">test</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd">int</span><span style="color:#ff79c6">[]</span> intArray <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">{</span> 5<span style="color:#ff79c6">,</span> 3<span style="color:#ff79c6">,</span> 8<span style="color:#ff79c6">,</span> 2 <span style="color:#ff79c6">};</span><span style="color:#8be9fd;font-style:italic">
+</span><span style="color:#8be9fd;font-style:italic">    intArray:</span><span style="color:#ff79c6">:</span>sort<span style="color:#ff79c6">();</span> <span style="color:#6272a4">// nice!
+</span><span style="color:#6272a4"></span>
+    String iAmNull <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span><span style="color:#8be9fd;font-style:italic">
+</span><span style="color:#8be9fd;font-style:italic">    iAmNull:</span><span style="color:#ff79c6">:</span>toTitleCase<span style="color:#ff79c6">();</span> <span style="color:#6272a4">// null
+</span><span style="color:#6272a4"></span>    <span style="color:#f1fa8c">&#34;hELlO, WORlD!&#34;</span><span style="color:#ff79c6">::</span>toTitleCase<span style="color:#ff79c6">();</span> <span style="color:#6272a4">// Hello, world!
+</span><span style="color:#6272a4"></span>  <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Now, the only missing part is the imports. We could borrow C#-style <code>using</code> keyword:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">package</span> com.example<span style="color:#ff79c6">;</span>
+
+using java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">util</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Arrays</span><span style="color:#ff79c6">.*;</span> <span style="color:#6272a4">// import-like star imports
+</span><span style="color:#6272a4"></span>using com<span style="color:#ff79c6">.</span><span style="color:#50fa7b">example</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Extensions</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">toTitleCase</span><span style="color:#ff79c6">;</span> <span style="color:#6272a4">// use concrete method
+</span><span style="color:#6272a4"></span>
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">ExtensionMethodExample</span> <span style="color:#ff79c6">{</span>
+  <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">test</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd">int</span><span style="color:#ff79c6">[]</span> intArray <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">{</span> 5<span style="color:#ff79c6">,</span> 3<span style="color:#ff79c6">,</span> 8<span style="color:#ff79c6">,</span> 2 <span style="color:#ff79c6">};</span><span style="color:#8be9fd;font-style:italic">
+</span><span style="color:#8be9fd;font-style:italic">    intArray:</span><span style="color:#ff79c6">:</span>sort<span style="color:#ff79c6">();</span> <span style="color:#6272a4">// nice!
+</span><span style="color:#6272a4"></span>
+    String iAmNull <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span><span style="color:#8be9fd;font-style:italic">
+</span><span style="color:#8be9fd;font-style:italic">    iAmNull:</span><span style="color:#ff79c6">:</span>toTitleCase<span style="color:#ff79c6">();</span> <span style="color:#6272a4">// null
+</span><span style="color:#6272a4"></span>    <span style="color:#f1fa8c">&#34;hELlO, WORlD!&#34;</span><span style="color:#ff79c6">::</span>toTitleCase<span style="color:#ff79c6">();</span> <span style="color:#6272a4">// Hello, world!
+</span><span style="color:#6272a4"></span>  <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Neat, isn&rsquo;t it?</p>
+
+<h1 id="what-it-gives-us">What it gives us</h1>
+
+<p>If we rewrite our original String example, we get:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#6272a4">// Before:
+</span><span style="color:#6272a4"></span>var myString <span style="color:#ff79c6">=</span> StringUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">leftPad</span><span style="color:#ff79c6">(</span>
+    Strings<span style="color:#ff79c6">.</span><span style="color:#50fa7b">repeat</span><span style="color:#ff79c6">(</span>
+        StringUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">swapCase</span><span style="color:#ff79c6">(</span>
+            StringUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">chomp</span><span style="color:#ff79c6">(</span>s<span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34; &#34;</span><span style="color:#ff79c6">)</span>
+        <span style="color:#ff79c6">),</span>
+        3
+    <span style="color:#ff79c6">),</span>
+    80
+<span style="color:#ff79c6">);</span>
+
+<span style="color:#6272a4">// After
+</span><span style="color:#6272a4"></span>var myString <span style="color:#ff79c6">=</span> <span style="color:#8be9fd;font-style:italic">s:</span><span style="color:#ff79c6">:</span>chomp<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34; &#34;</span><span style="color:#ff79c6">)::</span>swapCase<span style="color:#ff79c6">()::</span>repeat<span style="color:#ff79c6">(</span>3<span style="color:#ff79c6">)::</span>leftPad<span style="color:#ff79c6">(</span>80<span style="color:#ff79c6">);</span></code></pre></div>
+<p>Maybe the string examples are not that convincing. But consider the following examples:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">myList<span style="color:#ff79c6">.</span><span style="color:#50fa7b">stream</span><span style="color:#ff79c6">()</span>
+    <span style="color:#ff79c6">::</span>ofType<span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">)</span>
+    <span style="color:#ff79c6">::</span>collectList<span style="color:#ff79c6">();</span></code></pre></div>
+<p>or:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">myList:</span><span style="color:#ff79c6">:</span>map<span style="color:#ff79c6">(</span><span style="color:#8be9fd;font-style:italic">Object:</span><span style="color:#ff79c6">:</span>toString<span style="color:#ff79c6">);</span>
+
+<span style="color:#6272a4">// where map is:
+</span><span style="color:#6272a4"></span><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>I<span style="color:#ff79c6">,</span> O<span style="color:#ff79c6">&gt;</span> List<span style="color:#ff79c6">&lt;</span>O<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">map</span><span style="color:#ff79c6">(</span>List<span style="color:#ff79c6">&lt;</span>I<span style="color:#ff79c6">&gt;</span> self<span style="color:#ff79c6">,</span> Function<span style="color:#ff79c6">&lt;</span>I<span style="color:#ff79c6">,</span> O<span style="color:#ff79c6">&gt;</span> mapper<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#6272a4">// TODO optimize later ;)
+</span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">return</span> self<span style="color:#ff79c6">.</span><span style="color:#50fa7b">stream</span><span style="color:#ff79c6">(</span>mapper<span style="color:#ff79c6">).</span><span style="color:#50fa7b">collect</span><span style="color:#ff79c6">(</span>Collectors<span style="color:#ff79c6">.</span><span style="color:#50fa7b">toList</span><span style="color:#ff79c6">());</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>or:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">User user <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span>
+
+String name <span style="color:#ff79c6">=</span> <span style="color:#8be9fd;font-style:italic">myObject:</span><span style="color:#ff79c6">:</span>transform<span style="color:#ff79c6">(</span>it <span style="color:#ff79c6">-&gt;</span> it<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getName</span><span style="color:#ff79c6">())::</span>or<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Anonymous&#34;</span><span style="color:#ff79c6">);</span>
+
+<span style="color:#6272a4">// Where:
+</span><span style="color:#6272a4"></span><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>I<span style="color:#ff79c6">,</span> O<span style="color:#ff79c6">&gt;</span> O <span style="color:#50fa7b">transform</span><span style="color:#ff79c6">(</span>I self<span style="color:#ff79c6">,</span> Function<span style="color:#ff79c6">&lt;</span>I<span style="color:#ff79c6">,</span> O<span style="color:#ff79c6">&gt;</span> mapper<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">return</span> mapper<span style="color:#ff79c6">.</span><span style="color:#50fa7b">apply</span><span style="color:#ff79c6">(</span>self<span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">}</span>
+
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> T <span style="color:#50fa7b">or</span><span style="color:#ff79c6">(</span>@Nullable T self<span style="color:#ff79c6">,</span> T fallback<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">return</span> self <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">?</span> self <span style="color:#ff79c6">:</span> fallback<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>There is also <code>Flow.Publisher&lt;T&gt;</code> type in Java 9+, which does not define any operators and is not user friendly without the operators:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">Flow<span style="color:#ff79c6">.</span><span style="color:#50fa7b">Publisher</span><span style="color:#ff79c6">&lt;</span>User<span style="color:#ff79c6">&gt;</span> publisher <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">...;</span>
+
+<span style="color:#ff79c6">return</span> publisher
+    <span style="color:#ff79c6">::</span>filter<span style="color:#ff79c6">(</span>it <span style="color:#ff79c6">-&gt;</span> it<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getAge</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">&gt;=</span> 18<span style="color:#ff79c6">)</span> <span style="color:#6272a4">// generic operator for any Flow.Publisher
+</span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">::</span>asFlux<span style="color:#ff79c6">()</span> <span style="color:#6272a4">// convert to Project Reactor&#39;s Flux
+</span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">.</span><span style="color:#50fa7b">map</span><span style="color:#ff79c6">(</span>it <span style="color:#ff79c6">-&gt;</span> it<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getName</span><span style="color:#ff79c6">()::</span>or<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Anonymous&#34;</span><span style="color:#ff79c6">))</span>
+    <span style="color:#ff79c6">::</span>onErrorLogAndReturnEmpty<span style="color:#ff79c6">();</span></code></pre></div>
+<h1 id="conclusion">Conclusion</h1>
+
+<p>With the emerging functional programming in Java, having extension methods would help to keep the original types small,
+but also remove a lot of verbosity from users&rsquo; code.</p>
+
+<p>Library maintainers would also benefit from them.<br />
+Just look at the amount of methods defined in <a href="https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html" target="_blank">Reactor&rsquo;s Flux</a>! 😅</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
