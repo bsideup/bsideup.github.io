@@ -180,7 +180,7 @@ This is a thread started by Akka&rsquo;s dispatcher, the one we should not block
 
 <p>After reading the <a href="https://github.com/reactor/BlockHound/blob/7c6d299/docs/custom_integrations.md" target="_blank">custom integrations</a> section of the docs,
 it becomes clear that we need to hint which threads are considered non-blocking and &ldquo;blacklist&rdquo; a method on a stack, so that when it enters the method,
-it threads every call inside it as non-blocking.</p>
+it treats every call inside it as non-blocking.</p>
 
 <p>Since <code>BlockHound#install</code> accepts a list of integrations, I will add them inline:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">BlockHound<span style="color:#ff79c6">.</span><span style="color:#50fa7b">install</span><span style="color:#ff79c6">(</span>builder <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
