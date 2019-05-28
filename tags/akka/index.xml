@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Akka on A guy with &#39;Ego&#39; in his name</title>
+    <link>https://bsideup.github.io/tags/akka/</link>
+    <description>Recent content in Akka on A guy with &#39;Ego&#39; in his name</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 28 May 2019 18:12:32 +0200</lastBuildDate>
+    
+	<atom:link href="https://bsideup.github.io/tags/akka/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Detecting blocking calls in Akka with BlockHound</title>
+      <link>https://bsideup.github.io/posts/blockhound_with_akka/</link>
+      <pubDate>Tue, 28 May 2019 18:12:32 +0200</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/blockhound_with_akka/</guid>
+      <description>Asynchronous and non-blocking programming in JVM can provide very impressive performance results. Unlike the more classical blocking model, it runs on just a few threads from a pool. But, to keep it performant, you must ensure that you are not blocking these threads.
+Just imagine having 4 threads in total, and blocking one of them for 100 milliseconds?
+But how do you &amp;ldquo;protect&amp;rdquo; your application from the blocking calls?</description>
+    </item>
+    
+  </channel>
+</rss>

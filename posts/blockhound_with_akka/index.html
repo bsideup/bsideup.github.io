@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  Detecting blocking calls in Akka with BlockHound · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/blockhound_with_akka/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Detecting blocking calls in Akka with BlockHound</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-05-28T18:12:32&#43;02:00'>
+                May 28, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/blockhound/">BlockHound</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/akka/">akka</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p>Asynchronous and non-blocking programming in JVM can provide very impressive performance results.
+Unlike the more classical blocking model, it runs on just a few threads from a pool.
+But, to keep it performant, you must ensure that you are not blocking these threads.<br />
+Just imagine having 4 threads in total, and blocking one of them for 100 milliseconds?</p>
+
+<p>But how do you &ldquo;protect&rdquo; your application from the blocking calls?<br />
+Code reviews? Good, but suffers from the human factor.<br />
+Thread dumps in production? A bit too late, isn&rsquo;t it? :)<br />
+Starvation detectors? Well, probably one of the best solutions, but they require a proper load.</p>
+
+<p>My choice is <a href="http://github.com/reactor/BlockHound" target="_blank">BlockHound</a> - a Java agent to detect blocking calls from non-blocking threads.</p>
+
+<p>But wait&hellip; The title says &ldquo;Akka&rdquo;, but BlockHound is from <a href="https://projectreactor.io" target="_blank">Project Reactor</a> and claims to support Reactor &amp; RxJava 2?<br />
+Apparently it can be used with <strong>any</strong> Java technology thanks to <a href="https://github.com/reactor/BlockHound/blob/7c6d299/docs/custom_integrations.md" target="_blank">the custom integrations</a>.</p>
+
+<h1 id="sample-app">Sample app</h1>
+
+<p>I am no Akka expert, but I have enough knowledge to draft a &ldquo;Hello World&rdquo; in Akka (here I am using Akka Typed):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">import</span> akka.typed.*<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">import</span> akka.typed.javadsl.Actor<span style="color:#ff79c6">;</span>
+
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">AkkaWithBlockHound</span> <span style="color:#ff79c6">{</span>
+
+    <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> Behavior<span style="color:#ff79c6">&lt;</span>String<span style="color:#ff79c6">&gt;</span> behavior <span style="color:#ff79c6">=</span> Actor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">immutable</span><span style="color:#ff79c6">((</span>ctx<span style="color:#ff79c6">,</span> who<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Blocking call&#34;</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">equals</span><span style="color:#ff79c6">(</span>who<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+            Thread<span style="color:#ff79c6">.</span><span style="color:#50fa7b">sleep</span><span style="color:#ff79c6">(</span>100<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">}</span>
+
+        ctx<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getSystem</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">log</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Hello, &#34;</span> <span style="color:#ff79c6">+</span> who<span style="color:#ff79c6">);</span>
+
+        <span style="color:#ff79c6">return</span> Actor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">same</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">});</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> Exception <span style="color:#ff79c6">{</span>
+        var greeter <span style="color:#ff79c6">=</span> ActorSystem<span style="color:#ff79c6">.</span><span style="color:#50fa7b">create</span><span style="color:#ff79c6">(</span>behavior<span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;greeter&#34;</span><span style="color:#ff79c6">);</span>
+
+        greeter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">tell</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Akka&#34;</span><span style="color:#ff79c6">);</span>
+        greeter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">tell</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Java&#34;</span><span style="color:#ff79c6">);</span>
+        greeter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">tell</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Blocking call&#34;</span><span style="color:#ff79c6">);</span>
+
+        Thread<span style="color:#ff79c6">.</span><span style="color:#50fa7b">currentThread</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">join</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Here we have a very simple Akka application, but it should be enough for our needs.<br />
+As you can see, we call a blocking method when we receive <code>Blocking Call</code> message.</p>
+
+<p>If I run this code, it will execute and print the lines:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span><span style="color:#8be9fd;font-style:italic">19:15:</span>50<span style="color:#ff79c6">.</span><span style="color:#50fa7b">393</span><span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>greeter<span style="color:#ff79c6">-</span>akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">actor</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">default</span><span style="color:#ff79c6">-</span>dispatcher<span style="color:#ff79c6">-</span>2<span style="color:#ff79c6">]</span> Hello<span style="color:#ff79c6">,</span> Akka
+<span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span><span style="color:#8be9fd;font-style:italic">19:15:</span>50<span style="color:#ff79c6">.</span><span style="color:#50fa7b">394</span><span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>greeter<span style="color:#ff79c6">-</span>akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">actor</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">default</span><span style="color:#ff79c6">-</span>dispatcher<span style="color:#ff79c6">-</span>2<span style="color:#ff79c6">]</span> Hello<span style="color:#ff79c6">,</span> Java
+<span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span><span style="color:#8be9fd;font-style:italic">19:15:</span>50<span style="color:#ff79c6">.</span><span style="color:#50fa7b">497</span><span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>greeter<span style="color:#ff79c6">-</span>akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">actor</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">default</span><span style="color:#ff79c6">-</span>dispatcher<span style="color:#ff79c6">-</span>2<span style="color:#ff79c6">]</span> Hello<span style="color:#ff79c6">,</span> Blocking call</code></pre></div>
+<p>As you can see, everything will be running on <code>greeter-akka.actor.default-dispatcher-2</code> thread.
+This is a thread started by Akka&rsquo;s dispatcher, the one we should not block, but we do.</p>
+
+<p>Note that it runs fine, no exceptions or anything.</p>
+
+<h1 id="adding-blockhound">Adding BlockHound</h1>
+
+<p>What will happen if we add the BlockHound as described <a href="https://github.com/reactor/BlockHound/blob/7c6d299f8e6bd84cee0cd26a4be6f762b676e641/docs/quick_start.md" target="_blank">in the docs</a>?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> Exception <span style="color:#ff79c6">{</span>
+    BlockHound<span style="color:#ff79c6">.</span><span style="color:#50fa7b">install</span><span style="color:#ff79c6">();</span>
+
+    var greeter <span style="color:#ff79c6">=</span> ActorSystem<span style="color:#ff79c6">.</span><span style="color:#50fa7b">create</span><span style="color:#ff79c6">(</span>behavior<span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;greeter&#34;</span><span style="color:#ff79c6">);</span>
+
+    greeter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">tell</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Akka&#34;</span><span style="color:#ff79c6">);</span>
+    greeter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">tell</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Java&#34;</span><span style="color:#ff79c6">);</span>
+    greeter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">tell</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Blocking call&#34;</span><span style="color:#ff79c6">);</span>
+
+    Thread<span style="color:#ff79c6">.</span><span style="color:#50fa7b">currentThread</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">join</span><span style="color:#ff79c6">();</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>I run it, and&hellip;</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span><span style="color:#8be9fd;font-style:italic">19:22:</span>57<span style="color:#ff79c6">.</span><span style="color:#50fa7b">563</span><span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>greeter<span style="color:#ff79c6">-</span>akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">actor</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">default</span><span style="color:#ff79c6">-</span>dispatcher<span style="color:#ff79c6">-</span>2<span style="color:#ff79c6">]</span> Hello<span style="color:#ff79c6">,</span> Akka
+<span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span><span style="color:#8be9fd;font-style:italic">19:22:</span>57<span style="color:#ff79c6">.</span><span style="color:#50fa7b">563</span><span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>greeter<span style="color:#ff79c6">-</span>akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">actor</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">default</span><span style="color:#ff79c6">-</span>dispatcher<span style="color:#ff79c6">-</span>2<span style="color:#ff79c6">]</span> Hello<span style="color:#ff79c6">,</span> Java
+<span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span><span style="color:#8be9fd;font-style:italic">19:22:</span>57<span style="color:#ff79c6">.</span><span style="color:#50fa7b">665</span><span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>greeter<span style="color:#ff79c6">-</span>akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">actor</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">default</span><span style="color:#ff79c6">-</span>dispatcher<span style="color:#ff79c6">-</span>2<span style="color:#ff79c6">]</span> Hello<span style="color:#ff79c6">,</span> Blocking call</code></pre></div>
+<p>Uh? Nothing happens&hellip; Wait. It says that there is a concept of &ldquo;integrations&rdquo;, but Akka is not listed among the supported ones.</p>
+
+<p>Can we &ldquo;integrate&rdquo; it with Akka?</p>
+
+<h1 id="akka-integration">Akka integration</h1>
+
+<p>After reading the <a href="https://github.com/reactor/BlockHound/blob/7c6d299/docs/custom_integrations.md" target="_blank">custom integrations</a> section of the docs,
+it becomes clear that we need to hint which threads are considered non-blocking and &ldquo;blacklist&rdquo; a method on a stack, so that when it enters the method,
+it threads every call inside it as non-blocking.</p>
+
+<p>Since <code>BlockHound#install</code> accepts a list of integrations, I will add them inline:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">BlockHound<span style="color:#ff79c6">.</span><span style="color:#50fa7b">install</span><span style="color:#ff79c6">(</span>builder <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+    builder<span style="color:#ff79c6">.</span><span style="color:#50fa7b">nonBlockingThreadPredicate</span><span style="color:#ff79c6">(</span>p <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> p<span style="color:#ff79c6">.</span><span style="color:#50fa7b">or</span><span style="color:#ff79c6">(</span>AkkaForkJoinWorkerThread<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">::</span>isInstance<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">});</span>
+    builder<span style="color:#ff79c6">.</span><span style="color:#50fa7b">disallowBlockingCallsInside</span><span style="color:#ff79c6">(</span>
+        <span style="color:#f1fa8c">&#34;akka.dispatch.forkjoin.ForkJoinTask&#34;</span><span style="color:#ff79c6">,</span>
+        <span style="color:#f1fa8c">&#34;doExec&#34;</span>
+    <span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">});</span></code></pre></div>
+<p>Here we say that every instance of <code>akka.dispatch.MonitorableThreadFactory$AkkaForkJoinWorkerThread</code> should be considered non-blocking.</p>
+
+<blockquote>
+<p>⚠️ <strong>WARNING!</strong><br />
+I am not sure whether it is always true or not, but I am not using any custom pool or anything and assume that it is so.<br />
+Please reach out to Akka&rsquo;s team for proper guidance about the internals of Akka and which thread is what.</p>
+</blockquote>
+
+<p>Also, we mark <code>akka.dispatch.forkjoin.ForkJoinTask#doExec</code> as the entry (I got it after analysing the stacktrace by putting a breakpoint on <code>Thread.sleep</code>).</p>
+
+<p>Now, if we run it, we get&hellip; Nothing! 😱 Like&hellip; Really nothing :D</p>
+
+<p>TBH I was a bit puzzled, so I added my favourite &ldquo;WTH is going on&rdquo; trick to debug it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">builder<span style="color:#ff79c6">.</span><span style="color:#50fa7b">blockingMethodCallback</span><span style="color:#ff79c6">(</span>m <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">new</span> Exception<span style="color:#ff79c6">(</span>m<span style="color:#ff79c6">.</span><span style="color:#50fa7b">toString</span><span style="color:#ff79c6">()).</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+<span style="color:#ff79c6">});</span></code></pre></div>
+<p>(yes, you can override the built-in handling of the blocking calls)</p>
+
+<p>Now I see a few exceptions, but there is one that made me laugh:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">lang</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Exception</span><span style="color:#ff79c6">:</span> java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">io</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">FileOutputStream</span>#writeBytes
+	at com<span style="color:#ff79c6">.</span><span style="color:#50fa7b">lightbend</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">akka</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">sample</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">AkkaWithBlockHound</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">lambda$main$0</span><span style="color:#ff79c6">(</span>AkkaWithBlockHound<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>25<span style="color:#ff79c6">)</span>
+	at reactor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">blockhound</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">BlockHound$Builder</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">lambda$install$8</span><span style="color:#ff79c6">(</span>BlockHound<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>254<span style="color:#ff79c6">)</span>
+	at reactor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">blockhound</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">BlockHoundRuntime</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">checkBlocking</span><span style="color:#ff79c6">(</span>BlockHoundRuntime<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>43<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">io</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">FileOutputStream</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">writeBytes</span><span style="color:#ff79c6">(</span>FileOutputStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">io</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">FileOutputStream</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">write</span><span style="color:#ff79c6">(</span>FileOutputStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>348<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">io</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">BufferedOutputStream</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">write</span><span style="color:#ff79c6">(</span>BufferedOutputStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>123<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">io</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">PrintStream</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">write</span><span style="color:#ff79c6">(</span>PrintStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>559<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>sun<span style="color:#ff79c6">.</span><span style="color:#50fa7b">nio</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">cs</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">StreamEncoder</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">writeBytes</span><span style="color:#ff79c6">(</span>StreamEncoder<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>233<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>sun<span style="color:#ff79c6">.</span><span style="color:#50fa7b">nio</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">cs</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">StreamEncoder</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">implFlushBuffer</span><span style="color:#ff79c6">(</span>StreamEncoder<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>312<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>sun<span style="color:#ff79c6">.</span><span style="color:#50fa7b">nio</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">cs</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">StreamEncoder</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">flushBuffer</span><span style="color:#ff79c6">(</span>StreamEncoder<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>104<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">io</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">OutputStreamWriter</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">flushBuffer</span><span style="color:#ff79c6">(</span>OutputStreamWriter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>184<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">io</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">PrintStream</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">write</span><span style="color:#ff79c6">(</span>PrintStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>606<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">io</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">PrintStream</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">print</span><span style="color:#ff79c6">(</span>PrintStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>745<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">io</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">PrintStream</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>PrintStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>899<span style="color:#ff79c6">)</span>
+	at scala<span style="color:#ff79c6">.</span><span style="color:#50fa7b">Console$</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>Console<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>148<span style="color:#ff79c6">)</span>
+	at scala<span style="color:#ff79c6">.</span><span style="color:#50fa7b">Predef$</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>Predef<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>315<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">event</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Logging$StdOutLogger$class</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span>Logging<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>933<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">DefaultLogger</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span>EventStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>66<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">event</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Logging$StdOutLogger$class</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">print</span><span style="color:#ff79c6">(</span>Logging<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>883<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">DefaultLogger</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">print</span><span style="color:#ff79c6">(</span>EventStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>66<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">DefaultLogger$$anonfun$1$$anonfun$apply$1$$anonfun$2$$anonfun$apply$2</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">apply</span><span style="color:#ff79c6">(</span>EventStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>79<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">DefaultLogger$$anonfun$1$$anonfun$apply$1$$anonfun$2$$anonfun$apply$2</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">apply</span><span style="color:#ff79c6">(</span>EventStream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>77<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">internal</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">BehaviorImpl$ImmutableBehavior</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">receiveMessage</span><span style="color:#ff79c6">(</span>BehaviorImpl<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>74<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Behavior$</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">interpret</span><span style="color:#ff79c6">(</span>Behavior<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>275<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Behavior$</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">interpretMessage</span><span style="color:#ff79c6">(</span>Behavior<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>257<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">internal</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ActorCell</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">processMessage</span><span style="color:#ff79c6">(</span>ActorCell<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>400<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">internal</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ActorCell</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">process$1</span><span style="color:#ff79c6">(</span>ActorCell<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>286<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">internal</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ActorCell</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">run</span><span style="color:#ff79c6">(</span>ActorCell<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>295<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinExecutorConfigurator$AkkaForkJoinTask</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">exec</span><span style="color:#ff79c6">(</span>ForkJoinExecutorConfigurator<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>43<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">forkjoin</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinTask</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">doExec</span><span style="color:#ff79c6">(</span>ForkJoinTask<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>260<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">forkjoin</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinPool$WorkQueue</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">runTask</span><span style="color:#ff79c6">(</span>ForkJoinPool<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>1339<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">forkjoin</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinPool</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">runWorker</span><span style="color:#ff79c6">(</span>ForkJoinPool<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>1979<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">forkjoin</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinWorkerThread</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">run</span><span style="color:#ff79c6">(</span>ForkJoinWorkerThread<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>107<span style="color:#ff79c6">)</span></code></pre></div>
+<p>Do you know how <code>System.out.println</code> works? Well, it writes to a special file, and writing is&hellip; a blocking operation!</p>
+
+<p>What happens is:</p>
+
+<ol>
+<li>BlockHound detects a blocking call (<code>Thread.sleep</code>)</li>
+<li>Akka handles the error and attempts to print it to the console</li>
+<li>Printing is a blocking operation&hellip;</li>
+</ol>
+
+<p>You get it, right?</p>
+
+<p>That&rsquo;s where the whitelisting comes in handly!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">builder<span style="color:#ff79c6">.</span><span style="color:#50fa7b">allowBlockingCallsInside</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;scala.Console$&#34;</span><span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;println&#34;</span><span style="color:#ff79c6">);</span></code></pre></div>
+<p>Now we get a much better result:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span><span style="color:#8be9fd;font-style:italic">19:46:</span>53<span style="color:#ff79c6">.</span><span style="color:#50fa7b">815</span><span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>greeter<span style="color:#ff79c6">-</span>akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">actor</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">default</span><span style="color:#ff79c6">-</span>dispatcher<span style="color:#ff79c6">-</span>2<span style="color:#ff79c6">]</span> Hello<span style="color:#ff79c6">,</span> Akka
+<span style="color:#ff79c6">[</span>INFO<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span><span style="color:#8be9fd;font-style:italic">19:46:</span>53<span style="color:#ff79c6">.</span><span style="color:#50fa7b">816</span><span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>greeter<span style="color:#ff79c6">-</span>akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">actor</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">default</span><span style="color:#ff79c6">-</span>dispatcher<span style="color:#ff79c6">-</span>2<span style="color:#ff79c6">]</span> Hello<span style="color:#ff79c6">,</span> Java
+<span style="color:#ff79c6">[</span>ERROR<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span><span style="color:#8be9fd;font-style:italic">19:46:</span>53<span style="color:#ff79c6">.</span><span style="color:#50fa7b">825</span><span style="color:#ff79c6">]</span> <span style="color:#ff79c6">[</span>greeter<span style="color:#ff79c6">-</span>akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">actor</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">default</span><span style="color:#ff79c6">-</span>dispatcher<span style="color:#ff79c6">-</span>2<span style="color:#ff79c6">]</span> Blocking call<span style="color:#ff79c6">!</span> java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">lang</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Thread</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">sleep</span>
+java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">lang</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Error</span><span style="color:#ff79c6">:</span> Blocking call<span style="color:#ff79c6">!</span> java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">lang</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Thread</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">sleep</span>
+	at reactor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">blockhound</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">BlockHound$Builder</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">lambda$new$0</span><span style="color:#ff79c6">(</span>BlockHound<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>154<span style="color:#ff79c6">)</span>
+	at reactor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">blockhound</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">BlockHound$Builder</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">lambda$install$8</span><span style="color:#ff79c6">(</span>BlockHound<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>254<span style="color:#ff79c6">)</span>
+	at reactor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">blockhound</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">BlockHoundRuntime</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">checkBlocking</span><span style="color:#ff79c6">(</span>BlockHoundRuntime<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>43<span style="color:#ff79c6">)</span>
+	at java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">base</span><span style="color:#ff79c6">/</span>java<span style="color:#ff79c6">.</span><span style="color:#50fa7b">lang</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Thread</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">sleep</span><span style="color:#ff79c6">(</span>Thread<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">)</span>
+	at com<span style="color:#ff79c6">.</span><span style="color:#50fa7b">lightbend</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">akka</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">sample</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">AkkaWithBlockHound</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">lambda$static$4922afa4$1</span><span style="color:#ff79c6">(</span>AkkaWithBlockHound<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>14<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">javadsl</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Actor$$anonfun$immutable$2</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">apply</span><span style="color:#ff79c6">(</span>Actor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>156<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">javadsl</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Actor$$anonfun$immutable$2</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">apply</span><span style="color:#ff79c6">(</span>Actor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>156<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">internal</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">BehaviorImpl$ImmutableBehavior</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">receiveMessage</span><span style="color:#ff79c6">(</span>BehaviorImpl<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>74<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Behavior$</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">interpret</span><span style="color:#ff79c6">(</span>Behavior<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>275<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Behavior$</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">interpretMessage</span><span style="color:#ff79c6">(</span>Behavior<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>257<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">internal</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ActorCell</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">processMessage</span><span style="color:#ff79c6">(</span>ActorCell<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>400<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">internal</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ActorCell</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">process$1</span><span style="color:#ff79c6">(</span>ActorCell<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>286<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">typed</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">internal</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ActorCell</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">run</span><span style="color:#ff79c6">(</span>ActorCell<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>295<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinExecutorConfigurator$AkkaForkJoinTask</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">exec</span><span style="color:#ff79c6">(</span>ForkJoinExecutorConfigurator<span style="color:#ff79c6">.</span><span style="color:#50fa7b">scala</span><span style="color:#ff79c6">:</span>43<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">forkjoin</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinTask</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">doExec</span><span style="color:#ff79c6">(</span>ForkJoinTask<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>260<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">forkjoin</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinPool$WorkQueue</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">runTask</span><span style="color:#ff79c6">(</span>ForkJoinPool<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>1339<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">forkjoin</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinPool</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">runWorker</span><span style="color:#ff79c6">(</span>ForkJoinPool<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>1979<span style="color:#ff79c6">)</span>
+	at akka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dispatch</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">forkjoin</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">ForkJoinWorkerThread</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">run</span><span style="color:#ff79c6">(</span>ForkJoinWorkerThread<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>107<span style="color:#ff79c6">)</span></code></pre></div>
+<p>A-ha! The blocking call is detected and properly logged.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Dealing with the blocking calls can be tricky. Project Loom will greatly improve it, but it will take a lot of time to land in the JVM world.</p>
+
+<p>Until that happens, tools like BlockHound can save you a lot of time you would spend investigating a performance issue or even a deadlock in production.</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
