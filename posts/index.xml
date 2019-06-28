@@ -6,10 +6,22 @@
     <description>Recent content in Posts on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 28 May 2019 18:12:32 +0200</lastBuildDate>
+    <lastBuildDate>Fri, 28 Jun 2019 14:02:22 +0200</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Dependency Management in Gradle</title>
+      <link>https://bsideup.github.io/posts/gradle_dependency_management/</link>
+      <pubDate>Fri, 28 Jun 2019 14:02:22 +0200</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/gradle_dependency_management/</guid>
+      <description>There is one super popular thing I never did/do in my Gradle projects:
+ext { lib_version = &amp;#34;1.2.3&amp;#34; } dependencies { compile &amp;#34;org.corp:lib:$lib_version&amp;#34; } Why not? I know that this approach was/is popular among Maven projects.
+But I always preferred the dependencyManagement section of a parent POM because&amp;hellip; it is standartized.
+When you switch between projects and want to change a version of dependency, you know where you look at.</description>
+    </item>
     
     <item>
       <title>Detecting blocking calls in Akka with BlockHound</title>
