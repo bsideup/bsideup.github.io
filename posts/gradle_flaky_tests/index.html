@@ -157,7 +157,7 @@ Gradle Test Executor <span style="color:#bd93f9">5</span> &gt; com.example.Rerun
         at com.example.RerunTest.flakyTest<span style="color:#ff79c6">(</span>RerunTest.java:17<span style="color:#ff79c6">)</span>
 
 <span style="color:#bd93f9">1</span> <span style="color:#8be9fd;font-style:italic">test</span> completed, <span style="color:#bd93f9">1</span> failed</code></pre></div>
-<p>Or CI system changes to red status, we spent 30 minutes waiting for test results,
+<p>Our CI system changes to red status, we spent 30 minutes waiting for test results,
 our change is working but some unrelated test is failing, we&rsquo;re getting mad&hellip;</p>
 
 <p>We run it again - all good:</p>
@@ -192,7 +192,7 @@ and attempt to get a green status this time?</p>
 
     <span style="color:#6272a4">// Make it always run after the original task
 </span><span style="color:#6272a4"></span>    finalizedBy<span style="color:#ff79c6">(</span>rerunTask<span style="color:#ff79c6">)</span></code></pre></div>
-<p>It is enabled by default because otherwise it will rerun all tests if the inclusion list is empty.
+<p>It is disabled by default because otherwise it will rerun all tests if the inclusion list is empty.
 We will enable it once we add something to the list.<br />
 Note that we&rsquo;re using <code>failFast</code> mode, because if a test fails second time in a row, it definitely requires some attention ;)</p>
 
