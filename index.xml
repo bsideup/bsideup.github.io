@@ -6,10 +6,21 @@
     <description>Recent content on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 28 Jun 2019 14:02:22 +0200</lastBuildDate>
+    <lastBuildDate>Tue, 09 Jul 2019 10:32:12 +0200</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Re-running flaky tests in Gradle</title>
+      <link>https://bsideup.github.io/posts/gradle_flaky_tests/</link>
+      <pubDate>Tue, 09 Jul 2019 10:32:12 +0200</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/gradle_flaky_tests/</guid>
+      <description>The world is not perfect, so are the tests, and one day you will get&amp;hellip; a flaky test 😱
+Flaky&amp;hellip; what? As per Nebojša Stričević:
+ An essential property of an automated test and the entire test suite is its determinism. This means that a test should always have the same result when the tested code doesn’t change. A test that fails randomly is commonly called a flaky test.</description>
+    </item>
     
     <item>
       <title>Dependency Management in Gradle</title>
