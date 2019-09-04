@@ -108,7 +108,7 @@ even tho <em>they don&rsquo;t need it</em> and can be compiled to Java 8.</p>
 <h2 id="meet-jabel">Meet Jabel</h2>
 
 <p>A few days ago I opensourced <a href="http://github.com/bsideup/jabel" target="_blank">Jabel</a> - a hack that instruments the java compiler
-and makes it treat some new Java 9+ languages features as they were supported in Java 8.</p>
+and makes it treat some new Java 9+ language features as they were supported in Java 8.</p>
 
 <p>Consider the following Java 13 code:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">package</span> com.example<span style="color:#ff79c6">;</span>
@@ -130,7 +130,7 @@ and makes it treat some new Java 9+ languages features as they were supported in
         System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>callable<span style="color:#ff79c6">.</span><span style="color:#50fa7b">apply</span><span style="color:#ff79c6">(</span>args<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">));</span>
     <span style="color:#ff79c6">}</span>
 <span style="color:#ff79c6">}</span></code></pre></div>
-<p>We use three language features that are not available in Java 8 (can you spot all 3?).</p>
+<p>We use three language features that are not available in Java 8 (can you <strong>name</strong> all 3?).</p>
 
 <p>Now, let&rsquo;s add Jabel to our Maven file:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#ff79c6">&lt;build&gt;</span>
@@ -167,7 +167,7 @@ and makes it treat some new Java 9+ languages features as they were supported in
         <span style="color:#ff79c6">&lt;url&gt;</span>https://jitpack.io<span style="color:#ff79c6">&lt;/url&gt;</span>
     <span style="color:#ff79c6">&lt;/repository&gt;</span>
 <span style="color:#ff79c6">&lt;/repositories&gt;</span></code></pre></div>
-<p>Now, if we compile that class, it should be a valid Java 8 classfile:</p>
+<p>From now on, if we compile that class, it should be a valid Java 8 classfile:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ mvn -q package
 Jabel: initialized. Enabled features:
 	- TEXT_BLOCKS
@@ -178,7 +178,9 @@ Jabel: initialized. Enabled features:
 	- EFFECTIVELY_FINAL_VARIABLES_IN_TRY_WITH_RESOURCES
 	- DIAMOND_WITH_ANONYMOUS_CLASS_CREATION
 	- SWITCH_EXPRESSION
-	- SWITCH_RULE</code></pre></div>
+	- SWITCH_RULE
+$ <span style="color:#8be9fd;font-style:italic">$JAVA8_HOME</span>/bin/java -cp target/classes com.example.Main foo
+one</code></pre></div>
 <h2 id="trying-it-with-graalvm-s-native-image">Trying it with GraalVM&rsquo;s native-image</h2>
 
 <p>Native Image tool says that it can AOT compile most of Java 8 code into a native executable, let&rsquo;s check:</p>
