@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  Use Java 13 syntax in GraalVM with Jabel · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/graalvm_with_jabel/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Use Java 13 syntax in GraalVM with Jabel</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-09-04T19:22:31&#43;02:00'>
+                September 4, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              3 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p>GraalVM&rsquo;s <code>native-image</code> is great, but (at least at the time this post was published) it only supports Java 8.</p>
+
+<p>Since Java 8, we got new language features like <code>var</code>, switch expressions,
+<a href="http://openjdk.java.net/jeps/213" target="_blank">Milling of Project Coin</a> and others.</p>
+
+<p>But, if we want to use these features, Java compiler leaves no option other than producing Java 12+ bytecode,
+even tho <em>they don&rsquo;t need it</em> and can be compiled into Java 8.</p>
+
+<p>If only there was a tool that will unlock these new syntax while targeting Java 8&hellip;</p>
+
+<h2 id="meet-jabel">Meet Jabel</h2>
+
+<p>A few days ago I opensourced <a href="http://github.com/bsideup/jabel" target="_blank">Jabel</a> - a hack that instruments the java compiler
+and makes it treat some new Java 9+ languages features as they were supported in Java 8.</p>
+
+<p>Consider the following Java 13 code:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">package</span> com.example<span style="color:#ff79c6">;</span>
+
+<span style="color:#ff79c6">import</span> java.util.function.Function<span style="color:#ff79c6">;</span>
+
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">Main</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        Function<span style="color:#ff79c6">&lt;</span>Integer<span style="color:#ff79c6">,</span> String<span style="color:#ff79c6">&gt;</span> callable <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>var length<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">switch</span><span style="color:#ff79c6">(</span>args<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            <span style="color:#ff79c6">case</span> 1 <span style="color:#ff79c6">-&gt;</span> <span style="color:#f1fa8c">&#34;one&#34;</span><span style="color:#ff79c6">;</span>
+            <span style="color:#ff79c6">case</span> 2 <span style="color:#ff79c6">-&gt;</span> <span style="color:#f1fa8c">&#34;two&#34;</span><span style="color:#ff79c6">;</span>
+            <span style="color:#ff79c6">default</span> <span style="color:#ff79c6">-&gt;</span> <span style="color:#f1fa8c">&#34;&#34;&#34;
+</span><span style="color:#f1fa8c">                What is &#34;</span>length<span style="color:#f1fa8c">&#34; anyways?
+</span><span style="color:#f1fa8c">                Should we even bother trying to calculate it?
+</span><span style="color:#f1fa8c">                Whatever.. the number was:
+</span><span style="color:#f1fa8c">                &#34;&#34;&#34;</span> <span style="color:#ff79c6">+</span> args<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">};</span>
+
+        System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>callable<span style="color:#ff79c6">.</span><span style="color:#50fa7b">apply</span><span style="color:#ff79c6">(</span>args<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">));</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>We use three language features that are not available in Java 8 (can you spot all 3?).</p>
+
+<p>Now, let&rsquo;s add Jabel to our Maven file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#ff79c6">&lt;build&gt;</span>
+    <span style="color:#ff79c6">&lt;plugins&gt;</span>
+        <span style="color:#ff79c6">&lt;plugin&gt;</span>
+            <span style="color:#ff79c6">&lt;groupId&gt;</span>org.apache.maven.plugins<span style="color:#ff79c6">&lt;/groupId&gt;</span>
+            <span style="color:#ff79c6">&lt;artifactId&gt;</span>maven-compiler-plugin<span style="color:#ff79c6">&lt;/artifactId&gt;</span>
+            <span style="color:#ff79c6">&lt;version&gt;</span>3.8.1<span style="color:#ff79c6">&lt;/version&gt;</span>
+            <span style="color:#ff79c6">&lt;configuration&gt;</span>
+                <span style="color:#6272a4">&lt;!-- Make sure we&#39;re not using Java 9+ APIs --&gt;</span>
+                <span style="color:#ff79c6">&lt;release&gt;</span>8<span style="color:#ff79c6">&lt;/release&gt;</span>
+                <span style="color:#6272a4">&lt;!-- Jabel must be added to the annotation processor paths --&gt;</span>
+                <span style="color:#ff79c6">&lt;annotationProcessorPaths&gt;</span>
+                    <span style="color:#ff79c6">&lt;annotationProcessorPath&gt;</span>
+                        <span style="color:#ff79c6">&lt;groupId&gt;</span>com.github.bsideup.jabel<span style="color:#ff79c6">&lt;/groupId&gt;</span>
+                        <span style="color:#ff79c6">&lt;artifactId&gt;</span>jabel-javac-plugin<span style="color:#ff79c6">&lt;/artifactId&gt;</span>
+                        <span style="color:#ff79c6">&lt;version&gt;</span>0.2.0<span style="color:#ff79c6">&lt;/version&gt;</span>
+                    <span style="color:#ff79c6">&lt;/annotationProcessorPath&gt;</span>
+                <span style="color:#ff79c6">&lt;/annotationProcessorPaths&gt;</span>
+                <span style="color:#ff79c6">&lt;annotationProcessors&gt;</span>
+                    <span style="color:#ff79c6">&lt;annotationProcessor&gt;</span>
+                    com.github.bsideup.jabel.JabelJavacProcessor
+                    <span style="color:#ff79c6">&lt;/annotationProcessor&gt;</span>
+                <span style="color:#ff79c6">&lt;/annotationProcessors&gt;</span>
+            <span style="color:#ff79c6">&lt;/configuration&gt;</span>
+        <span style="color:#ff79c6">&lt;/plugin&gt;</span>
+    <span style="color:#ff79c6">&lt;/plugins&gt;</span>
+<span style="color:#ff79c6">&lt;/build&gt;</span>
+
+<span style="color:#ff79c6">&lt;repositories&gt;</span>
+    <span style="color:#6272a4">&lt;!-- Don&#39;t forget Jitpack! --&gt;</span>
+    <span style="color:#ff79c6">&lt;repository&gt;</span>
+        <span style="color:#ff79c6">&lt;id&gt;</span>jitpack.io<span style="color:#ff79c6">&lt;/id&gt;</span>
+        <span style="color:#ff79c6">&lt;url&gt;</span>https://jitpack.io<span style="color:#ff79c6">&lt;/url&gt;</span>
+    <span style="color:#ff79c6">&lt;/repository&gt;</span>
+<span style="color:#ff79c6">&lt;/repositories&gt;</span></code></pre></div>
+<p>Now, if we compile that class, it should be a valid Java 8 classfile:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ mvn -q package
+Jabel: initialized. Enabled features:
+	- TEXT_BLOCKS
+	- SWITCH_MULTIPLE_CASE_LABELS
+	- VAR_SYNTAX_IMPLICIT_LAMBDAS
+	- PRIVATE_SAFE_VARARGS
+	- LOCAL_VARIABLE_TYPE_INFERENCE
+	- EFFECTIVELY_FINAL_VARIABLES_IN_TRY_WITH_RESOURCES
+	- DIAMOND_WITH_ANONYMOUS_CLASS_CREATION
+	- SWITCH_EXPRESSION
+	- SWITCH_RULE</code></pre></div>
+<h2 id="trying-it-with-graalvm-s-native-image">Trying it with GraalVM&rsquo;s native-image</h2>
+
+<p>Native Image tool says that it can AOT compile most of Java 8 code into a native executable, let&rsquo;s check:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#ff79c6">[</span>/tmp/graalvm-jabel-example<span style="color:#ff79c6">]</span>$ <span style="color:#8be9fd;font-style:italic">$GRAALVM_HOME</span>/bin/native-image -cp target/classes/ com.example.Main
+Build on Server<span style="color:#ff79c6">(</span>pid: <span style="color:#bd93f9">98111</span>, port: <span style="color:#bd93f9">49591</span><span style="color:#ff79c6">)</span>
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>    classlist:     <span style="color:#bd93f9">130</span>.87 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>        <span style="color:#ff79c6">(</span>cap<span style="color:#ff79c6">)</span>:   <span style="color:#bd93f9">1</span>,070.62 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>        setup:   <span style="color:#bd93f9">1</span>,461.72 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>   <span style="color:#ff79c6">(</span>typeflow<span style="color:#ff79c6">)</span>:   <span style="color:#bd93f9">1</span>,438.00 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>    <span style="color:#ff79c6">(</span>objects<span style="color:#ff79c6">)</span>:   <span style="color:#bd93f9">1</span>,585.12 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>   <span style="color:#ff79c6">(</span>features<span style="color:#ff79c6">)</span>:     <span style="color:#bd93f9">158</span>.52 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>     analysis:   <span style="color:#bd93f9">3</span>,225.99 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>     <span style="color:#ff79c6">(</span>clinit<span style="color:#ff79c6">)</span>:      <span style="color:#bd93f9">53</span>.44 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>     universe:     <span style="color:#bd93f9">138</span>.85 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>      <span style="color:#ff79c6">(</span>parse<span style="color:#ff79c6">)</span>:     <span style="color:#bd93f9">110</span>.76 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>     <span style="color:#ff79c6">(</span>inline<span style="color:#ff79c6">)</span>:     <span style="color:#bd93f9">531</span>.70 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>    <span style="color:#ff79c6">(</span>compile<span style="color:#ff79c6">)</span>:   <span style="color:#bd93f9">1</span>,274.18 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>      compile:   <span style="color:#bd93f9">2</span>,060.94 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>        image:     <span style="color:#bd93f9">166</span>.56 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>        write:     <span style="color:#bd93f9">135</span>.31 ms
+<span style="color:#ff79c6">[</span>com.example.main:98111<span style="color:#ff79c6">]</span>      <span style="color:#ff79c6">[</span>total<span style="color:#ff79c6">]</span>:   <span style="color:#bd93f9">7</span>,380.42 ms
+
+<span style="color:#ff79c6">[</span>/tmp/graalvm-jabel-example<span style="color:#ff79c6">]</span>$ ./com.example.main foo
+one
+
+<span style="color:#ff79c6">[</span>/tmp/graalvm-jabel-example<span style="color:#ff79c6">]</span>$ ./com.example.main foo bar
+two
+
+<span style="color:#ff79c6">[</span>/tmp/graalvm-jabel-example<span style="color:#ff79c6">]</span>$ ./com.example.main foo bar baz
+What is <span style="color:#f1fa8c">&#34;length&#34;</span> anyways?
+Should we even bother trying to calculate it?
+Whatever.. the number was:
+<span style="color:#bd93f9">3</span></code></pre></div>
+<p>It works 🎉</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>I would like to give thanks to <a href="https://github.com/mgodave" target="_blank">Dave Rusek</a> who pointed me to the GraalVM use case of Jabel!</p>
+
+<p>As you can see, with a minimal effort you can start using Java 12 or even 13 <strong>syntax</strong> in your GraalVM native apps.</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

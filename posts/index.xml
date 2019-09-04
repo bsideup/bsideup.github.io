@@ -6,10 +6,21 @@
     <description>Recent content in Posts on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 09 Jul 2019 10:32:12 +0200</lastBuildDate>
+    <lastBuildDate>Wed, 04 Sep 2019 19:22:31 +0200</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Use Java 13 syntax in GraalVM with Jabel</title>
+      <link>https://bsideup.github.io/posts/graalvm_with_jabel/</link>
+      <pubDate>Wed, 04 Sep 2019 19:22:31 +0200</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/graalvm_with_jabel/</guid>
+      <description>GraalVM&amp;rsquo;s native-image is great, but (at least at the time this post was published) it only supports Java 8.
+Since Java 8, we got new language features like var, switch expressions, Milling of Project Coin and others.
+But, if we want to use these features, Java compiler leaves no option other than producing Java 12+ bytecode, even tho they don&amp;rsquo;t need it and can be compiled into Java 8.</description>
+    </item>
     
     <item>
       <title>Re-running flaky tests in Gradle</title>
