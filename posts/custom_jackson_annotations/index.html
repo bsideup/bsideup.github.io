@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  Zero-dependency Jackson entities with custom annotations · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/custom_jackson_annotations/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Zero-dependency Jackson entities with custom annotations</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-11-22T08:13:08&#43;01:00'>
+                November 22, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              6 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/jackson/">jackson</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p><a href="https://github.com/FasterXML/jackson" target="_blank">Jackson</a> is a great library for working with JSON.</p>
+
+<p>However, it is a bit too heavyweight to have it as a public dependency of your API.
+Especially if you&rsquo;re working on an Open Source library.</p>
+
+<p>While refactoring <a href="https://github.com/docker-java/docker-java/pull/1279" target="_blank">docker-java</a>, I got a challenge:</p>
+
+<ol>
+<li>There are two modules: <code>api</code> and <code>core</code></li>
+<li><code>api</code> module (unlike <code>core</code>) should not have any dependency</li>
+<li><code>core</code> can be shaded, which means that we cannot use <code>provided</code> scope for Jackson&rsquo;s annotations in <code>api</code></li>
+<li>The entities in <code>api</code> have Jackson annotations like <code>@JsonProperty</code>, <code>@JsonIgnore</code>, <code>@Creator</code> and others</li>
+<li>Some entities require custom (de-)serialization</li>
+</ol>
+
+<p>If not <code>4</code>, everything would be so easy. But hey, things are never easy, right? 😅</p>
+
+<h1 id="domain">Domain</h1>
+
+<p>Let&rsquo;s say we have the following entity:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Value
+@RequiredArgsConstructor
+@NoArgsConstructor<span style="color:#ff79c6">(</span>force <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">true</span><span style="color:#ff79c6">)</span>
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">User</span> <span style="color:#ff79c6">{</span>
+
+    String firstName<span style="color:#ff79c6">;</span>
+
+    String lastName<span style="color:#ff79c6">;</span>
+
+    <span style="color:#8be9fd">int</span> age<span style="color:#ff79c6">;</span>
+
+    Sex sex<span style="color:#ff79c6">;</span>
+
+    PhoneNumber phoneNumber<span style="color:#ff79c6">;</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">boolean</span> <span style="color:#50fa7b">isAdult</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> age <span style="color:#ff79c6">&gt;</span> 18<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    @Value
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">PhoneNumber</span> <span style="color:#ff79c6">{</span>
+
+        <span style="color:#8be9fd">int</span> countryCode<span style="color:#ff79c6">;</span>
+
+        <span style="color:#8be9fd">long</span> number<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">enum</span> Sex <span style="color:#ff79c6">{</span>
+        MALE<span style="color:#ff79c6">,</span>
+        FEMALE<span style="color:#ff79c6">,</span>
+        UNKNOWN<span style="color:#ff79c6">,</span>
+        <span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<blockquote>
+<p>ℹ️ Note that I am using <a href="http://projectlombok.org" target="_blank">Project Lombok</a> here to generate some boilerplate.</p>
+</blockquote>
+
+<p>Let&rsquo;s write a test for it to verify that it matches our requirements:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">UserTest</span> <span style="color:#ff79c6">{</span>
+
+    <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> ObjectMapper objectMapper <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> ObjectMapper<span style="color:#ff79c6">()</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">disable</span><span style="color:#ff79c6">(</span>DeserializationFeature<span style="color:#ff79c6">.</span><span style="color:#50fa7b">FAIL_ON_UNKNOWN_PROPERTIES</span><span style="color:#ff79c6">)</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">disable</span><span style="color:#ff79c6">(</span>SerializationFeature<span style="color:#ff79c6">.</span><span style="color:#50fa7b">FAIL_ON_EMPTY_BEANS</span><span style="color:#ff79c6">);</span>
+
+    <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> User USER <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> User<span style="color:#ff79c6">(</span>
+            <span style="color:#f1fa8c">&#34;John&#34;</span><span style="color:#ff79c6">,</span>
+            <span style="color:#f1fa8c">&#34;Smith&#34;</span><span style="color:#ff79c6">,</span>
+            25<span style="color:#ff79c6">,</span>
+            User<span style="color:#ff79c6">.</span><span style="color:#50fa7b">Sex</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">MALE</span><span style="color:#ff79c6">,</span>
+            <span style="color:#ff79c6">new</span> User<span style="color:#ff79c6">.</span><span style="color:#50fa7b">PhoneNumber</span><span style="color:#ff79c6">(</span>1<span style="color:#ff79c6">,</span> 2065550100<span style="color:#ff79c6">)</span>
+    <span style="color:#ff79c6">);</span>
+
+    <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> String JSON <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;{&#34;</span> <span style="color:#ff79c6">+</span>
+            <span style="color:#f1fa8c">&#34;\&#34;age\&#34;:25,&#34;</span> <span style="color:#ff79c6">+</span>
+            <span style="color:#f1fa8c">&#34;\&#34;sex\&#34;:\&#34;m\&#34;,&#34;</span> <span style="color:#ff79c6">+</span>
+            <span style="color:#f1fa8c">&#34;\&#34;first_name\&#34;:\&#34;John\&#34;,&#34;</span> <span style="color:#ff79c6">+</span>
+            <span style="color:#f1fa8c">&#34;\&#34;last_name\&#34;:\&#34;Smith\&#34;,&#34;</span> <span style="color:#ff79c6">+</span>
+            <span style="color:#f1fa8c">&#34;\&#34;phone_number\&#34;:\&#34;+1-2065550100\&#34;&#34;</span> <span style="color:#ff79c6">+</span>
+            <span style="color:#f1fa8c">&#34;}&#34;</span><span style="color:#ff79c6">;</span>
+
+    @Test
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">testSerialization</span><span style="color:#ff79c6">()</span> <span style="color:#8be9fd;font-style:italic">throws</span> Exception <span style="color:#ff79c6">{</span>
+        assertEquals<span style="color:#ff79c6">(</span>JSON<span style="color:#ff79c6">,</span> objectMapper<span style="color:#ff79c6">.</span><span style="color:#50fa7b">writeValueAsString</span><span style="color:#ff79c6">(</span>USER<span style="color:#ff79c6">));</span>
+    <span style="color:#ff79c6">}</span>
+
+    @Test
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">testDeserialization</span><span style="color:#ff79c6">()</span> <span style="color:#8be9fd;font-style:italic">throws</span> Exception <span style="color:#ff79c6">{</span>
+        assertEquals<span style="color:#ff79c6">(</span>USER<span style="color:#ff79c6">,</span> objectMapper<span style="color:#ff79c6">.</span><span style="color:#50fa7b">readValue</span><span style="color:#ff79c6">(</span>JSON<span style="color:#ff79c6">,</span> User<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">));</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Note that:</p>
+
+<ul>
+<li>every field name should use the snake_case</li>
+<li>the phone number field should be encoded as a String</li>
+<li><code>sex</code> enum is using <code>m/f/u</code> notation</li>
+</ul>
+
+<p>If I run the test it will of course fail:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">Expected :{<span style="color:#ff79c6">&#34;age&#34;</span>:<span style="color:#bd93f9">25</span>,<span style="color:#ff79c6">&#34;sex&#34;</span>:<span style="color:#f1fa8c">&#34;m&#34;</span>,<span style="color:#ff79c6">&#34;first_name&#34;</span>:<span style="color:#f1fa8c">&#34;John&#34;</span>,<span style="color:#ff79c6">&#34;last_name&#34;</span>:<span style="color:#f1fa8c">&#34;Smith&#34;</span>,<span style="color:#ff79c6">&#34;phone_number&#34;</span>:<span style="color:#f1fa8c">&#34;+1-2065550100&#34;</span>}
+Actual   :{<span style="color:#ff79c6">&#34;adult&#34;</span>:<span style="color:#ff79c6">true</span>,<span style="color:#ff79c6">&#34;firstName&#34;</span>:<span style="color:#f1fa8c">&#34;John&#34;</span>,<span style="color:#ff79c6">&#34;lastName&#34;</span>:<span style="color:#f1fa8c">&#34;Smith&#34;</span>,<span style="color:#ff79c6">&#34;age&#34;</span>:<span style="color:#bd93f9">25</span>,<span style="color:#ff79c6">&#34;sex&#34;</span>:<span style="color:#f1fa8c">&#34;MALE&#34;</span>,<span style="color:#ff79c6">&#34;phoneNumber&#34;</span>:{<span style="color:#ff79c6">&#34;countryCode&#34;</span>:<span style="color:#bd93f9">1</span>,<span style="color:#ff79c6">&#34;number&#34;</span>:<span style="color:#bd93f9">2065550100</span>}}</code></pre></div>
+<p>Note <code>&quot;adult&quot;:true</code>! It seems that Jackson automatically detected <code>isAdult</code> method and serialized it too!</p>
+
+<h1 id="fixing-the-test">Fixing the test</h1>
+
+<p>Let&rsquo;s fix the test with Jackson&rsquo;s annotations.</p>
+
+<p>First, we need to override the property names:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Value
+@RequiredArgsConstructor
+@NoArgsConstructor<span style="color:#ff79c6">(</span>force <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">true</span><span style="color:#ff79c6">)</span>
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">User</span> <span style="color:#ff79c6">{</span>
+
+    @JsonProperty<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;first_name&#34;</span><span style="color:#ff79c6">)</span>
+    String firstName<span style="color:#ff79c6">;</span>
+
+    @JsonProperty<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;last_name&#34;</span><span style="color:#ff79c6">)</span>
+    String lastName<span style="color:#ff79c6">;</span>
+
+    <span style="color:#8be9fd">int</span> age<span style="color:#ff79c6">;</span>
+
+    Sex sex<span style="color:#ff79c6">;</span>
+
+    @JsonProperty<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;phone_number&#34;</span><span style="color:#ff79c6">)</span>
+    PhoneNumber phoneNumber<span style="color:#ff79c6">;</span>
+
+    <span style="color:#6272a4">// ...
+</span><span style="color:#6272a4"></span><span style="color:#ff79c6">}</span></code></pre></div>
+<p><code>age</code> and <code>sex</code> are single-word properties and do not require an annotation.</p>
+
+<p>Now, let&rsquo;s ignore the <code>isAdult</code> method:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@JsonIgnore
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">boolean</span> <span style="color:#50fa7b">isAdult</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">return</span> age <span style="color:#ff79c6">&gt;=</span> 18<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>We also need to override the enum values:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">enum</span> Sex <span style="color:#ff79c6">{</span>
+
+    @JsonProperty<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;m&#34;</span><span style="color:#ff79c6">)</span>
+    MALE<span style="color:#ff79c6">,</span>
+
+    @JsonProperty<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;f&#34;</span><span style="color:#ff79c6">)</span>
+    FEMALE<span style="color:#ff79c6">,</span>
+
+    @JsonProperty<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;u&#34;</span><span style="color:#ff79c6">)</span>
+    UNKNOWN<span style="color:#ff79c6">,</span>
+    <span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>But what aboout the <code>PhoneNumber</code>?</p>
+
+<p>We could write a (De)Serializer by extending Jackson&rsquo;s <code>JsonSerializer</code>,
+but this would require a hard dependency on Jackson&rsquo;s tree structure.</p>
+
+<p>Instead, we will be using <code>@JsonCreator</code> and <code>@JsonValue</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Value
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">PhoneNumber</span> <span style="color:#ff79c6">{</span>
+
+    <span style="color:#8be9fd">int</span> countryCode<span style="color:#ff79c6">;</span>
+
+    <span style="color:#8be9fd">long</span> number<span style="color:#ff79c6">;</span>
+
+    @JsonCreator
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> PhoneNumber <span style="color:#50fa7b">fromPrimitive</span><span style="color:#ff79c6">(</span>String string<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#6272a4">// Don&#39;t do this at home :D
+</span><span style="color:#6272a4"></span>        <span style="color:#8be9fd">int</span> beginIndex <span style="color:#ff79c6">=</span> string<span style="color:#ff79c6">.</span><span style="color:#50fa7b">indexOf</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;+&#34;</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">+</span> 1<span style="color:#ff79c6">;</span>
+        <span style="color:#8be9fd">int</span> endIndex <span style="color:#ff79c6">=</span> string<span style="color:#ff79c6">.</span><span style="color:#50fa7b">indexOf</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;-&#34;</span><span style="color:#ff79c6">,</span> beginIndex<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">new</span> PhoneNumber<span style="color:#ff79c6">(</span>
+                Integer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">parseInt</span><span style="color:#ff79c6">(</span>string<span style="color:#ff79c6">.</span><span style="color:#50fa7b">substring</span><span style="color:#ff79c6">(</span>beginIndex<span style="color:#ff79c6">,</span> endIndex<span style="color:#ff79c6">)),</span>
+                Long<span style="color:#ff79c6">.</span><span style="color:#50fa7b">parseLong</span><span style="color:#ff79c6">(</span>string<span style="color:#ff79c6">.</span><span style="color:#50fa7b">substring</span><span style="color:#ff79c6">(</span>endIndex <span style="color:#ff79c6">+</span> 1<span style="color:#ff79c6">))</span>
+        <span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+
+    @JsonValue
+    <span style="color:#8be9fd;font-style:italic">public</span> String <span style="color:#50fa7b">toPrimitive</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#f1fa8c">&#34;+&#34;</span> <span style="color:#ff79c6">+</span> countryCode <span style="color:#ff79c6">+</span> <span style="color:#f1fa8c">&#34;-&#34;</span> <span style="color:#ff79c6">+</span> number<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Now, if we run the tests, everything will be green. But&hellip; we still have the Jackson dependency!</p>
+
+<h1 id="custom-annotations">Custom annotations</h1>
+
+<p>One of the things that make Jackson so popular is that it is very flexible.</p>
+
+<p>One of the flexibility vectors is that you can Bring Your Own Annotations!</p>
+
+<p>Let&rsquo;s define our own set to use later:
+For <code>@JsonProperty</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Target<span style="color:#ff79c6">({</span>ElementType<span style="color:#ff79c6">.</span><span style="color:#50fa7b">FIELD</span><span style="color:#ff79c6">,</span> ElementType<span style="color:#ff79c6">.</span><span style="color:#50fa7b">METHOD</span><span style="color:#ff79c6">})</span>
+@Retention<span style="color:#ff79c6">(</span>RetentionPolicy<span style="color:#ff79c6">.</span><span style="color:#50fa7b">RUNTIME</span><span style="color:#ff79c6">)</span>
+<span style="color:#8be9fd;font-style:italic">public</span> @interface FieldName <span style="color:#ff79c6">{</span>
+    String <span style="color:#50fa7b">value</span><span style="color:#ff79c6">();</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>For <code>@JsonIgnore</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Target<span style="color:#ff79c6">({</span>ElementType<span style="color:#ff79c6">.</span><span style="color:#50fa7b">FIELD</span><span style="color:#ff79c6">,</span> ElementType<span style="color:#ff79c6">.</span><span style="color:#50fa7b">METHOD</span><span style="color:#ff79c6">})</span>
+@Retention<span style="color:#ff79c6">(</span>RetentionPolicy<span style="color:#ff79c6">.</span><span style="color:#50fa7b">RUNTIME</span><span style="color:#ff79c6">)</span>
+<span style="color:#8be9fd;font-style:italic">public</span> @interface IgnoredField <span style="color:#ff79c6">{}</span></code></pre></div>
+<p>For <code>@JsonCreator</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Target<span style="color:#ff79c6">({</span>ElementType<span style="color:#ff79c6">.</span><span style="color:#50fa7b">METHOD</span><span style="color:#ff79c6">,</span> ElementType<span style="color:#ff79c6">.</span><span style="color:#50fa7b">CONSTRUCTOR</span><span style="color:#ff79c6">})</span>
+@Retention<span style="color:#ff79c6">(</span>RetentionPolicy<span style="color:#ff79c6">.</span><span style="color:#50fa7b">RUNTIME</span><span style="color:#ff79c6">)</span>
+<span style="color:#8be9fd;font-style:italic">public</span> @interface FromPrimitive <span style="color:#ff79c6">{}</span></code></pre></div>
+<p>For <code>@JsonValue</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Target<span style="color:#ff79c6">({</span>ElementType<span style="color:#ff79c6">.</span><span style="color:#50fa7b">METHOD</span><span style="color:#ff79c6">})</span>
+@Retention<span style="color:#ff79c6">(</span>RetentionPolicy<span style="color:#ff79c6">.</span><span style="color:#50fa7b">RUNTIME</span><span style="color:#ff79c6">)</span>
+<span style="color:#8be9fd;font-style:italic">public</span> @interface ToPrimitive <span style="color:#ff79c6">{}</span></code></pre></div>
+<p>As you can see, they don&rsquo;t have to exactly match the ones fom Jackson.<br />
+There are no Jackson classes in them too, so that we can remove the Jackson dependency completely!</p>
+
+<p>In our case, we can use them as a drop-in replacement:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Value
+@RequiredArgsConstructor
+@NoArgsConstructor<span style="color:#ff79c6">(</span>force <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">true</span><span style="color:#ff79c6">)</span>
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">User</span> <span style="color:#ff79c6">{</span>
+
+    @FieldName<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;first_name&#34;</span><span style="color:#ff79c6">)</span>
+    String firstName<span style="color:#ff79c6">;</span>
+
+    @FieldName<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;last_name&#34;</span><span style="color:#ff79c6">)</span>
+    String lastName<span style="color:#ff79c6">;</span>
+
+    <span style="color:#8be9fd">int</span> age<span style="color:#ff79c6">;</span>
+
+    Sex sex<span style="color:#ff79c6">;</span>
+
+    @FieldName<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;phone_number&#34;</span><span style="color:#ff79c6">)</span>
+    PhoneNumber phoneNumber<span style="color:#ff79c6">;</span>
+
+    @IgnoredField
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">boolean</span> <span style="color:#50fa7b">isAdult</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> age <span style="color:#ff79c6">&gt;=</span> 18<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    @Value
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">PhoneNumber</span> <span style="color:#ff79c6">{</span>
+
+        <span style="color:#8be9fd">int</span> countryCode<span style="color:#ff79c6">;</span>
+
+        <span style="color:#8be9fd">long</span> number<span style="color:#ff79c6">;</span>
+
+        @FromPrimitive
+        <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> PhoneNumber <span style="color:#50fa7b">fromPrimitive</span><span style="color:#ff79c6">(</span>String string<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            <span style="color:#6272a4">// Don&#39;t do this at home :D
+</span><span style="color:#6272a4"></span>            <span style="color:#8be9fd">int</span> beginIndex <span style="color:#ff79c6">=</span> string<span style="color:#ff79c6">.</span><span style="color:#50fa7b">indexOf</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;+&#34;</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">+</span> 1<span style="color:#ff79c6">;</span>
+            <span style="color:#8be9fd">int</span> endIndex <span style="color:#ff79c6">=</span> string<span style="color:#ff79c6">.</span><span style="color:#50fa7b">indexOf</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;-&#34;</span><span style="color:#ff79c6">,</span> beginIndex<span style="color:#ff79c6">);</span>
+            <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">new</span> PhoneNumber<span style="color:#ff79c6">(</span>
+                    Integer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">parseInt</span><span style="color:#ff79c6">(</span>string<span style="color:#ff79c6">.</span><span style="color:#50fa7b">substring</span><span style="color:#ff79c6">(</span>beginIndex<span style="color:#ff79c6">,</span> endIndex<span style="color:#ff79c6">)),</span>
+                    Long<span style="color:#ff79c6">.</span><span style="color:#50fa7b">parseLong</span><span style="color:#ff79c6">(</span>string<span style="color:#ff79c6">.</span><span style="color:#50fa7b">substring</span><span style="color:#ff79c6">(</span>endIndex <span style="color:#ff79c6">+</span> 1<span style="color:#ff79c6">))</span>
+            <span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">}</span>
+
+        @ToPrimitive
+        <span style="color:#8be9fd;font-style:italic">public</span> String <span style="color:#50fa7b">toPrimitive</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+            <span style="color:#ff79c6">return</span> <span style="color:#f1fa8c">&#34;+&#34;</span> <span style="color:#ff79c6">+</span> countryCode <span style="color:#ff79c6">+</span> <span style="color:#f1fa8c">&#34;-&#34;</span> <span style="color:#ff79c6">+</span> number<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">enum</span> Sex <span style="color:#ff79c6">{</span>
+
+        @FieldName<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;m&#34;</span><span style="color:#ff79c6">)</span>
+        MALE<span style="color:#ff79c6">,</span>
+
+        @FieldName<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;f&#34;</span><span style="color:#ff79c6">)</span>
+        FEMALE<span style="color:#ff79c6">,</span>
+
+        @FieldName<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;u&#34;</span><span style="color:#ff79c6">)</span>
+        UNKNOWN<span style="color:#ff79c6">,</span>
+        <span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>But, if we run it as-is, the tests would obviosly start failing
+because Jackson does not know about our custom annotations, so we need to &ldquo;map&rdquo; them.</p>
+
+<p>To do so, we will be using the <a href="https://github.com/FasterXML/jackson-docs/wiki/AnnotationIntrospector" target="_blank">AnnotationIntrospector</a> class:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">CustomJacksonAnnotationIntrospector</span> <span style="color:#8be9fd;font-style:italic">extends</span> JacksonAnnotationIntrospector <span style="color:#ff79c6">{</span>
+    <span style="color:#6272a4">// ...
+</span><span style="color:#6272a4"></span><span style="color:#ff79c6">}</span></code></pre></div>
+<p>I define this class in the module where I do have the Jackson dependency (<code>testCompile</code>, in my case),
+so that my API stays Jackson-free.
+I haven&rsquo;t checked, but I assume other JSON fameworks could use these annotations too.</p>
+
+<p>As you can see, I extend <code>JacksonAnnotationIntrospector</code>, so that I support the Jackson annotations too!</p>
+
+<p>First, let&rsquo;s map our <code>@IgnoredField</code> annotation:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Override
+<span style="color:#8be9fd;font-style:italic">protected</span> <span style="color:#8be9fd">boolean</span> <span style="color:#50fa7b">_isIgnorable</span><span style="color:#ff79c6">(</span>Annotated a<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">return</span> a<span style="color:#ff79c6">.</span><span style="color:#50fa7b">hasAnnotation</span><span style="color:#ff79c6">(</span>IgnoredField<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">||</span> <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">_isIgnorable</span><span style="color:#ff79c6">(</span>a<span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p><code>Annotated</code> object gives us a very convinient way of checking whether some annotation is present, or access it.</p>
+
+<p>Now, let&rsquo;s support <code>@ToPrimitive</code>/<code>@FromPrimitive</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Override
+<span style="color:#8be9fd;font-style:italic">public</span> JsonCreator<span style="color:#ff79c6">.</span><span style="color:#50fa7b">Mode</span> <span style="color:#50fa7b">findCreatorAnnotation</span><span style="color:#ff79c6">(</span>MapperConfig<span style="color:#ff79c6">&lt;?&gt;</span> config<span style="color:#ff79c6">,</span> Annotated a<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>a<span style="color:#ff79c6">.</span><span style="color:#50fa7b">hasAnnotation</span><span style="color:#ff79c6">(</span>FromPrimitive<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> JsonCreator<span style="color:#ff79c6">.</span><span style="color:#50fa7b">Mode</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">DEFAULT</span><span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">return</span> <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">findCreatorAnnotation</span><span style="color:#ff79c6">(</span>config<span style="color:#ff79c6">,</span> a<span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">}</span>
+
+@Override
+<span style="color:#8be9fd;font-style:italic">public</span> Boolean <span style="color:#50fa7b">hasAsValue</span><span style="color:#ff79c6">(</span>Annotated a<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>a<span style="color:#ff79c6">.</span><span style="color:#50fa7b">hasAnnotation</span><span style="color:#ff79c6">(</span>ToPrimitive<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">true</span><span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">return</span> <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">hasAsValue</span><span style="color:#ff79c6">(</span>a<span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>The <code>return JsonCreator.Mode.DEFAULT;</code> value I got from analysing <code>JacksonAnnotationIntrospector#findCreatorAnnotation</code>.</p>
+
+<p>Last but definitelly not least comes the <code>@FieldName</code> support:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Override
+<span style="color:#8be9fd;font-style:italic">public</span> String<span style="color:#ff79c6">[]</span> <span style="color:#50fa7b">findEnumValues</span><span style="color:#ff79c6">(</span>Class<span style="color:#ff79c6">&lt;?&gt;</span> enumType<span style="color:#ff79c6">,</span> Enum<span style="color:#ff79c6">&lt;?&gt;[]</span> enumValues<span style="color:#ff79c6">,</span> String<span style="color:#ff79c6">[]</span> names<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    Map<span style="color:#ff79c6">&lt;</span>String<span style="color:#ff79c6">,</span> String<span style="color:#ff79c6">&gt;</span> overrides <span style="color:#ff79c6">=</span> Stream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">of</span><span style="color:#ff79c6">(</span>ClassUtil<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getDeclaredFields</span><span style="color:#ff79c6">(</span>enumType<span style="color:#ff79c6">))</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">filter</span><span style="color:#ff79c6">(</span>it <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">!</span>it<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isEnumConstant</span><span style="color:#ff79c6">())</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">filter</span><span style="color:#ff79c6">(</span>it <span style="color:#ff79c6">-&gt;</span> it<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getAnnotation</span><span style="color:#ff79c6">(</span>FieldName<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">)</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">collect</span><span style="color:#ff79c6">(</span>Collectors<span style="color:#ff79c6">.</span><span style="color:#50fa7b">toMap</span><span style="color:#ff79c6">(</span>
+                    it <span style="color:#ff79c6">-&gt;</span> it<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getName</span><span style="color:#ff79c6">(),</span>
+                    it <span style="color:#ff79c6">-&gt;</span> it<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getAnnotation</span><span style="color:#ff79c6">(</span>FieldName<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">).</span><span style="color:#50fa7b">value</span><span style="color:#ff79c6">()</span>
+            <span style="color:#ff79c6">));</span>
+
+    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>overrides<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isEmpty</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">findEnumValues</span><span style="color:#ff79c6">(</span>enumType<span style="color:#ff79c6">,</span> enumValues<span style="color:#ff79c6">,</span> names<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#ff79c6">for</span> <span style="color:#ff79c6">(</span><span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> 0<span style="color:#ff79c6">;</span> i <span style="color:#ff79c6">&lt;</span> enumValues<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">;</span> <span style="color:#ff79c6">++</span>i<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        names<span style="color:#ff79c6">[</span>i<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">=</span> overrides<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getOrDefault</span><span style="color:#ff79c6">(</span>enumValues<span style="color:#ff79c6">[</span>i<span style="color:#ff79c6">].</span><span style="color:#50fa7b">name</span><span style="color:#ff79c6">(),</span> names<span style="color:#ff79c6">[</span>i<span style="color:#ff79c6">]);</span>
+    <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">return</span> names<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">}</span>
+
+@Override
+<span style="color:#8be9fd;font-style:italic">public</span> PropertyName <span style="color:#50fa7b">findNameForSerialization</span><span style="color:#ff79c6">(</span>Annotated a<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    FieldName fieldName <span style="color:#ff79c6">=</span> a<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getAnnotation</span><span style="color:#ff79c6">(</span>FieldName<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>fieldName <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> PropertyName<span style="color:#ff79c6">.</span><span style="color:#50fa7b">construct</span><span style="color:#ff79c6">(</span>fieldName<span style="color:#ff79c6">.</span><span style="color:#50fa7b">value</span><span style="color:#ff79c6">());</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#ff79c6">return</span> <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">findNameForSerialization</span><span style="color:#ff79c6">(</span>a<span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">}</span>
+
+@Override
+<span style="color:#8be9fd;font-style:italic">public</span> PropertyName <span style="color:#50fa7b">findNameForDeserialization</span><span style="color:#ff79c6">(</span>Annotated a<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    FieldName fieldName <span style="color:#ff79c6">=</span> a<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getAnnotation</span><span style="color:#ff79c6">(</span>FieldName<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>fieldName <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> PropertyName<span style="color:#ff79c6">.</span><span style="color:#50fa7b">construct</span><span style="color:#ff79c6">(</span>fieldName<span style="color:#ff79c6">.</span><span style="color:#50fa7b">value</span><span style="color:#ff79c6">());</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#ff79c6">return</span> <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">findNameForDeserialization</span><span style="color:#ff79c6">(</span>a<span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>As you can see, it requires a bit of a boilerplate code to be copied from <code>JacksonAnnotationIntrospector#findEnumValues</code>.</p>
+
+<p>The last step is to pass our <code>AnnotationIntrospector</code> to <code>ObjectMapper</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> ObjectMapper objectMapper <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> ObjectMapper<span style="color:#ff79c6">()</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">disable</span><span style="color:#ff79c6">(</span>DeserializationFeature<span style="color:#ff79c6">.</span><span style="color:#50fa7b">FAIL_ON_UNKNOWN_PROPERTIES</span><span style="color:#ff79c6">)</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">disable</span><span style="color:#ff79c6">(</span>SerializationFeature<span style="color:#ff79c6">.</span><span style="color:#50fa7b">FAIL_ON_EMPTY_BEANS</span><span style="color:#ff79c6">)</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">setAnnotationIntrospector</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> CustomJacksonAnnotationIntrospector<span style="color:#ff79c6">());</span></code></pre></div>
+<p>(you may also create a Jackson <code>Module</code> and append the <code>AnnotationIntrospector</code> to the existing ones)</p>
+
+<p>We run the tests and they are back to green! Yay!</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Jackson&rsquo;s support for custom annotations makes it very easy to bring your own annotations, or adopt other framework&rsquo;s ones.</p>
+
+<p>There is also <code>JaxbAnnotationIntrospector</code> that leverages JAXB annotations where applicable to JSON mapping.</p>
+
+<p>The source code is available on GitHub: <a href="https://github.com/bsideup/blog-custom-Jackson-annotations" target="_blank">https://github.com/bsideup/blog-custom-Jackson-annotations</a></p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
