@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  Daily Reactive: Where is my exception?! · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/daily_reactive/where_is_my_exception/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Daily Reactive: Where is my exception?!</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2019-12-09T14:42:17&#43;01:00'>
+                December 9, 2019
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              3 minutes read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://bsideup.github.io/categories/daily-reactive/">Daily Reactive</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/reactor/">reactor</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/reactive-programming/">reactive programming</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<blockquote>
+<p>This post is a part of the <a href="https://bsideup.github.io/categories/daily-reactive/">&ldquo;Daily Reactive&rdquo;</a> series of short posts about common situations with Project Reactor and Reactive Programming.</p>
+</blockquote>
+
+<h2 id="exceptions-for-flow-contol">Exceptions For Flow Contol?</h2>
+
+<p>Throwing an error is a very easy way of terminating the processing. Consider the following example:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> Mono<span style="color:#ff79c6">&lt;</span>Void<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">sendRequest</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">return</span> doSendAndReceiveResponse<span style="color:#ff79c6">()</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">doOnNext</span><span style="color:#ff79c6">(</span>buffer <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+                <span style="color:#ff79c6">throw</span> <span style="color:#ff79c6">new</span> StopProcessingException<span style="color:#ff79c6">(</span>buffer<span style="color:#ff79c6">);</span>
+            <span style="color:#ff79c6">})</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">onErrorResume</span><span style="color:#ff79c6">(</span>StopProcessingException<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">,</span> e <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+                ResourceUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">releaseResource</span><span style="color:#ff79c6">(</span>e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getBuffer</span><span style="color:#ff79c6">());</span>
+                <span style="color:#ff79c6">return</span> Mono<span style="color:#ff79c6">.</span><span style="color:#50fa7b">empty</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">})</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">then</span><span style="color:#ff79c6">();</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Here, if we receive a response from the call, we throw an error
+(to cancel the flow, because error is a terminating signal and it will cancel the processing),
+and later we handle the error with <code>onErrorResume</code> in which we release the buffer.</p>
+
+<p>Looks simple, huh? What could possibly go wrong?</p>
+
+<h2 id="meet-onerrorcontinue">Meet <code>onErrorContinue</code>!</h2>
+
+<p>Since Error is a signal in Reactive Programming, some frameworks offer various advanced error handling mechanisms.
+But, unlike in imperative programming, where we&rsquo;re limited to <code>try {} catch {} finally {}</code>, the reactive approach gives more control!</p>
+
+<p>An example of such is <a href="https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#onErrorContinue-java.util.function.BiConsumer-" target="_blank">Project Reactor&rsquo;s <code>onErrorContinue()</code></a>:</p>
+
+<blockquote>
+<p><code>public final Flux&lt;T&gt; onErrorContinue(BiConsumer&lt;Throwable,Object&gt; errorConsumer)</code></p>
+
+<p>Let <strong>compatible</strong> operators upstream recover from errors by dropping the incriminating element
+from the sequence and continuing with subsequent elements.</p>
+</blockquote>
+
+<p>This is how you can use it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">Flux<span style="color:#ff79c6">.</span><span style="color:#50fa7b">range</span><span style="color:#ff79c6">(</span>0<span style="color:#ff79c6">,</span> 5<span style="color:#ff79c6">)</span>
+    <span style="color:#ff79c6">.</span><span style="color:#50fa7b">doOnNext</span><span style="color:#ff79c6">(</span>i <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>i <span style="color:#ff79c6">%</span> 2 <span style="color:#ff79c6">==</span> 1<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            <span style="color:#ff79c6">throw</span> <span style="color:#ff79c6">new</span> IllegalStateException<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Boom!&#34;</span><span style="color:#ff79c6">);</span>
+	    <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">})</span>
+    <span style="color:#ff79c6">.</span><span style="color:#50fa7b">onErrorContinue</span><span style="color:#ff79c6">((</span>e<span style="color:#ff79c6">,</span> i<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">-&gt;</span> println<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Value &#39;&#34;</span> <span style="color:#ff79c6">+</span> i <span style="color:#ff79c6">+</span> <span style="color:#f1fa8c">&#34;&#39; caused an error &#34;</span> <span style="color:#ff79c6">+</span> e<span style="color:#ff79c6">))</span>
+    <span style="color:#ff79c6">.</span><span style="color:#50fa7b">log</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;values&#34;</span><span style="color:#ff79c6">)</span>
+    <span style="color:#ff79c6">.</span><span style="color:#50fa7b">blockLast</span><span style="color:#ff79c6">();</span></code></pre></div>
+<p>Running it will produce:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#bd93f9">15</span><span style="color:#ff79c6">:</span><span style="color:#bd93f9">25</span><span style="color:#ff79c6">:</span><span style="color:#bd93f9">45.319</span> INFO  values <span style="color:#ff79c6">-</span> <span style="color:#ff79c6">|</span> onNext(<span style="color:#bd93f9">0</span>)
+Value <span style="color:#f1fa8c">&#39;1&#39;</span> have triggered an error java.lang.IllegalStateException<span style="color:#ff79c6">:</span> Boom<span style="color:#ff79c6">!</span>
+<span style="color:#bd93f9">15</span><span style="color:#ff79c6">:</span><span style="color:#bd93f9">25</span><span style="color:#ff79c6">:</span><span style="color:#bd93f9">45.325</span> INFO  values <span style="color:#ff79c6">-</span> <span style="color:#ff79c6">|</span> onNext(<span style="color:#bd93f9">2</span>)
+Value <span style="color:#f1fa8c">&#39;3&#39;</span> have triggered an error java.lang.IllegalStateException<span style="color:#ff79c6">:</span> Boom<span style="color:#ff79c6">!</span>
+<span style="color:#bd93f9">15</span><span style="color:#ff79c6">:</span><span style="color:#bd93f9">25</span><span style="color:#ff79c6">:</span><span style="color:#bd93f9">45.325</span> INFO  values <span style="color:#ff79c6">-</span> <span style="color:#ff79c6">|</span> onNext(<span style="color:#bd93f9">4</span>)
+<span style="color:#bd93f9">15</span><span style="color:#ff79c6">:</span><span style="color:#bd93f9">25</span><span style="color:#ff79c6">:</span><span style="color:#bd93f9">45.326</span> INFO  values <span style="color:#ff79c6">-</span> <span style="color:#ff79c6">|</span> onComplete()
+</code></pre></div>
+<p>As you can see, <strong>some</strong> (yes, some, not every, see the docs) Reactor operators allow you to &ldquo;ignore&rdquo;
+the errors, without cancelling the whole flow.</p>
+
+<p>Now, if we apply this knowledge to our original code:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> Mono<span style="color:#ff79c6">&lt;</span>Void<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">sendRequest</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">return</span> doSendAndReceiveResponse<span style="color:#ff79c6">()</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">doOnNext</span><span style="color:#ff79c6">(</span>buffer <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+                <span style="color:#ff79c6">throw</span> <span style="color:#ff79c6">new</span> StopProcessingException<span style="color:#ff79c6">(</span>buffer<span style="color:#ff79c6">);</span>
+            <span style="color:#ff79c6">})</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">onErrorResume</span><span style="color:#ff79c6">(</span>StopProcessingException<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">,</span> e <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+                ResourceUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">releaseResource</span><span style="color:#ff79c6">(</span>e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getBuffer</span><span style="color:#ff79c6">());</span>
+                <span style="color:#ff79c6">return</span> Mono<span style="color:#ff79c6">.</span><span style="color:#50fa7b">empty</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">})</span>
+            <span style="color:#ff79c6">.</span><span style="color:#50fa7b">then</span><span style="color:#ff79c6">();</span>
+<span style="color:#ff79c6">}</span>
+
+<span style="color:#6272a4">// ...
+</span><span style="color:#6272a4"></span>
+sendRequest<span style="color:#ff79c6">()</span>
+    <span style="color:#ff79c6">.</span><span style="color:#50fa7b">then</span><span style="color:#ff79c6">(</span>doSomething<span style="color:#ff79c6">())</span>
+    <span style="color:#ff79c6">.</span><span style="color:#50fa7b">onErrorContinue</span><span style="color:#ff79c6">((</span>e<span style="color:#ff79c6">,</span> o<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{});</span></code></pre></div>
+<p><code>StopProcessingException</code> will never be processed by <code>onErrorResume</code>! This is how it works:</p>
+
+<ol>
+<li><code>doOnNext</code> captures an error</li>
+<li>it checks whether it is in &ldquo;<code>onErrorContinue</code> mode&rdquo;</li>
+<li>if so, instead of processing the error, it calls the provided <code>onErrorContinue</code> callback instead!</li>
+</ol>
+
+<h2 id="how-to-fix-the-unexpected-behavior">How to fix the unexpected behavior?</h2>
+
+<p>A good rule of Reactive Programming is to never assume things and be explicit.</p>
+
+<p>Since <code>onErrorContinue</code> is a &ldquo;mode&rdquo;, you can&hellip; turn it off (but only for the upstream)!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">return</span> doSendAndReceiveResponse<span style="color:#ff79c6">()</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">doOnNext</span><span style="color:#ff79c6">(</span>buffer <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">...)</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">onErrorResume</span><span style="color:#ff79c6">(</span>StopProcessingException<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">,</span> e <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">...)</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">onErrorStop</span><span style="color:#ff79c6">()</span> <span style="color:#6272a4">// &lt;-- this &#34;restores&#34; the original &#34;fail on error&#34; behavior
+</span><span style="color:#6272a4"></span>        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">then</span><span style="color:#ff79c6">();</span></code></pre></div>
+<h2 id="how-to-actually-fix-the-problem">How to actually fix the problem</h2>
+
+<p><code>onErrorContinue</code> is a very helpful operator and there is no issue in using it.
+Let&rsquo;s have a look at our code again. This is the algorithm:</p>
+
+<ol>
+<li>Start receiving</li>
+<li>If we receive a buffer, we need to &ldquo;release&rdquo; it and terminate the flow</li>
+</ol>
+
+<p>Sometimes, rethinking code in &ldquo;Reactive Way&rdquo; solves a bunch of problems altogether.
+Throwing an exception is indeed one way of canceling the flow. But, in Reactive Programming, we have many more!</p>
+
+<p>And, in most situations, there is always an operator that matches the requirements so well.
+In our case, it is <a href="https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#takeWhile-java.util.function.Predicate-" target="_blank"><code>takeWhile</code></a>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">return</span> doSendAndReceiveResponse<span style="color:#ff79c6">()</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">takeWhile</span><span style="color:#ff79c6">(</span>buffer <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+            ResourceUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">releaseResource</span><span style="color:#ff79c6">(</span>buffer<span style="color:#ff79c6">);</span>
+            <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">false</span><span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">})</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">then</span><span style="color:#ff79c6">();</span></code></pre></div>
+<p>It is not only shorter, but also easier to understand! Not throwing an exception should improve the performance too!</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>The Reactive Programming would not be so successful without the great set of various operators provided by the frameworks.</p>
+
+<p>Do check <a href="https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html" target="_blank">the ones from Project Reactor</a>,
+and maybe you will find a better one for your use case!</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2019
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

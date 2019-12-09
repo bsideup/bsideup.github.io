@@ -95,7 +95,7 @@
     <item>
       <title>Java</title>
       <link>https://bsideup.github.io/tags/java/</link>
-      <pubDate>Fri, 22 Nov 2019 08:13:08 +0100</pubDate>
+      <pubDate>Mon, 09 Dec 2019 14:42:17 +0100</pubDate>
       
       <guid>https://bsideup.github.io/tags/java/</guid>
       <description></description>
@@ -152,6 +152,24 @@
       <pubDate>Wed, 23 Jan 2019 13:58:43 +0100</pubDate>
       
       <guid>https://bsideup.github.io/tags/oss/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Reactive Programming</title>
+      <link>https://bsideup.github.io/tags/reactive-programming/</link>
+      <pubDate>Mon, 09 Dec 2019 14:42:17 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/reactive-programming/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Reactor</title>
+      <link>https://bsideup.github.io/tags/reactor/</link>
+      <pubDate>Mon, 09 Dec 2019 14:42:17 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/reactor/</guid>
       <description></description>
     </item>
     

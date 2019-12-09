@@ -3,6 +3,16 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://bsideup.github.io/posts/daily_reactive/where_is_my_exception/</loc>
+    <lastmod>2019-12-09T14:42:17+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/posts/daily_reactive/hello_world/</loc>
+    <lastmod>2019-12-09T13:42:17+01:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/custom_jackson_annotations/</loc>
     <lastmod>2019-11-22T08:13:08+01:00</lastmod>
   </url>
@@ -59,7 +69,7 @@
   
   <url>
     <loc>https://bsideup.github.io/</loc>
-    <lastmod>2019-11-22T08:13:08+01:00</lastmod>
+    <lastmod>2019-12-09T14:42:17+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -83,6 +93,12 @@
   
   <url>
     <loc>https://bsideup.github.io/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/categories/daily-reactive/</loc>
+    <lastmod>2019-12-09T14:42:17+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -124,7 +140,7 @@
   
   <url>
     <loc>https://bsideup.github.io/tags/java/</loc>
-    <lastmod>2019-11-22T08:13:08+01:00</lastmod>
+    <lastmod>2019-12-09T14:42:17+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -166,7 +182,19 @@
   
   <url>
     <loc>https://bsideup.github.io/posts/</loc>
-    <lastmod>2019-11-22T08:13:08+01:00</lastmod>
+    <lastmod>2019-12-09T14:42:17+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/reactive-programming/</loc>
+    <lastmod>2019-12-09T14:42:17+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/reactor/</loc>
+    <lastmod>2019-12-09T14:42:17+01:00</lastmod>
     <priority>0</priority>
   </url>
   
