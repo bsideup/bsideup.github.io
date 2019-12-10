@@ -119,7 +119,7 @@ Kafka/Pulsar, REST, SQS/PubSub&hellip; You name it!</p>
 </span><span style="color:#6272a4"></span><span style="color:#ff79c6">while</span> <span style="color:#ff79c6">(</span><span style="color:#ff79c6">true</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
     var item <span style="color:#ff79c6">=</span> client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">poll</span><span style="color:#ff79c6">(</span>5<span style="color:#ff79c6">,</span> SECONDS<span style="color:#ff79c6">);</span>
     <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>item <span style="color:#ff79c6">==</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
-        TimeUnit<span style="color:#ff79c6">.</span><span style="color:#50fa7b">SECOND</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">sleep</span><span style="color:#ff79c6">(</span>1<span style="color:#ff79c6">);</span>
+        TimeUnit<span style="color:#ff79c6">.</span><span style="color:#50fa7b">SECONDS</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">sleep</span><span style="color:#ff79c6">(</span>1<span style="color:#ff79c6">);</span>
     <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">else</span> <span style="color:#ff79c6">{</span>
         println<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Received item: &#34;</span> <span style="color:#ff79c6">+</span> item<span style="color:#ff79c6">);</span>
     <span style="color:#ff79c6">}</span>
