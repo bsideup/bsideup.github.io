@@ -147,7 +147,9 @@ from the sequence and continuing with subsequent elements.</p>
             <span style="color:#ff79c6">throw</span> <span style="color:#ff79c6">new</span> IllegalStateException<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Boom!&#34;</span><span style="color:#ff79c6">);</span>
 	    <span style="color:#ff79c6">}</span>
     <span style="color:#ff79c6">})</span>
-    <span style="color:#ff79c6">.</span><span style="color:#50fa7b">onErrorContinue</span><span style="color:#ff79c6">((</span>e<span style="color:#ff79c6">,</span> i<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">-&gt;</span> println<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Value &#39;&#34;</span> <span style="color:#ff79c6">+</span> i <span style="color:#ff79c6">+</span> <span style="color:#f1fa8c">&#34;&#39; caused an error &#34;</span> <span style="color:#ff79c6">+</span> e<span style="color:#ff79c6">))</span>
+    <span style="color:#ff79c6">.</span><span style="color:#50fa7b">onErrorContinue</span><span style="color:#ff79c6">((</span>e<span style="color:#ff79c6">,</span> i<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">-&gt;</span> <span style="color:#ff79c6">{</span>
+        println<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Value &#39;&#34;</span> <span style="color:#ff79c6">+</span> i <span style="color:#ff79c6">+</span> <span style="color:#f1fa8c">&#34;&#39; have triggered an error &#34;</span> <span style="color:#ff79c6">+</span> e<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">})</span>
     <span style="color:#ff79c6">.</span><span style="color:#50fa7b">log</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;values&#34;</span><span style="color:#ff79c6">)</span>
     <span style="color:#ff79c6">.</span><span style="color:#50fa7b">blockLast</span><span style="color:#ff79c6">();</span></code></pre></div>
 <p>Running it will produce:</p>
