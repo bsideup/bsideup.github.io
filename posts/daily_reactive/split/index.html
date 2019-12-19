@@ -154,10 +154,10 @@ Imagine doing a database query instead of this simple <a href="https://projectre
 <ol>
 <li><code>tuple.getT1().subscribe(System.out::println)</code> will subscribe on <code>personFlux.map(Person::getName)</code></li>
 <li>&hellip; which will subscribe on <code>personFlux</code></li>
-<li>that, as per the <a href="https://github.com/reactive-streams/reactive-streams-jvm" target="_blank">Reactive Streams specification</a>, will return <strong>a new <code>Publisher</code></strong></li>
+<li>that, as per the <a href="https://github.com/reactive-streams/reactive-streams-jvm" target="_blank">Reactive Streams specification</a>, will result in a fresh new subscription</li>
 <li>Then, <code>tuple.getT2().collectList().block()</code> will subscribe on <code>personFlux.map(Person::getId)</code></li>
 <li>&hellip; which will subscribe on <code>personFlux</code></li>
-<li>And, once again, As per the Reactive Streams specification, a new <code>Publisher</code> will be returned.</li>
+<li>And, once again, As per the Reactive Streams specification, a new subscription will be returned.</li>
 </ol>
 
 <p>At this stage, your reaction may look like this: ಠ_ಠ</p>
