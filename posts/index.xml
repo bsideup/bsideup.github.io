@@ -6,10 +6,21 @@
     <description>Recent content in Posts on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 10 Dec 2019 12:51:29 +0100</lastBuildDate>
+    <lastBuildDate>Thu, 19 Dec 2019 15:18:57 +0100</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Daily Reactive: Splitting a stream</title>
+      <link>https://bsideup.github.io/posts/daily_reactive/split/</link>
+      <pubDate>Thu, 19 Dec 2019 15:18:57 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/daily_reactive/split/</guid>
+      <description>This post is a part of the &amp;ldquo;Daily Reactive&amp;rdquo; series of short posts about common situations with Project Reactor and Reactive Programming.
+ Although it is not common, sometimes there is a need to split a Flux into a few. And one has to be careful to do it correctly!
+Let&amp;rsquo;s say we have a stream of persons and we want to return a Tuple of names and ids:</description>
+    </item>
     
     <item>
       <title>Daily Reactive: Pollable sources</title>
