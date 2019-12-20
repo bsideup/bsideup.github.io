@@ -6,10 +6,23 @@
     <description>Recent content in Java on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 19 Dec 2019 15:18:57 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 20 Dec 2019 14:50:02 +0100</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/tags/java/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Daily Reactive: Pagination</title>
+      <link>https://bsideup.github.io/posts/daily_reactive/pagination/</link>
+      <pubDate>Fri, 20 Dec 2019 14:50:02 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/daily_reactive/pagination/</guid>
+      <description>This post is a part of the &amp;ldquo;Daily Reactive&amp;rdquo; series of short posts about common situations with Project Reactor and Reactive Programming.
+ In one of the previous Daily Reactive posts we talked about the polling.
+Today we will focus on an interesting example of the polling: Pagination.
+Example Let&amp;rsquo;s say we have the following API:
+interface Page extends Iterable&amp;lt;Item&amp;gt; { Optional&amp;lt;String&amp;gt; nextPageId(); } interface Client { CompletionStage&amp;lt;Page&amp;gt; fetchPage(@Nullable String pageId); } As you can see, each fetchPage will get a page (where pageId == null means &amp;ldquo;the first page&amp;rdquo;).</description>
+    </item>
     
     <item>
       <title>Daily Reactive: Splitting a stream</title>
