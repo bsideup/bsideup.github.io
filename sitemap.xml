@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://bsideup.github.io/posts/testcontainers_fixed_ports/</loc>
+    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/daily_reactive/pagination/</loc>
     <lastmod>2019-12-20T14:50:02+01:00</lastmod>
   </url>
@@ -84,7 +89,7 @@
   
   <url>
     <loc>https://bsideup.github.io/</loc>
-    <lastmod>2019-12-20T14:50:02+01:00</lastmod>
+    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -155,7 +160,7 @@
   
   <url>
     <loc>https://bsideup.github.io/tags/java/</loc>
-    <lastmod>2019-12-20T14:50:02+01:00</lastmod>
+    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -197,7 +202,7 @@
   
   <url>
     <loc>https://bsideup.github.io/posts/</loc>
-    <lastmod>2019-12-20T14:50:02+01:00</lastmod>
+    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -220,8 +225,14 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/categories/testcontainers/</loc>
+    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/tags/testcontainers/</loc>
-    <lastmod>2019-04-08T15:52:05+02:00</lastmod>
+    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
     <priority>0</priority>
   </url>
   

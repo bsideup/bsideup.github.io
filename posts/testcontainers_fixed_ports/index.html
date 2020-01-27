@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  Why you should never use fixed ports in your Testcontainers tests · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/testcontainers_fixed_ports/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Why you should never use fixed ports in your Testcontainers tests</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-01-27T12:23:19&#43;01:00'>
+                January 27, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5 minutes read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://bsideup.github.io/categories/testcontainers/">Testcontainers</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/testcontainers/">testcontainers</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p>I admit it - people are used to static ports.
+Web server? port <code>80</code>! Redis? <code>6379</code>! Java app? <code>8080</code>!</p>
+
+<p>But let&rsquo;s be honest, the following also looks painfully familiar:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell script" data-lang="shell script">Bind for 0.0.0.0:80 failed: port is already allocated.</code></pre></div>
+<p>But there is more - <strong><code>localhost</code> is the king!</strong></p>
+
+<p>There was some disturbance back in the days of docker-machine
+(magical <code>192.168.99.100</code>, anyone?
+Heck, <a href="https://github.com/bsideup/forward2docker" target="_blank">I even wrote a tool</a> that auto-forwards ports to <code>localhost</code>),
+but people <strong>really</strong> think everything they start <del>on</del> <strong>from</strong> their machine should be on <code>localhost</code>.</p>
+
+<p>However, the technologies are growing, we now develop microservices where each service requires his own
+set of databases to start, and the likehood of the port conflicts is growing.</p>
+
+<p>Luckily, the tooling is growing too, and thanks to projects like <a href="http://testcontainers.org" target="_blank">Testcontainers</a>,
+we can start databases and other components without having to worry about the host and ports,
+because they take care of randomization and provide programmatic access to the actual values.</p>
+
+<p>But&hellip; Old habbits sometimes make people not want changes, and we constantly receive questions like
+<strong>&ldquo;How do I run a container on fixed port?&rdquo;</strong>.<br />
+And, while you can, we strongly advise against it.</p>
+
+<p>The twist is that if you think that the conflicts is the only issue you will have, you&rsquo;re missing an important detail!</p>
+
+<h1 id="oss-maintainers-are-stupid">OSS maintainers are stupid</h1>
+
+<p>Let&rsquo;s say you have some code you want to test, and it requires a PostgreSQL database to run.</p>
+
+<p>In &ldquo;before Docker&rdquo; era, you would have something like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell script" data-lang="shell script">$ cat src/test/resources/application-test.properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/databasename</code></pre></div>
+<p>It expects that PostgreSQL will be available on <code>localhost:5432</code>.<br />
+Note, however, that it does not say which version of PostgreSQL, 9? 10? 11? Anyways, let&rsquo;s skip this question for now.</p>
+
+<p>Now you try Testcontainers, because you&rsquo;ve read some article saying that it can help you starting Docker containers
+from your tests.</p>
+
+<p>But <a href="https://www.testcontainers.org/features/networking/#exposing-container-ports-to-the-host" target="_blank">the docs say</a>:</p>
+
+<blockquote>
+<p>From the host&rsquo;s perspective Testcontainers actually exposes this on a random free port.
+This is by design, to avoid port collisions that may arise with locally running software or in between parallel test runs.</p>
+</blockquote>
+
+<p>Obviously, our tests will fail, since there won&rsquo;t be anything started by Testcontainers on port <code>5432</code>.</p>
+
+<p>What we do? Of course we <del>read the docs</del> go to GitHub/Slack/StackOverflow and ask &ldquo;How to use fixed ports?&rdquo;.</p>
+
+<p>Eventually you find the answer, and, despite the inconvenient API, it even works (on your machine)!</p>
+
+<p>What could go wrong?</p>
+
+<h1 id="if-something-can-go-wrong-it-will">if something can go wrong it will</h1>
+
+<p>You push your tests, and 10 minutes after your colleague <del>sends you an IM</del> comes to your desk and reports:</p>
+
+<p><center>
+<img src="https://bsideup.github.io/images/testcontainers_fixed_ports/That-Would-Be-Great.jpg" alt="VNC" />
+</center>
+&gt; &ldquo;Yeeeah&hellip; the test you just pushed&hellip; it fails to start on my machine.<br />
+&gt; If you could just fix it, that&rsquo;d be great.&rdquo;</p>
+
+<p>Apparently, he needed to start some fancy database, and, when it was asking for port,
+he just&hellip; rolled his finger over 5, 4, 3, 2 on his keyboard!<br />
+(pretty much the same did the developers of PostgreSQL, I assume 😅)</p>
+
+<p>That&rsquo;s his computer and he is free to do whatever he wants, right?</p>
+
+<p>You explain him the problem, and now it works on his machine too.</p>
+
+<p>Problem solved? Nope!</p>
+
+<h1 id="there-is-no-place-like-127-0-0-1-unless-there-is">There is no place like <code>127.0.0.1</code>&hellip; unless there is.</h1>
+
+<p>Let&rsquo;s say you&rsquo;ve learned how to ignore the nervous tick every time someone gets a port conflict, fine.<br />
+But something is still not working. And this something is&hellip; your CI environment.</p>
+
+<p>Since everyone is uses Docker nowadays, the CI system is not an exception.<br />
+And, to run your tests, it will start a container.</p>
+
+<p>Let&rsquo;s simulate a similar environment. Here I am running everything On My Machine™:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell script" data-lang="shell script">$ docker run -d -p 80:80 nginx
+cb74d81a4d2d72619f92bc003bcd44cc03ea1f523f41821bef0adf7954ceaa2e
+
+$ wget -q -O- localhost:80 | grep title
+&lt;title&gt;Welcome to nginx!&lt;/title&gt;</code></pre></div>
+<p>As we can see, it works perfectly fine and I can hardcode <code>localhost:80</code>.</p>
+
+<p>But now, let&rsquo;s simulate our CI system and start our &ldquo;test&rdquo; inside a container:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell script" data-lang="shell script">$ docker run -it --rm alpine
+$ wget -q -O- localhost:80
+wget: can&#39;t connect to remote host (127.0.0.1): Connection refused</code></pre></div>
+<p>Since we&rsquo;re running inside a container, our <code>localhost</code> is not host&rsquo;s <code>localhost</code>.</p>
+
+<p>We can access the Docker host:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell script" data-lang="shell script">$ wget -q -O- 172.17.0.1:80 | grep title
+&lt;title&gt;Welcome to nginx!&lt;/title&gt;</code></pre></div>
+<p>But we cannot hardcode <code>172.17.0.1</code> since this depends on many factors.</p>
+
+<p>So, as you can see, if you manage the fix the port, you won&rsquo;t be able to guarantee that it will always be on <code>localhost</code>.</p>
+
+<p>This is why in Testcontainers we have <code>Container#getContainerIpAddress()</code>:<br />
+<a href="https://www.testcontainers.org/features/networking/#getting-the-container-ip-address" target="_blank">https://www.testcontainers.org/features/networking/#getting-the-container-ip-address</a></p>
+
+<p>It will auto-detect the host and return either <code>localhost</code>, <code>172.17.0.1</code>-ish IP,
+or something like <code>54.68.123.73</code> (don&rsquo;t forget about the remote Docker daemons!).</p>
+
+<h1 id="there-is-no-excuse-for-using-fixed-ports">There is no excuse for using fixed ports</h1>
+
+<p>So, as you can see, fixed ports are dangerous and only work in some environments but not all.</p>
+
+<p>Always obtain the actual host and port and <strong>never hardcode anything, including the host</strong>.</p>
+
+<p><strong>Having troubles providing the actual values to your Java app?</strong>
+Most of the frameworks support configuration with System properties. Just set them before starting your service.</p>
+
+<p><strong>Having troubles debugging containers?</strong> You have two great options with Testcontainers:</p>
+
+<ol>
+<li><a href="https://github.com/testcontainers/testcontainers-java/pull/1781" target="_blank">Reusable containers</a> - start container once, reuse between the tests.
+Pretty similar to Docker Compose, but automated and controlled by your tests.</li>
+<li><a href="https://bsideup.github.io/posts/debugging_containers/">&ldquo;How to locally debug containers started by Testcontainers&rdquo;</a>.</li>
+</ol>
+
+<p>Still want to use fixed ports? 😜</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2020
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

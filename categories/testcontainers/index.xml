@@ -2,13 +2,13 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Testcontainers on A guy with &#39;Ego&#39; in his name</title>
-    <link>https://bsideup.github.io/tags/testcontainers/</link>
+    <link>https://bsideup.github.io/categories/testcontainers/</link>
     <description>Recent content in Testcontainers on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Mon, 27 Jan 2020 12:23:19 +0100</lastBuildDate>
     
-	<atom:link href="https://bsideup.github.io/tags/testcontainers/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://bsideup.github.io/categories/testcontainers/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -32,31 +32,6 @@ There was some disturbance back in the days of docker-machine (magical 192.168.9
       <description>One of the best things Docker gave us was the port randomization. You no longer have to care about possible conflicts, especially on CI environments.
 But it also created a big confusion for many users who got used to Redis listening on port 6379, or the Java debugger on 5005. Many tools are not container aware and expect things on static ports.
 Well, we can&amp;rsquo;t change the whole world (yet), but maybe there is something we can do for the Testcontainers users?</description>
-    </item>
-    
-    <item>
-      <title>The Builder pattern vs Java syntax</title>
-      <link>https://bsideup.github.io/posts/builders_vs_java/</link>
-      <pubDate>Thu, 31 Jan 2019 13:29:11 +0100</pubDate>
-      
-      <guid>https://bsideup.github.io/posts/builders_vs_java/</guid>
-      <description>The Builder pattern is one of the most popular patterns in Java.
-It is simple, helps to keep objects immutable, and can be generated with tools like Project Lombok&amp;rsquo;s @Builder or Immutables, to name a few.
-Example of a fluent variant of the pattern:
-public class User { private final String firstName; private final String lastName; User(String firstName, String lastName) { this.firstName = firstName; this.lastName = lastName; } public static Builder builder() { return new Builder(); } public static class Builder { String firstName; String lastName; Builder firstName(String value) { this.</description>
-    </item>
-    
-    <item>
-      <title>My favourite GitHub bots</title>
-      <link>https://bsideup.github.io/posts/github_bots/</link>
-      <pubDate>Wed, 23 Jan 2019 13:58:43 +0100</pubDate>
-      
-      <guid>https://bsideup.github.io/posts/github_bots/</guid>
-      <description>Year 2018 was an eye-opening year for me as an OSS project maintainer. The reason is due to the emerge of GitHub bots.
-Maintaining a project on GitHub could be a challenging task, especially when the project becomes popular. Issue management, releases, follow-ups, dependency management, oh my!
-But, as most of the developers, we&amp;rsquo;re lazy enough and spend time automating things.
-Dependabot https://github.com/apps/dependabot
-There are many nice bots, but Dependabot is a real &amp;ldquo;Good Boy Bot&amp;rdquo;!</description>
     </item>
     
   </channel>
