@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://bsideup.github.io/posts/spring_boot_in_container/</loc>
+    <lastmod>2020-01-30T14:43:14+01:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/testcontainers_fixed_ports/</loc>
     <lastmod>2020-01-27T12:23:19+01:00</lastmod>
   </url>
@@ -89,7 +94,7 @@
   
   <url>
     <loc>https://bsideup.github.io/</loc>
-    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
+    <lastmod>2020-01-30T14:43:14+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -160,7 +165,7 @@
   
   <url>
     <loc>https://bsideup.github.io/tags/java/</loc>
-    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
+    <lastmod>2020-01-30T14:43:14+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -202,7 +207,7 @@
   
   <url>
     <loc>https://bsideup.github.io/posts/</loc>
-    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
+    <lastmod>2020-01-30T14:43:14+01:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -219,20 +224,26 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/tags/spring-boot/</loc>
+    <lastmod>2020-01-30T14:43:14+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/tags/</loc>
     <lastmod>2019-05-28T18:12:32+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://bsideup.github.io/categories/testcontainers/</loc>
-    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
+    <loc>https://bsideup.github.io/tags/testcontainers/</loc>
+    <lastmod>2020-01-30T14:43:14+01:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://bsideup.github.io/tags/testcontainers/</loc>
-    <lastmod>2020-01-27T12:23:19+01:00</lastmod>
+    <loc>https://bsideup.github.io/categories/testcontainers/</loc>
+    <lastmod>2020-01-30T14:43:14+01:00</lastmod>
     <priority>0</priority>
   </url>
   

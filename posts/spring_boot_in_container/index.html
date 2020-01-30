@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  E2E testing your Spring Boot 2.3.0 apps with Testcontainers · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/spring_boot_in_container/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">E2E testing your Spring Boot 2.3.0 apps with Testcontainers</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-01-30T14:43:14&#43;01:00'>
+                January 30, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              4 minutes read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://bsideup.github.io/categories/testcontainers/">Testcontainers</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/testcontainers/">testcontainers</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/spring-boot/">spring boot</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p><a href="https://spring.io/blog/2020/01/23/spring-boot-2-3-0-m1-is-now-available" target="_blank">Spring Boot 2.3.0.M1</a> comes with a number of great features.
+I find one of them especially interesting -
+now you can <a href="https://spring.io/blog/2020/01/27/creating-docker-images-with-spring-boot-2-3-0-m1" target="_blank">build layered Docker images using Cloud Native Buildpacks</a>!<br />
+It is a <strong>very</strong> fast way of building Docker images compared to the Dockerfile approach thanks to Buildpacks.</p>
+
+<p>It is so fast that we can use it&hellip; to build, start and <strong>test</strong> our service as a Docker container (with <a href="http://testcontainers.org" target="_blank">Testcontainers</a>, of course!)</p>
+
+<h1 id="building-an-image-from-tests">Building an image from tests</h1>
+
+<p>Let&rsquo;s say I have a Spring Boot <strong>2.3.0</strong> service that I generated from <a href="https://start.spring.io" target="_blank">https://start.spring.io</a> with the following Gradle file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-groovy" data-lang="groovy">plugins <span style="color:#ff79c6">{</span>
+	id <span style="color:#f1fa8c">&#39;org.springframework.boot&#39;</span> version <span style="color:#f1fa8c">&#39;2.3.0.M1&#39;</span>
+	id <span style="color:#f1fa8c">&#39;io.spring.dependency-management&#39;</span> version <span style="color:#f1fa8c">&#39;1.0.9.RELEASE&#39;</span>
+	id <span style="color:#f1fa8c">&#39;java&#39;</span>
+<span style="color:#ff79c6">}</span>
+
+test<span style="color:#ff79c6">.</span><span style="color:#50fa7b">useJUnitPlatform</span><span style="color:#ff79c6">()</span>
+
+<span style="color:#6272a4">// Make it possible to override the image name externally
+</span><span style="color:#6272a4"></span>bootBuildImage<span style="color:#ff79c6">.</span><span style="color:#50fa7b">imageName</span> <span style="color:#ff79c6">=</span> project<span style="color:#ff79c6">.</span><span style="color:#50fa7b">properties</span><span style="color:#ff79c6">[</span><span style="color:#f1fa8c">&#34;dockerImageName&#34;</span><span style="color:#ff79c6">]</span>
+
+repositories <span style="color:#ff79c6">{</span>
+	mavenCentral<span style="color:#ff79c6">()</span>
+	maven <span style="color:#ff79c6">{</span> url <span style="color:#f1fa8c">&#39;https://repo.spring.io/milestone&#39;</span> <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+
+dependencies <span style="color:#ff79c6">{</span>
+	implementation <span style="color:#f1fa8c">&#39;org.springframework.boot:spring-boot-starter-actuator&#39;</span>
+	implementation <span style="color:#f1fa8c">&#39;org.springframework.boot:spring-boot-starter-webflux&#39;</span>
+
+	testImplementation<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#39;org.springframework.boot:spring-boot-starter-test&#39;</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+		exclude <span style="color:#8be9fd;font-style:italic">group:</span> <span style="color:#f1fa8c">&#39;org.junit.vintage&#39;</span><span style="color:#ff79c6">,</span> <span style="color:#8be9fd;font-style:italic">module:</span> <span style="color:#f1fa8c">&#39;junit-vintage-engine&#39;</span>
+	<span style="color:#ff79c6">}</span>
+
+    <span style="color:#6272a4">// Testcontainers
+</span><span style="color:#6272a4"></span>	testImplementation <span style="color:#f1fa8c">&#39;org.testcontainers:junit-jupiter:1.12.5&#39;</span>
+
+    <span style="color:#6272a4">// Add Gradle&#39;s TestKit as a dependency so that we can invoke it from our tests
+</span><span style="color:#6272a4"></span>	testImplementation <span style="color:#50fa7b">gradleTestKit</span><span style="color:#ff79c6">()</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>I can easily build a Docker image for my service just by running the following command:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ ./gradlew bootBuildImage
+
+&gt; Task :bootBuildImage
+Building image <span style="color:#f1fa8c">&#39;docker.io/library/demo:latest&#39;</span>
+
+<span style="color:#ff79c6">(</span>some buildpacks output<span style="color:#ff79c6">)</span>
+
+Successfully built image <span style="color:#f1fa8c">&#39;docker.io/library/demo:latest&#39;</span></code></pre></div>
+<p>One Gradle command and we get an image. Nice, huh?</p>
+
+<p>The question is: can we run this command from our tests? <a href="https://docs.gradle.org/current/userguide/test_kit.html" target="_blank">Sure we can!</a></p>
+
+<p>Since we need to build it once, I will be using <code>LazyFuture</code> from Testcontainers:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> Future<span style="color:#ff79c6">&lt;</span>String<span style="color:#ff79c6">&gt;</span> IMAGE_FUTURE <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> LazyFuture<span style="color:#ff79c6">&lt;&gt;()</span> <span style="color:#ff79c6">{</span>
+    @Override
+    <span style="color:#8be9fd;font-style:italic">protected</span> String <span style="color:#50fa7b">resolve</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#6272a4">// Find project&#39;s root dir
+</span><span style="color:#6272a4"></span>        File cwd<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">for</span> <span style="color:#ff79c6">(</span>
+                cwd <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> File<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;.&#34;</span><span style="color:#ff79c6">);</span>
+                <span style="color:#ff79c6">!</span><span style="color:#ff79c6">new</span> File<span style="color:#ff79c6">(</span>cwd<span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;settings.gradle&#34;</span><span style="color:#ff79c6">).</span><span style="color:#50fa7b">isFile</span><span style="color:#ff79c6">();</span>
+                cwd <span style="color:#ff79c6">=</span> cwd<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getParentFile</span><span style="color:#ff79c6">()</span>
+        <span style="color:#ff79c6">);</span>
+
+        <span style="color:#6272a4">// Make it unique per folder (for caching)
+</span><span style="color:#6272a4"></span>        var imageName <span style="color:#ff79c6">=</span> String<span style="color:#ff79c6">.</span><span style="color:#50fa7b">format</span><span style="color:#ff79c6">(</span>
+                <span style="color:#f1fa8c">&#34;local/app-%s:%s&#34;</span><span style="color:#ff79c6">,</span>
+                DigestUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">md5DigestAsHex</span><span style="color:#ff79c6">(</span>cwd<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getAbsolutePath</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">getBytes</span><span style="color:#ff79c6">()),</span>
+                System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">currentTimeMillis</span><span style="color:#ff79c6">()</span>
+        <span style="color:#ff79c6">);</span>
+
+        <span style="color:#6272a4">// Run Gradle task and override the image name
+</span><span style="color:#6272a4"></span>        GradleRunner<span style="color:#ff79c6">.</span><span style="color:#50fa7b">create</span><span style="color:#ff79c6">()</span>
+                <span style="color:#ff79c6">.</span><span style="color:#50fa7b">withProjectDir</span><span style="color:#ff79c6">(</span>cwd<span style="color:#ff79c6">)</span>
+                <span style="color:#ff79c6">.</span><span style="color:#50fa7b">withArguments</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;-q&#34;</span><span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;bootBuildImage&#34;</span><span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;-PdockerImageName=&#34;</span> <span style="color:#ff79c6">+</span> imageName<span style="color:#ff79c6">)</span>
+                <span style="color:#ff79c6">.</span><span style="color:#50fa7b">forwardOutput</span><span style="color:#ff79c6">()</span>
+                <span style="color:#ff79c6">.</span><span style="color:#50fa7b">build</span><span style="color:#ff79c6">();</span>
+
+        <span style="color:#ff79c6">return</span> imageName<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">};</span></code></pre></div>
+<p>Here we find the project&rsquo;s root dir, generate a unique image name for it, and run the same Gradle task but with <code>dockerImageName</code> property.</p>
+
+<h1 id="starting-our-app-inside-a-container">Starting our app inside a container</h1>
+
+<p>Now I have a <code>Future</code> that resolves to the Docker image name of my app, neat!
+We can now pass this <code>Future</code> to <code>GenericContainer</code> and start it (here I am using <a href="https://www.testcontainers.org/test_framework_integration/junit_5/" target="_blank">Testcontainers&rsquo; JUnit 5 support</a>):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Testcontainers
+<span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">DemoApplicationTests</span> <span style="color:#ff79c6">{</span>
+
+	<span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> Future<span style="color:#ff79c6">&lt;</span>String<span style="color:#ff79c6">&gt;</span> IMAGE_FUTURE <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> LazyFuture<span style="color:#ff79c6">&lt;&gt;()</span> <span style="color:#ff79c6">{</span> <span style="color:#ff79c6">...</span> <span style="color:#ff79c6">}</span>
+
+	@Container
+	<span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> GenericContainer<span style="color:#ff79c6">&lt;?&gt;</span> APP <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> GenericContainer<span style="color:#ff79c6">&lt;&gt;(</span>IMAGE_FUTURE<span style="color:#ff79c6">)</span>
+			<span style="color:#ff79c6">.</span><span style="color:#50fa7b">withExposedPorts</span><span style="color:#ff79c6">(</span>8080<span style="color:#ff79c6">);</span>
+
+	WebTestClient webClient<span style="color:#ff79c6">;</span>
+
+	@BeforeEach
+	<span style="color:#8be9fd">void</span> <span style="color:#50fa7b">setUp</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+		var endpoint <span style="color:#ff79c6">=</span> String<span style="color:#ff79c6">.</span><span style="color:#50fa7b">format</span><span style="color:#ff79c6">(</span>
+            <span style="color:#f1fa8c">&#34;http://%s:%d/&#34;</span><span style="color:#ff79c6">,</span>
+            APP<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getContainerIpAddress</span><span style="color:#ff79c6">(),</span>
+            APP<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getFirstMappedPort</span><span style="color:#ff79c6">()</span>
+        <span style="color:#ff79c6">);</span>
+		webClient <span style="color:#ff79c6">=</span> WebTestClient<span style="color:#ff79c6">.</span><span style="color:#50fa7b">bindToServer</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">baseUrl</span><span style="color:#ff79c6">(</span>endpoint<span style="color:#ff79c6">).</span><span style="color:#50fa7b">build</span><span style="color:#ff79c6">();</span>
+	<span style="color:#ff79c6">}</span>
+
+	@Test
+	<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">starts</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+		
+	<span style="color:#ff79c6">}</span>
+
+	@Test
+	<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">healthy</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+		webClient<span style="color:#ff79c6">.</span><span style="color:#50fa7b">get</span><span style="color:#ff79c6">()</span>
+				<span style="color:#ff79c6">.</span><span style="color:#50fa7b">uri</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;/actuator/health&#34;</span><span style="color:#ff79c6">)</span>
+				<span style="color:#ff79c6">.</span><span style="color:#50fa7b">exchange</span><span style="color:#ff79c6">()</span>
+				<span style="color:#ff79c6">.</span><span style="color:#50fa7b">expectStatus</span><span style="color:#ff79c6">()</span>
+				<span style="color:#ff79c6">.</span><span style="color:#50fa7b">is2xxSuccessful</span><span style="color:#ff79c6">();</span>
+	<span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>As you can see, we can&rsquo;t inject <code>WebTestClient</code> anymore (in fact, we&rsquo;re not using <code>@SpringBootTest</code> annotation at all!).
+Instead, we create our own instance of it and point to the app&rsquo;s container. Once done, we can use it as always.</p>
+
+<h1 id="improving-ux">Improving UX</h1>
+
+<p>Since we&rsquo;re running the app containerized, we can&rsquo;t see the logs anymore!
+But don&rsquo;t worry, we can forward them, since Testcontainers supports log consumers:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">new</span> GenericContainer<span style="color:#ff79c6">&lt;&gt;(</span>IMAGE_FUTURE<span style="color:#ff79c6">)</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">withExposedPorts</span><span style="color:#ff79c6">(</span>8080<span style="color:#ff79c6">)</span>
+        <span style="color:#6272a4">// Forward logs
+</span><span style="color:#6272a4"></span>        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">withLogConsumer</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> ToStringConsumer<span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+            @Override
+            <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">accept</span><span style="color:#ff79c6">(</span>OutputFrame outputFrame<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>outputFrame<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getBytes</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                    <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+                        System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">write</span><span style="color:#ff79c6">(</span>outputFrame<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getBytes</span><span style="color:#ff79c6">());</span>
+                    <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>IOException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                        <span style="color:#ff79c6">throw</span> <span style="color:#ff79c6">new</span> RuntimeException<span style="color:#ff79c6">(</span>e<span style="color:#ff79c6">);</span>
+                    <span style="color:#ff79c6">}</span>
+                <span style="color:#ff79c6">}</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">});</span></code></pre></div>
+<p>Should we need to tune some parameters (with the same mecnahism we&rsquo;d be using in production!), we can set environment variables:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">.</span><span style="color:#50fa7b">withExposedPorts</span><span style="color:#ff79c6">(</span>9090<span style="color:#ff79c6">)</span>
+<span style="color:#ff79c6">.</span><span style="color:#50fa7b">withEnv</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;SERVER_PORT&#34;</span><span style="color:#ff79c6">,</span> 9090<span style="color:#ff79c6">)</span></code></pre></div>
+<p>Need to connect it to DB? Easy!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Container
+<span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> PostgreSQLContainer<span style="color:#ff79c6">&lt;?&gt;</span> postgresql <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> PostgreSQLContainer<span style="color:#ff79c6">&lt;&gt;()</span>
+		<span style="color:#ff79c6">.</span><span style="color:#50fa7b">withNetwork</span><span style="color:#ff79c6">(</span>Network<span style="color:#ff79c6">.</span><span style="color:#50fa7b">SHARED</span><span style="color:#ff79c6">)</span>
+		<span style="color:#ff79c6">.</span><span style="color:#50fa7b">withNetworkAliases</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;db&#34;</span><span style="color:#ff79c6">);</span>
+
+@Container
+<span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> GenericContainer<span style="color:#ff79c6">&lt;?&gt;</span> APP <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> GenericContainer<span style="color:#ff79c6">&lt;&gt;(</span>IMAGE_FUTURE<span style="color:#ff79c6">)</span>
+		<span style="color:#ff79c6">.</span><span style="color:#50fa7b">withNetwork</span><span style="color:#ff79c6">(</span>Network<span style="color:#ff79c6">.</span><span style="color:#50fa7b">SHARED</span><span style="color:#ff79c6">)</span>
+		<span style="color:#ff79c6">.</span><span style="color:#50fa7b">dependsOn</span><span style="color:#ff79c6">(</span>postgresql<span style="color:#ff79c6">)</span>
+		<span style="color:#ff79c6">.</span><span style="color:#50fa7b">withEnv</span><span style="color:#ff79c6">(</span>
+            <span style="color:#f1fa8c">&#34;SPRING_DATASOURCE_URL&#34;</span><span style="color:#ff79c6">,</span>
+            <span style="color:#f1fa8c">&#34;jdbc:postgresql://db:5432/test?user=test&amp;password=test&#34;</span>
+        <span style="color:#ff79c6">)</span></code></pre></div>
+<blockquote>
+<p>⚠️ <strong>WARNING!</strong><br />
+Note that I am using <code>Network</code> here and accessing PostgreSQL by it&rsquo;s alias (<code>db</code>) instead of using <code>PostgreSQLContainer#getJdbcUrl</code>.</p>
+</blockquote>
+
+<p>Because we&rsquo;re using <code>GenericContainer</code>, everything we can do with it we can also apply to our app running inside a container.
+And Testcontainers provides a lot of common functionality.</p>
+
+<p>You can even debug it with the approach described in <a href="https://bsideup.github.io/posts/debugging_containers/">How to locally debug containers started by Testcontainers</a>!</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Although I still prefer <code>@SpringBootTest</code>, the Buildpack support brings a whole new level of testing
+and gets us even closer to production, since we&rsquo;re using exactly the same Docker image / classpath as we do in prod.</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2020
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
