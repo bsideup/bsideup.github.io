@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>E2E testing your Spring Boot 2.3.0 apps with Testcontainers</title>
+      <title>E2E test your Spring Boot 2.3.0 apps with Testcontainers</title>
       <link>https://bsideup.github.io/posts/spring_boot_in_container/</link>
       <pubDate>Thu, 30 Jan 2020 14:43:14 +0100</pubDate>
       
