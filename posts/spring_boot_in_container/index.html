@@ -81,7 +81,7 @@
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              4 minutes read
+              5 minutes read
             </span>
           </div>
           <div class="categories">
@@ -185,6 +185,49 @@ Successfully built image <span style="color:#f1fa8c">&#39;docker.io/library/demo
     <span style="color:#ff79c6">}</span>
 <span style="color:#ff79c6">};</span></code></pre></div>
 <p>Here we find the project&rsquo;s root dir, generate a unique image name for it, and run the same Gradle task but with <code>dockerImageName</code> property.</p>
+
+<h1 id="building-with-maven">Building with Maven</h1>
+
+<p>You can also do the same with Maven but it requires a bit more code and configuration.</p>
+
+<p>First, you need to make the image name configurable:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#ff79c6">&lt;plugin&gt;</span>
+    <span style="color:#ff79c6">&lt;groupId&gt;</span>org.springframework.boot<span style="color:#ff79c6">&lt;/groupId&gt;</span>
+    <span style="color:#ff79c6">&lt;artifactId&gt;</span>spring-boot-maven-plugin<span style="color:#ff79c6">&lt;/artifactId&gt;</span>
+    <span style="color:#ff79c6">&lt;configuration&gt;</span>
+        <span style="color:#ff79c6">&lt;image&gt;</span>
+            <span style="color:#ff79c6">&lt;name&gt;</span>${spring-boot.build-image.name}<span style="color:#ff79c6">&lt;/name&gt;</span>
+        <span style="color:#ff79c6">&lt;/image&gt;</span>
+    <span style="color:#ff79c6">&lt;/configuration&gt;</span>
+<span style="color:#ff79c6">&lt;/plugin&gt;</span></code></pre></div>
+<p>Now we need to call it from our tests.</p>
+
+<p>In Maven, there is <code>org.apache.maven.shared:maven-invoker</code> to invoke Maven goals programmatically.<br />
+We can use it to implement a similar approach:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">var properties <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> Properties<span style="color:#ff79c6">();</span>
+properties<span style="color:#ff79c6">.</span><span style="color:#50fa7b">put</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;spring-boot.build-image.name&#34;</span><span style="color:#ff79c6">,</span> imageName<span style="color:#ff79c6">);</span>
+<span style="color:#6272a4">// Avoid recursion :D
+</span><span style="color:#6272a4"></span>properties<span style="color:#ff79c6">.</span><span style="color:#50fa7b">put</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;skipTests&#34;</span><span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;true&#34;</span><span style="color:#ff79c6">);</span>
+
+var request <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> DefaultInvocationRequest<span style="color:#ff79c6">()</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">setPomFile</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> File<span style="color:#ff79c6">(</span>cwd<span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;pom.xml&#34;</span><span style="color:#ff79c6">))</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">setGoals</span><span style="color:#ff79c6">(</span>Arrays<span style="color:#ff79c6">.</span><span style="color:#50fa7b">asList</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;spring-boot:build-image&#34;</span><span style="color:#ff79c6">))</span>
+        <span style="color:#ff79c6">.</span><span style="color:#50fa7b">setProperties</span><span style="color:#ff79c6">(</span>properties<span style="color:#ff79c6">);</span>
+
+var invocationResult <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> DefaultInvoker<span style="color:#ff79c6">().</span><span style="color:#50fa7b">execute</span><span style="color:#ff79c6">(</span>request<span style="color:#ff79c6">);</span>
+
+<span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>invocationResult<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getExitCode</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">!=</span> 0<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">throw</span> <span style="color:#ff79c6">new</span> RuntimeException<span style="color:#ff79c6">(</span>invocationResult<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getExecutionException</span><span style="color:#ff79c6">());</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Some things to keep in mind:</p>
+
+<ol>
+<li>It requires <code>MAVEN_HOME</code> (or <code>${maven.home}</code> property) to be set.</li>
+<li>It looks like the actual invocation is happening via the Process API,
+and will JVM set in JAVA_HOME, which may differ from the one you use to run the tests.</li>
+<li>Maven&rsquo;s caching is not as good a Gradle&rsquo;s.</li>
+<li>Maven Wrapper (which is IMO a must have) needs to be handled manually.</li>
+</ol>
 
 <h1 id="starting-our-app-inside-a-container">Starting our app inside a container</h1>
 
