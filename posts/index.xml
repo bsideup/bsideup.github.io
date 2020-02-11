@@ -6,10 +6,21 @@
     <description>Recent content in Posts on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 30 Jan 2020 14:43:14 +0100</lastBuildDate>
+    <lastBuildDate>Tue, 11 Feb 2020 13:29:47 +0100</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Local development with Testcontainers</title>
+      <link>https://bsideup.github.io/posts/local_development_with_testcontainers/</link>
+      <pubDate>Tue, 11 Feb 2020 13:29:47 +0100</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/local_development_with_testcontainers/</guid>
+      <description>Testcontainers is a very helpful library when it comes to integration testing.
+One of the main benefits of it is that you can code your &amp;ldquo;dependencies&amp;rdquo; (like databases, brokers, cloud mocks, and other I/O sources) and start them with Docker from your tests - no need to run any additional command like docker-compose up or anything!
+But sometimes it is still useful to start your application and play with it.</description>
+    </item>
     
     <item>
       <title>E2E test your Spring Boot 2.3.0 apps with Testcontainers</title>

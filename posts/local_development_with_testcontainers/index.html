@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  Local development with Testcontainers · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/local_development_with_testcontainers/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Local development with Testcontainers</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-02-11T13:29:47&#43;01:00'>
+                February 11, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              5 minutes read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://bsideup.github.io/categories/testcontainers/">Testcontainers</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/testcontainers/">testcontainers</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p><a href="https://www.testcontainers.org" target="_blank">Testcontainers</a> is a very helpful library when it comes to integration testing.<br />
+One of the main benefits of it is that you can code your &ldquo;dependencies&rdquo; (like databases, brokers, cloud mocks, and other I/O sources)
+and start them with Docker from your tests - no need to run any additional command like <code>docker-compose up</code> or anything!</p>
+
+<p>But sometimes it is still useful to start your application and play with it.
+This is why some projects still have a Docker Compose file next to the project.</p>
+
+<p>Today I want to show you how you can reuse your existing testing infrastructure based on Testcontainers for local development.</p>
+
+<h1 id="what-we-already-have">What we already have</h1>
+
+<p>Let&rsquo;s say we&rsquo;re using Testcontainers already. Depending on your framework (see the framework-independent option <a href="http://localhost:1313/posts/local_development_with_testcontainers/#generic-approach" target="_blank">at the bottom of this article</a>),
+it may look somehow like this (here I am using Spring Boot):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@RunWith<span style="color:#ff79c6">(</span>SpringRunner<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">)</span>
+@SpringBootTest<span style="color:#ff79c6">(</span>webEnvironment <span style="color:#ff79c6">=</span> WebEnvironment<span style="color:#ff79c6">.</span><span style="color:#50fa7b">RANDOM_PORT</span><span style="color:#ff79c6">)</span>
+@ContextConfiguration<span style="color:#ff79c6">(</span>initializers <span style="color:#ff79c6">=</span> AbstractIntegrationTest<span style="color:#ff79c6">.</span><span style="color:#50fa7b">Initializer</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">)</span>
+<span style="color:#8be9fd;font-style:italic">abstract</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">AbstractIntegrationTest</span> <span style="color:#ff79c6">{</span>
+
+   <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">Initializer</span>
+         <span style="color:#8be9fd;font-style:italic">implements</span> ApplicationContextInitializer<span style="color:#ff79c6">&lt;</span>ConfigurableApplicationContext<span style="color:#ff79c6">&gt;</span> <span style="color:#ff79c6">{</span>
+
+      <span style="color:#8be9fd;font-style:italic">static</span> PostgreSQLContainer<span style="color:#ff79c6">&lt;?&gt;</span> postgres <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> PostgreSQLContainer<span style="color:#ff79c6">&lt;&gt;();</span>
+
+      <span style="color:#8be9fd;font-style:italic">static</span> GenericContainer<span style="color:#ff79c6">&lt;?&gt;</span> redis <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> GenericContainer<span style="color:#ff79c6">&lt;&gt;(</span><span style="color:#f1fa8c">&#34;redis:3-alpine&#34;</span><span style="color:#ff79c6">)</span>
+          <span style="color:#ff79c6">.</span><span style="color:#50fa7b">withExposedPorts</span><span style="color:#ff79c6">(</span>6379<span style="color:#ff79c6">);</span>
+
+      <span style="color:#8be9fd;font-style:italic">static</span> KafkaContainer kafka <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> KafkaContainer<span style="color:#ff79c6">();</span>
+
+      <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> Map<span style="color:#ff79c6">&lt;</span>String<span style="color:#ff79c6">,</span> String<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">getProperties</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+         Startables<span style="color:#ff79c6">.</span><span style="color:#50fa7b">deepStart</span><span style="color:#ff79c6">(</span>Stream<span style="color:#ff79c6">.</span><span style="color:#50fa7b">of</span><span style="color:#ff79c6">(</span>redis<span style="color:#ff79c6">,</span> kafka<span style="color:#ff79c6">,</span> postgres<span style="color:#ff79c6">)).</span><span style="color:#50fa7b">join</span><span style="color:#ff79c6">();</span>
+
+         <span style="color:#ff79c6">return</span> Map<span style="color:#ff79c6">.</span><span style="color:#50fa7b">of</span><span style="color:#ff79c6">(</span>
+               <span style="color:#f1fa8c">&#34;spring.datasource.url&#34;</span><span style="color:#ff79c6">,</span> postgres<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getJdbcUrl</span><span style="color:#ff79c6">(),</span>
+               <span style="color:#f1fa8c">&#34;spring.datasource.username&#34;</span><span style="color:#ff79c6">,</span> postgres<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getUsername</span><span style="color:#ff79c6">(),</span>
+               <span style="color:#f1fa8c">&#34;spring.datasource.password&#34;</span><span style="color:#ff79c6">,</span>postgres<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getPassword</span><span style="color:#ff79c6">(),</span>
+
+               <span style="color:#f1fa8c">&#34;spring.redis.host&#34;</span><span style="color:#ff79c6">,</span> redis<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getContainerIpAddress</span><span style="color:#ff79c6">(),</span>
+               <span style="color:#f1fa8c">&#34;spring.redis.port&#34;</span><span style="color:#ff79c6">,</span> redis<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getFirstMappedPort</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">+</span> <span style="color:#f1fa8c">&#34;&#34;</span><span style="color:#ff79c6">,</span>
+               <span style="color:#f1fa8c">&#34;spring.kafka.bootstrap-servers&#34;</span><span style="color:#ff79c6">,</span> kafka<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getBootstrapServers</span><span style="color:#ff79c6">()</span>
+         <span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">}</span>
+
+      @Override
+      <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">initialize</span><span style="color:#ff79c6">(</span>ConfigurableApplicationContext context<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+         var env <span style="color:#ff79c6">=</span> configurableApplicationContext<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getEnvironment</span><span style="color:#ff79c6">();</span>
+         env<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getPropertySources</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">addFirst</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> MapPropertySource<span style="color:#ff79c6">(</span>
+               <span style="color:#f1fa8c">&#34;testcontainers&#34;</span><span style="color:#ff79c6">,</span>
+               <span style="color:#ff79c6">(</span>Map<span style="color:#ff79c6">)</span> getProperties<span style="color:#ff79c6">()</span>
+         <span style="color:#ff79c6">));</span>
+      <span style="color:#ff79c6">}</span>
+  <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>Here we start PostgreSQL, Redis and Kafka, and set the context properties accordingly.</p>
+
+<p>Note that <code>ApplicationContextInitializer</code> has nothing to do about testing, and can be applied to any (configurable) Spring context!</p>
+
+<p>Which means that we can do&hellip;</p>
+
+<h1 id="self-contained-applications">Self Contained Applications</h1>
+
+<p>There are multiple approaches (<code>args</code>, system properties, Spring factories), but I would like to describe my favourite one.</p>
+
+<p>Given the following (typical) Spring Boot main class:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@SpringBootApplication
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">DemoApplication</span> <span style="color:#ff79c6">{</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        SpringApplication<span style="color:#ff79c6">.</span><span style="color:#50fa7b">run</span><span style="color:#ff79c6">(</span>DemoApplication<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">,</span> args<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>We can change it a little and expose the application builder via <code>createApplication</code> method:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@SpringBootApplication
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">Application</span> <span style="color:#ff79c6">{</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        createSpringApplication<span style="color:#ff79c6">().</span><span style="color:#50fa7b">run</span><span style="color:#ff79c6">(</span>args<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> SpringApplication <span style="color:#50fa7b">createSpringApplication</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">new</span> SpringApplication<span style="color:#ff79c6">(</span>Application<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>So that now we can create a <code>TestApplication</code> class <strong>in the test source set</strong> next to our testing infrastructure
+that we will be using later for starting our app locally with all required dependencies:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">TestApplication</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        var application <span style="color:#ff79c6">=</span> Application<span style="color:#ff79c6">.</span><span style="color:#50fa7b">createSpringApplication</span><span style="color:#ff79c6">();</span>
+
+        <span style="color:#6272a4">// Here we add the same initializer as we were using in our tests...
+</span><span style="color:#6272a4"></span>        application<span style="color:#ff79c6">.</span><span style="color:#50fa7b">addInitializers</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> AbstractIntegrationTest<span style="color:#ff79c6">.</span><span style="color:#50fa7b">Initializer</span><span style="color:#ff79c6">());</span>
+        
+        <span style="color:#6272a4">// ... and start it normally
+</span><span style="color:#6272a4"></span>        application<span style="color:#ff79c6">.</span><span style="color:#50fa7b">run</span><span style="color:#ff79c6">(</span>args<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>   
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>You can run it the same way you would run your &ldquo;main&rdquo; <code>Application</code> class, but now it will also start PostgreSQL, Redis &amp; Kafka.</p>
+
+<h1 id="making-it-faster">Making it faster</h1>
+
+<p>This approach works well if you need to start the app once and play with it, but, in case TDD is not your thing and you develop by starting the app,
+you may have noticed a few issues with this setup:</p>
+
+<ol>
+<li>It takes time to start databases, and you start them every time you run the app, unlike with Docker Compose</li>
+<li>Not really a separate issue, but the result of the first one - you always loose the state.</li>
+<li>Debugging the DB&rsquo;s state is hard because the ports are always random</li>
+</ol>
+
+<p>And, while the second can be solved by populating the DBs with some state, the question of speed remains open.<br />
+Not to mention that it does not feel the same as it used to be - some DB always running on a well known port.</p>
+
+<p>All of that is happening because Testcontainers&rsquo; main focus is testing, and it makes sure that containers are
+terminated after you run your tests.</p>
+
+<p>This is where another feature of Testcontainers comes in handy - <a href="https://github.com/testcontainers/testcontainers-java/pull/1781" target="_blank">Reusable Containers</a>!</p>
+
+<p>And, while it is still in preview, it works very well for our use case.</p>
+
+<p>It takes a minor effort to start using it:</p>
+
+<ol>
+<li>add <code>.withReuse(true)</code></li>
+<li>add <code>.withNetwork(null)</code> to Kafka (should be fixed soon)</li>
+<li>set <code>testcontainers.reuse.enable=true</code> in <code>$HOME/.testcontainers.properties</code> file</li>
+</ol>
+
+<p>Once done, we can see that the containers (and their randomly selected ports) are preserved between the runs of our app 🎉</p>
+
+<p>Another great side effect of this feature is that if you have multiple services that need the same version &amp; configuration of a database,
+they will reuse it too! Something that you cannot achieve with Docker Compose ;)</p>
+
+<p>Also, unlike with Docker Compose, it will never conflict with existing running containers because the ports will remaind randomized
+when you start the tests / app for the first time.</p>
+
+<h1 id="generic-approach">Generic approach</h1>
+
+<p>So far we were talking about Spring Boot, but it does not mean that other frameworks cannot benefit from this &ldquo;pattern&rdquo;!</p>
+
+<p>In fact, if we cannot touch the main class of our Spring Boot app, we may also want to use something more generic.</p>
+
+<p>Luckily, almost all (if not all) JVM frameworks support configuration with either <code>args</code> or system properties.</p>
+
+<p>We can use this to pass our properties to <strong>any</strong> JVM application:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">TestApplication</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#6272a4">// &#34;Initializer&#34; here can be any class that defines &amp; starts containers
+</span><span style="color:#6272a4"></span>        Initializer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getProperties</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">forEach</span><span style="color:#ff79c6">(</span><span style="color:#8be9fd;font-style:italic">System:</span><span style="color:#ff79c6">:</span>setProperty<span style="color:#ff79c6">);</span>
+
+        <span style="color:#6272a4">// Just call the regular &#34;public static void main&#34; method here
+</span><span style="color:#6272a4"></span>        Application<span style="color:#ff79c6">.</span><span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>args<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<h1 id="docker-compose-is-not-the-king-anymore">Docker Compose is not the king anymore</h1>
+
+<p>As you can see, with just a few changes, you can start reusing the same container definitions you would use
+in your tests&hellip; but for local development too!</p>
+
+<p>Next iterations of the Reusable Containers feature will also support terminating started containers after a certain timeout,
+so that if you&rsquo;re not working on one of your services anymore, you won&rsquo;t need to care about stopping the containers you
+started for it - everything will be done automagically for you. With one tool. How cool is that?</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2020
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
