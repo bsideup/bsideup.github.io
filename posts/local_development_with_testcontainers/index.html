@@ -144,7 +144,7 @@ it may look somehow like this (here I am using Spring Boot):</p>
 
       @Override
       <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">initialize</span><span style="color:#ff79c6">(</span>ConfigurableApplicationContext context<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
-         var env <span style="color:#ff79c6">=</span> configurableApplicationContext<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getEnvironment</span><span style="color:#ff79c6">();</span>
+         var env <span style="color:#ff79c6">=</span> context<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getEnvironment</span><span style="color:#ff79c6">();</span>
          env<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getPropertySources</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">addFirst</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> MapPropertySource<span style="color:#ff79c6">(</span>
                <span style="color:#f1fa8c">&#34;testcontainers&#34;</span><span style="color:#ff79c6">,</span>
                <span style="color:#ff79c6">(</span>Map<span style="color:#ff79c6">)</span> getProperties<span style="color:#ff79c6">()</span>
