@@ -81,7 +81,7 @@
             </span>
             <span class="reading-time">
               <i class="fas fa-clock"></i>
-              5 minutes read
+              6 minutes read
             </span>
           </div>
           <div class="categories">
@@ -197,7 +197,7 @@ that we will be using later for starting our app locally with all required depen
 <span style="color:#ff79c6">}</span></code></pre></div>
 <p>You can run it the same way you would run your &ldquo;main&rdquo; <code>Application</code> class, but now it will also start PostgreSQL, Redis &amp; Kafka.</p>
 
-<h1 id="making-it-faster">Making it faster</h1>
+<h1 id="making-it-fast">Making it fast</h1>
 
 <p>This approach works well if you need to start the app once and play with it, but, in case TDD is not your thing and you develop by starting the app,
 you may have noticed a few issues with this setup:</p>
@@ -233,6 +233,21 @@ they will reuse it too! Something that you cannot achieve with Docker Compose ;)
 
 <p>Also, unlike with Docker Compose, it will never conflict with existing running containers because the ports will remaind randomized
 when you start the tests / app for the first time.</p>
+
+<h1 id="make-it-even-faster">Make it even faster!</h1>
+
+<p>With reusable containers, everything starts fast already. But we still have to wait for a couple of seconds,
+plus a few more seconds to start our own app.</p>
+
+<p>Can we do something about it? Of course! Spring Boot supports <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-devtools-restart" target="_blank">a very fast development mode</a> that will restart only a subset of your app.</p>
+
+<p>How to activate it? Just add <code>testCompile 'org.springframework.boot:spring-boot-devtools'</code> to your dependencies and you&rsquo;re good to go!</p>
+
+<p>Now, if we make a change to the already running app (and build id via our IDE&rsquo;s Build action),
+Spring Boot will restart it, but it won&rsquo;t run <code>TestApplication.main</code> again, and our containers will remain running &amp; configured.  s
+In fact, we don&rsquo;t even <em>have</em> to use reusable containers, but they still make debugging easier by preserving the ports :)</p>
+
+<p>Warp speed development! 🚀</p>
 
 <h1 id="generic-approach">Generic approach</h1>
 
