@@ -120,9 +120,12 @@ I <em>could</em> drop the namespace (so that it becomes <code>$serviceName.proj.
 
 <p>My knowledge if Kubernetes made me think that most of the time there is some annotation to adjust the defaults. Well, not this time.</p>
 
-<p>There were some discussions on how to make custom domain names easier to set:
-- <a href="https://github.com/knative/serving/issues/1185" target="_blank">https://github.com/knative/serving/issues/1185</a>
-- <a href="https://github.com/knative/serving/issues/2985" target="_blank">https://github.com/knative/serving/issues/2985</a></p>
+<p>There were some discussions on how to make custom domain names easier to set:</p>
+
+<ul>
+<li><a href="https://github.com/knative/serving/issues/1185" target="_blank">https://github.com/knative/serving/issues/1185</a></li>
+<li><a href="https://github.com/knative/serving/issues/2985" target="_blank">https://github.com/knative/serving/issues/2985</a></li>
+</ul>
 
 <p>But none of them are resolved yet.</p>
 
@@ -186,7 +189,7 @@ kind: Service
 metadata:
   name: app
   annotations:
-    <span style="color:#6272a4"># Will be exposed as `api.proj.org` instead of `app.myproj.proj.org`s</span>
+    <span style="color:#6272a4"># Will be exposed as `api.proj.org` instead of `app.myproj.proj.org`</span>
     org.proj.subdomain: api
 spec:
   ...</code></pre></div>
