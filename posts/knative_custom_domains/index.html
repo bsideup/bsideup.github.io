@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  Human-friendly Domains with Knative · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/knative_custom_domains/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Human-friendly Domains with Knative</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-04-06T15:34:02&#43;02:00'>
+                April 6, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              4 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/k8s/">k8s</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/knative/">knative</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/devops/">devops</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<h1 id="introduction">Introduction</h1>
+
+<p>Recently, I started playing with Kubernetes and Knative.
+The trigger was the credits I received to play with Oracle Cloud. I did not know how to use them and on which services
+(Java is the only Oracle&rsquo;s product I use :D), so I googled &ldquo;oracle cloud kubernetes&rdquo; and 15 minutes later I had a running cluster to play with. Nice!</p>
+
+<p>After installing Knative (<code>k apply -f</code> FTW!) and Gloo as a gateway, I decided to move one of my pet projects to this cluster,
+just to get the feeling of what it takes to run a few services on it.</p>
+
+<p>BTW, I expected a (better) integration of Oracle Cloud&rsquo;s Image Registry and their k8s service, but, after all, that was the only thing I had to do manually.</p>
+
+<h1 id="the-problem">The problem</h1>
+
+<p>Once I deployed the services, I was able to send some HTTP requests to <code>$serviceName.$namespace.example.com</code>-like domains.<br />
+My project&rsquo;s domain is obviously not <code>example.com</code>, so I went to <a href="https://knative.dev/docs/serving/using-a-custom-domain/" target="_blank">https://knative.dev/docs/serving/using-a-custom-domain/</a> and changed it accordingly.</p>
+
+<p>But I stil didn&rsquo;t like <code>$serviceName.$namespace.proj.org</code>-style domains for exposed services.
+I <em>could</em> drop the namespace (so that it becomes <code>$serviceName.proj.org</code>), but my service names did not match the public domains I wanted to expose.</p>
+
+<p>My knowledge if Kubernetes made me think that most of the time there is some annotation to adjust the defaults. Well, not this time.</p>
+
+<p>There were some discussions on how to make custom domain names easier to set:
+- <a href="https://github.com/knative/serving/issues/1185" target="_blank">https://github.com/knative/serving/issues/1185</a>
+- <a href="https://github.com/knative/serving/issues/2985" target="_blank">https://github.com/knative/serving/issues/2985</a></p>
+
+<p>But none of them are resolved yet.</p>
+
+<p>Another way is to use Virtual Services but this seems to be Istio specific, and I decided to use Gloo. If you&rsquo;re running in Istio, check this:
+<a href="https://github.com/knative/docs/blob/v0.13.x/docs/serving/samples/knative-routing-go/routing.yaml" target="_blank">https://github.com/knative/docs/blob/v0.13.x/docs/serving/samples/knative-routing-go/routing.yaml</a></p>
+
+<p>It turns out, custom domains with Knative isn&rsquo;t something you can get out of the box!</p>
+
+<h1 id="we-just-need-another-annotation">We just need another annotation</h1>
+
+<p>After looking at Knative configs (and asking help from fellow VMwareans), I started looking at <code>domainTemplate</code> property of <code>config-network</code> ConfigMap:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#6272a4"># domainTemplate specifies the golang text template string to use</span>
+<span style="color:#6272a4"># when constructing the Knative service&#39;s DNS name. The default</span>
+<span style="color:#6272a4"># value is &#34;{{.Name}}.{{.Namespace}}.{{.Domain}}&#34;. And those three</span>
+<span style="color:#6272a4"># values (Name, Namespace, Domain) are the only variables defined.s</span>
+<span style="color:#6272a4">#</span>
+<span style="color:#6272a4"># Changing this value might be necessary when the extra levels in</span>
+<span style="color:#6272a4"># the domain name generated is problematic for wildcard certificates</span>
+<span style="color:#6272a4"># that only support a single level of domain name added to the</span>
+<span style="color:#6272a4"># certificate&#39;s domain. In those cases you might consider using a value</span>
+<span style="color:#6272a4"># of &#34;{{.Name}}-{{.Namespace}}.{{.Domain}}&#34;, or removing the Namespace</span>
+<span style="color:#6272a4"># entirely from the template. When choosing a new value be thoughtful</span>
+<span style="color:#6272a4"># of the potential for conflicts - for example, when users choose to use</span>
+<span style="color:#6272a4"># characters such as `-` in their service, or namespace, names.</span>
+<span style="color:#6272a4"># {{.Annotations}} can be used for any customization in the go template if needed.</span>
+<span style="color:#6272a4"># We strongly recommend keeping namespace part of the template to avoid domain name clashes</span>
+<span style="color:#6272a4"># Example &#39;{{.Name}}-{{.Namespace}}.{{ index .Annotations &#34;sub&#34;}}.{{.Domain}}&#39;</span>
+<span style="color:#6272a4"># and you have an annotation {&#34;sub&#34;:&#34;foo&#34;}, then the generated template would be {Name}-{Namespace}.foo.{Domain}</span>
+domainTemplate: <span style="color:#f1fa8c">&#34;{{.Name}}.{{.Namespace}}.{{.Domain}}&#34;</span></code></pre></div>
+<p>This one caught my attention:</p>
+
+<blockquote>
+<p><code>{{.Annotations}} can be used for any customization in the go template if needed.</code></p>
+</blockquote>
+
+<p>&ldquo;Can be&rdquo;? Will be! 🤓</p>
+
+<p>After some trial and error, I ended up with:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-network
+  namespace: knative-serving
+data:
+  domainTemplate: |-
+    {{if index .Annotations <span style="color:#f1fa8c">&#34;org.proj.subdomain&#34;</span> -}}
+      {{- index .Annotations <span style="color:#f1fa8c">&#34;org.proj.subdomain&#34;</span> -}}
+    {{else -}}
+      {{- .Name}}.{{.Namespace -}}
+    {{end -}}
+    .{{.Domain}}</code></pre></div>
+<p>(be careful here, every new line/space will end up in the domain name and the config validation will fail)</p>
+
+<p>Here we check if <code>org.proj.subdomain</code> annotation is present and use its value as a sub-domain.
+If not, we fallback to the standard <code>$serviceName.$namespace.$domain</code> scheme.</p>
+
+<p>Now we can deploy our Knative services as usual but enjoy human-friendly domains:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: app
+  annotations:
+    <span style="color:#6272a4"># Will be exposed as `api.proj.org` instead of `app.myproj.proj.org`s</span>
+    org.proj.subdomain: api
+spec:
+  ...</code></pre></div>
+<p>And it is gateway agnostic and just uses Knative&rsquo;s configuration, which I find very nice (less custom things to have).</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>I hope that Knative will add support for such customization soon. Meanwhile, it requires a minor configuration change.</p>
+
+<p>Who knows, maybe I should even contribute it to their default config?</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2020
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

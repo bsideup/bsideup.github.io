@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://bsideup.github.io/posts/knative_custom_domains/</loc>
+    <lastmod>2020-04-06T15:34:02+02:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/tcks_with_jupiter_and_dynamic_tests/</loc>
     <lastmod>2020-03-16T16:25:49+01:00</lastmod>
   </url>
@@ -109,7 +114,7 @@
   
   <url>
     <loc>https://bsideup.github.io/</loc>
-    <lastmod>2020-03-16T16:25:49+01:00</lastmod>
+    <lastmod>2020-04-06T15:34:02+02:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -145,6 +150,12 @@
   <url>
     <loc>https://bsideup.github.io/tags/debugging/</loc>
     <lastmod>2019-04-08T15:52:05+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/devops/</loc>
+    <lastmod>2020-04-06T15:34:02+02:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -197,6 +208,18 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/tags/k8s/</loc>
+    <lastmod>2020-04-06T15:34:02+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/knative/</loc>
+    <lastmod>2020-04-06T15:34:02+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/tags/kotlin/</loc>
     <lastmod>2019-05-07T17:37:23+02:00</lastmod>
     <priority>0</priority>
@@ -228,7 +251,7 @@
   
   <url>
     <loc>https://bsideup.github.io/posts/</loc>
-    <lastmod>2020-03-16T16:25:49+01:00</lastmod>
+    <lastmod>2020-04-06T15:34:02+02:00</lastmod>
     <priority>0</priority>
   </url>
   

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Devops on A guy with &#39;Ego&#39; in his name</title>
+    <link>https://bsideup.github.io/tags/devops/</link>
+    <description>Recent content in Devops on A guy with &#39;Ego&#39; in his name</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 06 Apr 2020 15:34:02 +0200</lastBuildDate>
+    
+	<atom:link href="https://bsideup.github.io/tags/devops/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Human-friendly Domains with Knative</title>
+      <link>https://bsideup.github.io/posts/knative_custom_domains/</link>
+      <pubDate>Mon, 06 Apr 2020 15:34:02 +0200</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/knative_custom_domains/</guid>
+      <description>Introduction Recently, I started playing with Kubernetes and Knative. The trigger was the credits I received to play with Oracle Cloud. I did not know how to use them and on which services (Java is the only Oracle&amp;rsquo;s product I use :D), so I googled &amp;ldquo;oracle cloud kubernetes&amp;rdquo; and 15 minutes later I had a running cluster to play with. Nice!
+After installing Knative (k apply -f FTW!) and Gloo as a gateway, I decided to move one of my pet projects to this cluster, just to get the feeling of what it takes to run a few services on it.</description>
+    </item>
+    
+  </channel>
+</rss>
