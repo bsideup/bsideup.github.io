@@ -133,7 +133,7 @@ Or a new span from your favourite distributed tracing library being created due 
 
 <h2 id="how-to-loose-context">How to loose <code>Context</code></h2>
 
-<p>Let&rsquo;s use our previous example and demonstrate how wrongly implemented operator can break the <code>Context</code> chain.</p>
+<p>Let&rsquo;s use our previous example and demonstrate how a wrongly implemented operator can break the <code>Context</code> chain.</p>
 
 <p>First, our &ldquo;operator&rdquo;:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">LoggingOperator</span><span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#8be9fd;font-style:italic">extends</span> FluxOperator<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">,</span> T<span style="color:#ff79c6">&gt;</span> <span style="color:#ff79c6">{</span>
@@ -168,7 +168,7 @@ Or a new span from your favourite distributed tracing library being created due 
         <span style="color:#ff79c6">});</span>
     <span style="color:#ff79c6">}</span>
 <span style="color:#ff79c6">}</span></code></pre></div>
-<p>Here we simply forward all signals to the actual subscriber and simply log every <code>onNext</code>.</p>
+<p>Here we simply forward all signals to the actual subscriber and log every <code>onNext</code>.</p>
 
 <p>And here is how we can apply it:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">getItems<span style="color:#ff79c6">()</span>
