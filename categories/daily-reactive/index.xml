@@ -6,10 +6,21 @@
     <description>Recent content in Daily Reactive on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 12 Feb 2020 13:44:18 +0100</lastBuildDate>
+    <lastBuildDate>Wed, 10 Jun 2020 10:22:38 +0200</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/categories/daily-reactive/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Daily Reactive: Context loss detection in Project Reactor</title>
+      <link>https://bsideup.github.io/posts/daily_reactive/context_loss_detection/</link>
+      <pubDate>Wed, 10 Jun 2020 10:22:38 +0200</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/daily_reactive/context_loss_detection/</guid>
+      <description>This post is a part of the &amp;ldquo;Daily Reactive&amp;rdquo; series of short posts about common situations with Project Reactor and Reactive Programming.
+ One of the unique features of Project Reactor is the Context support. It allows you to associate an immutable context (represented by key/value pairs) and pass it to the upstream subscribers:
+public Flux&amp;lt;Item&amp;gt; getItems() { return Flux.deferWithContext(context -&amp;gt; { String userId = context.get(&amp;#34;userId&amp;#34;); Publisher&amp;lt;Item&amp;gt; items = fetchItemsByUserId(userId); return items; }); } public void streamItems() { getItems().</description>
+    </item>
     
     <item>
       <title>Daily Reactive: Let&#39;s talk about ThreadLocals.</title>
