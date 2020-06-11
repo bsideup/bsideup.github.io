@@ -125,7 +125,7 @@ It allows you to associate an immutable context (represented by key/value pairs)
 
 <p>It is a very powerful feature that is used by Spring Security, Spring Cloud Sleuth, R2DBC and other libraries.
 But, with great power comes great responsibility!<br />
-Imagine loosing the <code>transactionId</code> half way throught the flow?<br />
+Imagine losing the <code>transactionId</code> half way throught the flow?<br />
 Or not being able to access the security context anymore?<br />
 Or a new span from your favourite distributed tracing library being created due to a missing current one?</p>
 
