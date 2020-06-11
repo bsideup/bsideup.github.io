@@ -131,7 +131,7 @@ Or a new span from your favourite distributed tracing library being created due 
 
 <p>Such issues may cause big troubles, and debugging them isn&rsquo;t easy&hellip; unless you have tools for that!</p>
 
-<h2 id="how-to-loose-context">How to loose <code>Context</code></h2>
+<h2 id="how-to-lose-context">How to lose <code>Context</code></h2>
 
 <p>Let&rsquo;s use our previous example and demonstrate how a wrongly implemented operator can break the <code>Context</code> chain.</p>
 
@@ -180,7 +180,7 @@ Or a new span from your favourite distributed tracing library being created due 
 	at reactor.util.context.Context0.get(Context0.java:41)</code></pre></div>
 <p>Pointing to this line:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">String userId <span style="color:#ff79c6">=</span> context<span style="color:#ff79c6">.</span><span style="color:#50fa7b">get</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;userId&#34;</span><span style="color:#ff79c6">);</span></code></pre></div>
-<p>See <del>how easy it is to loose the <code>Context</code></del> why you should think twice before implementing a custom operator?</p>
+<p>See <del>how easy it is to lose the <code>Context</code></del> why you should think twice before implementing a custom operator?</p>
 
 <h2 id="debugging-context-related-issues">Debugging <code>Context</code>-related issues</h2>
 
@@ -207,7 +207,7 @@ Caused <span style="color:#8be9fd;font-style:italic">by:</span> java<span style=
 	at reactor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">core</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">publisher</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">FluxLift</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">subscribeOrReturn</span><span style="color:#ff79c6">(</span>FluxLift<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>50<span style="color:#ff79c6">)</span>
 	at reactor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">core</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">publisher</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">InternalFluxOperator</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">subscribe</span><span style="color:#ff79c6">(</span>InternalFluxOperator<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>55<span style="color:#ff79c6">)</span>
 	at playground<span style="color:#ff79c6">.</span><span style="color:#50fa7b">ContextLossTest$LoggingOperator</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">subscribe</span><span style="color:#ff79c6">(</span>ContextLossTest<span style="color:#ff79c6">.</span><span style="color:#50fa7b">java</span><span style="color:#ff79c6">:</span>44<span style="color:#ff79c6">)</span></code></pre></div>
-<p>Nice! Now, the error happens when we loose the context and not when we try to access it.</p>
+<p>Nice! Now, the error happens when we lose the context and not when we try to access it.</p>
 
 <p>Although, it would be nice to see the exact line where <code>playground.ContextLossTest$$Lambda$30</code> got applied.
 For that, we will use <a href="https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Hooks.html#onOperatorDebug--" target="_blank"><code>Hooks.onOperatorDebug()</code></a>:</p>
