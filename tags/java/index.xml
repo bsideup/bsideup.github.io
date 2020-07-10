@@ -18,7 +18,7 @@
       
       <guid>https://bsideup.github.io/posts/rootless_docker/</guid>
       <description>Rootless Docker is one of the most exciting recent changes in the Docker ecosystem.
-It allows you to run the same good old Docker but without having to obtain root priviledges on the machine.
+It allows you to run the same good old Docker but without having to obtain root privileges on the machine.
 Installing Rootless Docker on a fresh VM Although you can run Rootless Docker-in-Docker, I wanted to try it on a fresh environment.
 A few seconds later, I had an Ubuntu VM running on Oracle Cloud to play with:</description>
     </item>
