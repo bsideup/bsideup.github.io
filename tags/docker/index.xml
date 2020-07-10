@@ -6,10 +6,22 @@
     <description>Recent content in Docker on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 26 Dec 2018 17:56:42 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 10 Jul 2020 14:22:31 +0200</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/tags/docker/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Trying Rootless Docker with Testcontainers</title>
+      <link>https://bsideup.github.io/posts/rootless_docker/</link>
+      <pubDate>Fri, 10 Jul 2020 14:22:31 +0200</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/rootless_docker/</guid>
+      <description>Rootless Docker is one of the most exciting recent changes in the Docker ecosystem.
+It allows you to run the same good old Docker but without having to obtain root priviledges on the machine.
+Installing Rootless Docker on a fresh VM Although you can run Rootless Docker-in-Docker, I wanted to try it on a fresh environment.
+A few seconds later, I had an Ubuntu VM running on Oracle Cloud to play with:</description>
+    </item>
     
     <item>
       <title>JNI cross-compilation with Docker</title>

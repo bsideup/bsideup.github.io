@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://bsideup.github.io/posts/rootless_docker/</loc>
+    <lastmod>2020-07-10T14:22:31+02:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/daily_reactive/context_loss_detection/</loc>
     <lastmod>2020-06-10T10:22:38+02:00</lastmod>
   </url>
@@ -119,7 +124,7 @@
   
   <url>
     <loc>https://bsideup.github.io/</loc>
-    <lastmod>2020-06-10T10:22:38+02:00</lastmod>
+    <lastmod>2020-07-10T14:22:31+02:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -166,7 +171,7 @@
   
   <url>
     <loc>https://bsideup.github.io/tags/docker/</loc>
-    <lastmod>2018-12-26T17:56:42+01:00</lastmod>
+    <lastmod>2020-07-10T14:22:31+02:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -196,7 +201,7 @@
   
   <url>
     <loc>https://bsideup.github.io/tags/java/</loc>
-    <lastmod>2020-06-10T10:22:38+02:00</lastmod>
+    <lastmod>2020-07-10T14:22:31+02:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -256,7 +261,7 @@
   
   <url>
     <loc>https://bsideup.github.io/posts/</loc>
-    <lastmod>2020-06-10T10:22:38+02:00</lastmod>
+    <lastmod>2020-07-10T14:22:31+02:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -286,13 +291,13 @@
   
   <url>
     <loc>https://bsideup.github.io/tags/testcontainers/</loc>
-    <lastmod>2020-02-11T13:29:47+01:00</lastmod>
+    <lastmod>2020-07-10T14:22:31+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://bsideup.github.io/categories/testcontainers/</loc>
-    <lastmod>2020-02-11T13:29:47+01:00</lastmod>
+    <lastmod>2020-07-10T14:22:31+02:00</lastmod>
     <priority>0</priority>
   </url>
   

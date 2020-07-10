@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  Trying Rootless Docker with Testcontainers · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/rootless_docker/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">Trying Rootless Docker with Testcontainers</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2020-07-10T14:22:31&#43;02:00'>
+                July 10, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              8 minutes read
+            </span>
+          </div>
+          <div class="categories">
+  <i class="fas fa-folder"></i>
+    <a href="https://bsideup.github.io/categories/testcontainers/">Testcontainers</a></div>
+
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/java/">java</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/testcontainers/">testcontainers</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/docker/">docker</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p><a href="https://docs.docker.com/engine/security/rootless/" target="_blank">Rootless Docker</a> is one of the most exciting recent changes in the Docker ecosystem.</p>
+
+<p>It allows you to run the same good old Docker but without having to obtain root priviledges on the machine.</p>
+
+<h1 id="installing-rootless-docker-on-a-fresh-vm">Installing Rootless Docker on a fresh VM</h1>
+
+<p>Although you can run Rootless Docker-in-Docker, I wanted to try it on a fresh environment.</p>
+
+<p>A few seconds later, I had an Ubuntu VM running on Oracle Cloud to play with:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">ubuntu@instance-20200710-1405:~$</code></pre></div>
+<p>As you can see, I am logged in as <code>ubuntu</code> user, not <code>root</code>.</p>
+
+<p>Before we proceed to the installation, there is one thing that needs to be installed on the host,
+as per <a href="https://docs.docker.com/engine/security/rootless/#prerequisites" target="_blank">the Prerequisites section of the docs</a>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ sudo apt-get install -y uidmap</code></pre></div>
+<p>I guess it shouldn&rsquo;t be hard to convience your sysadmin to install it anyways.</p>
+
+<p>Now we&rsquo;re ready to install Rootless Docker:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ curl -fsSL https://get.docker.com/rootless | sh
+<span style="color:#6272a4"># ...</span>
+
+<span style="color:#6272a4"># Docker binaries are installed in /home/ubuntu/bin</span>
+<span style="color:#6272a4"># WARN: dockerd is not in your current PATH or pointing to /home/ubuntu/bin/dockerd</span>
+<span style="color:#6272a4"># Make sure the following environment variables are set (or add them to ~/.bashrc):</span>
+
+<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">PATH</span><span style="color:#ff79c6">=</span>/home/ubuntu/bin:<span style="color:#8be9fd;font-style:italic">$PATH</span>
+<span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">DOCKER_HOST</span><span style="color:#ff79c6">=</span>unix:///run/user/1001/docker.sock
+
+#
+<span style="color:#6272a4"># To control docker service run:</span>
+<span style="color:#6272a4"># systemctl --user (start|stop|restart) docker</span>
+#
+
+$ systemctl --user start docker
+$ systemctl --user status docker
+● docker.service - Docker Application Container Engine <span style="color:#ff79c6">(</span>Rootless<span style="color:#ff79c6">)</span>
+     Loaded: loaded <span style="color:#ff79c6">(</span>/home/ubuntu/.config/systemd/user/docker.service; disabled; vendor preset: enabled<span style="color:#ff79c6">)</span>
+     Active: active <span style="color:#ff79c6">(</span>running<span style="color:#ff79c6">)</span> since Fri <span style="color:#bd93f9">2020</span>-07-10 <span style="color:#bd93f9">12</span>:39:41 UTC; 51s ago
+       Docs: https://docs.docker.com
+   Main PID: <span style="color:#bd93f9">7638</span> <span style="color:#ff79c6">(</span>rootlesskit<span style="color:#ff79c6">)</span>
+     CGroup: /user.slice/user-1001.slice/user@1001.service/docker.service
+             ├─7638 rootlesskit --net<span style="color:#ff79c6">=</span>vpnkit --mtu<span style="color:#ff79c6">=</span><span style="color:#bd93f9">1500</span> --slirp4netns-sandbox<span style="color:#ff79c6">=</span>auto --slirp4netns-seccomp<span style="color:#ff79c6">=</span>auto --disable-host-loopback --port-driver<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">builtin</span> --copy-up<span style="color:#ff79c6">=</span>/etc --copy-up<span style="color:#ff79c6">=</span>/run /home/ubuntu/bin/dockerd-rootless.sh --experimental&gt;
+             ├─7647 /proc/self/exe --net<span style="color:#ff79c6">=</span>vpnkit --mtu<span style="color:#ff79c6">=</span><span style="color:#bd93f9">1500</span> --slirp4netns-sandbox<span style="color:#ff79c6">=</span>auto --slirp4netns-seccomp<span style="color:#ff79c6">=</span>auto --disable-host-loopback --port-driver<span style="color:#ff79c6">=</span><span style="color:#8be9fd;font-style:italic">builtin</span> --copy-up<span style="color:#ff79c6">=</span>/etc --copy-up<span style="color:#ff79c6">=</span>/run /home/ubuntu/bin/dockerd-rootless.sh --experimen&gt;
+             ├─7659 vpnkit --ethernet /tmp/rootlesskit977878316/vpnkit-ethernet.sock --mtu <span style="color:#bd93f9">1500</span> --host-ip <span style="color:#bd93f9">0</span>.0.0.0
+             ├─7678 dockerd --experimental --storage-driver<span style="color:#ff79c6">=</span>overlay2
+             └─7695 containerd --config /run/user/1001/docker/containerd/containerd.toml --log-level info
+
+Jul <span style="color:#bd93f9">10</span> <span style="color:#bd93f9">12</span>:39:42 instance-20200710-1405 dockerd-rootless.sh<span style="color:#ff79c6">[</span><span style="color:#bd93f9">7678</span><span style="color:#ff79c6">]</span>: <span style="color:#8be9fd;font-style:italic">time</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;2020-07-10T12:39:42.061487164Z&#34;</span> <span style="color:#8be9fd;font-style:italic">level</span><span style="color:#ff79c6">=</span>warning <span style="color:#8be9fd;font-style:italic">msg</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;Your kernel does not support cgroup blkio weight&#34;</span>
+Jul <span style="color:#bd93f9">10</span> <span style="color:#bd93f9">12</span>:39:42 instance-20200710-1405 dockerd-rootless.sh<span style="color:#ff79c6">[</span><span style="color:#bd93f9">7678</span><span style="color:#ff79c6">]</span>: <span style="color:#8be9fd;font-style:italic">time</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;2020-07-10T12:39:42.061495439Z&#34;</span> <span style="color:#8be9fd;font-style:italic">level</span><span style="color:#ff79c6">=</span>warning <span style="color:#8be9fd;font-style:italic">msg</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;Your kernel does not support cgroup blkio weight_device&#34;</span>
+Jul <span style="color:#bd93f9">10</span> <span style="color:#bd93f9">12</span>:39:42 instance-20200710-1405 dockerd-rootless.sh<span style="color:#ff79c6">[</span><span style="color:#bd93f9">7678</span><span style="color:#ff79c6">]</span>: <span style="color:#8be9fd;font-style:italic">time</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;2020-07-10T12:39:42.061719048Z&#34;</span> <span style="color:#8be9fd;font-style:italic">level</span><span style="color:#ff79c6">=</span>info <span style="color:#8be9fd;font-style:italic">msg</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;Loading containers: start.&#34;</span>
+Jul <span style="color:#bd93f9">10</span> <span style="color:#bd93f9">12</span>:39:42 instance-20200710-1405 dockerd-rootless.sh<span style="color:#ff79c6">[</span><span style="color:#bd93f9">7678</span><span style="color:#ff79c6">]</span>: <span style="color:#8be9fd;font-style:italic">time</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;2020-07-10T12:39:42.064508578Z&#34;</span> <span style="color:#8be9fd;font-style:italic">level</span><span style="color:#ff79c6">=</span>warning <span style="color:#8be9fd;font-style:italic">msg</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;Running modprobe bridge br_netfilter failed with message: modprobe: ERROR: could not insert &#39;br_netfilter&#39;: Operat&gt;
+</span><span style="color:#f1fa8c">Jul 10 12:39:42 instance-20200710-1405 dockerd-rootless.sh[7678]: time=&#34;</span><span style="color:#bd93f9">2020</span>-07-10T12:39:42.145749301Z<span style="color:#f1fa8c">&#34; level=info msg=&#34;</span>Default bridge <span style="color:#ff79c6">(</span>docker0<span style="color:#ff79c6">)</span> is assigned with an IP address <span style="color:#bd93f9">172</span>.17.0.0/16. Daemon option --bip can be used to <span style="color:#8be9fd;font-style:italic">set</span> a prefe&gt;
+Jul <span style="color:#bd93f9">10</span> <span style="color:#bd93f9">12</span>:39:42 instance-20200710-1405 dockerd-rootless.sh<span style="color:#ff79c6">[</span><span style="color:#bd93f9">7678</span><span style="color:#ff79c6">]</span>: <span style="color:#8be9fd;font-style:italic">time</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;2020-07-10T12:39:42.181690135Z&#34;</span> <span style="color:#8be9fd;font-style:italic">level</span><span style="color:#ff79c6">=</span>info <span style="color:#8be9fd;font-style:italic">msg</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;Loading containers: done.&#34;</span>
+Jul <span style="color:#bd93f9">10</span> <span style="color:#bd93f9">12</span>:39:42 instance-20200710-1405 dockerd-rootless.sh<span style="color:#ff79c6">[</span><span style="color:#bd93f9">7678</span><span style="color:#ff79c6">]</span>: <span style="color:#8be9fd;font-style:italic">time</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;2020-07-10T12:39:42.188475776Z&#34;</span> <span style="color:#8be9fd;font-style:italic">level</span><span style="color:#ff79c6">=</span>warning <span style="color:#8be9fd;font-style:italic">msg</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;Not using native diff for overlay2, this may cause degraded performance for building images: failed to set opaque &gt;
+</span><span style="color:#f1fa8c">Jul 10 12:39:42 instance-20200710-1405 dockerd-rootless.sh[7678]: time=&#34;</span><span style="color:#bd93f9">2020</span>-07-10T12:39:42.188735172Z<span style="color:#f1fa8c">&#34; level=info msg=&#34;</span>Docker daemon<span style="color:#f1fa8c">&#34; commit=42e35e61f3 graphdriver(s)=overlay2 version=19.03.11
+</span><span style="color:#f1fa8c">Jul 10 12:39:42 instance-20200710-1405 dockerd-rootless.sh[7678]: time=&#34;</span><span style="color:#bd93f9">2020</span>-07-10T12:39:42.188795144Z<span style="color:#f1fa8c">&#34; level=info msg=&#34;</span>Daemon has completed initialization<span style="color:#f1fa8c">&#34;
+</span><span style="color:#f1fa8c">Jul 10 12:39:42 instance-20200710-1405 dockerd-rootless.sh[7678]: time=&#34;</span><span style="color:#bd93f9">2020</span>-07-10T12:39:42.204860831Z<span style="color:#f1fa8c">&#34; level=info msg=&#34;</span>API listen on /run/user/1001/docker.sock<span style="color:#f1fa8c">&#34;</span></code></pre></div>
+<p>As you can see, the <code>DOCKER_HOST</code> isn&rsquo;t the same as with &ldquo;normal&rdquo; Docker, for obvious reasons.</p>
+
+<p>What surprised me is that Docker CLI does not know how to locate it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ /home/ubuntu/bin/docker ps
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?</code></pre></div>
+<p>Why surprising? Because Docker seems to be using a well known location for the socket - <code>$XDG_RUNTIME_DIR/docker.sock</code>.<br />
+You may ask yourself - wtf is <code>XDG_RUNTIME_DIR</code>? At least I did.</p>
+
+<p>Apparently, Rootless Docker relies on its presence, and, after some digging, I discovered this page:
+<a href="https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html" target="_blank">https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html</a></p>
+
+<blockquote>
+<p>There is a single base directory relative to which user-specific runtime files and other file objects should be placed.<br />
+This directory is defined by the environment variable <code>$XDG_RUNTIME_DIR</code>.</p>
+</blockquote>
+
+<p>Oh, cool, TIL! Maybe future versions of Docker CLI will try to auto-detect.</p>
+
+<p>Meanwhile, we need to pass it explicitly:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ <span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">DOCKER_HOST</span><span style="color:#ff79c6">=</span>unix://<span style="color:#8be9fd;font-style:italic">$XDG_RUNTIME_DIR</span>/docker.sock
+$ docker info -f <span style="color:#f1fa8c">&#39;{{ join .SecurityOptions &#34;\n&#34; }}&#39;</span>
+<span style="color:#8be9fd;font-style:italic">name</span><span style="color:#ff79c6">=</span>seccomp,profile<span style="color:#ff79c6">=</span>default
+<span style="color:#8be9fd;font-style:italic">name</span><span style="color:#ff79c6">=</span>rootless</code></pre></div>
+<p>As you can see, there is a new security option reported by Docker, <code>rootless</code>.</p>
+
+<p>Now, the moment of truth:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ <span style="color:#8be9fd;font-style:italic">DOCKER_HOST</span><span style="color:#ff79c6">=</span>unix://<span style="color:#8be9fd;font-style:italic">$XDG_RUNTIME_DIR</span>/docker.sock docker run -it --rm busybox whoami
+Unable to find image <span style="color:#f1fa8c">&#39;busybox:latest&#39;</span> locally
+latest: Pulling from library/busybox
+91f30d776fb2: Pull <span style="color:#8be9fd;font-style:italic">complete</span>
+Digest: sha256:9ddee63a712cea977267342e8750ecbc60d3aab25f04ceacfa795e6fce341793
+Status: Downloaded newer image <span style="color:#ff79c6">for</span> busybox:latest
+
+root</code></pre></div>
+<p>Despite the feature being shipped (experimental, but still), I must say I was positively surprised
+to see it running an arbitary container, especially given that <code>busybox</code> will be using <code>root</code> user by default.</p>
+
+<p>But&hellip; will it run&hellip; Testcontainers&rsquo; Ryuk?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker run -it -v <span style="color:#8be9fd;font-style:italic">$XDG_RUNTIME_DIR</span>/docker.sock:/var/run/docker.sock --rm testcontainers/ryuk:0.3.0
+
+<span style="color:#bd93f9">2020</span>/07/10 <span style="color:#bd93f9">12</span>:49:19 Pinging Docker...
+<span style="color:#bd93f9">2020</span>/07/10 <span style="color:#bd93f9">12</span>:49:19 Docker daemon is available!
+<span style="color:#bd93f9">2020</span>/07/10 <span style="color:#bd93f9">12</span>:49:19 Starting on port <span style="color:#bd93f9">8080</span>...
+<span style="color:#bd93f9">2020</span>/07/10 <span style="color:#bd93f9">12</span>:49:19 Started!</code></pre></div>
+<p>Wow. Just wow. Note that I am mounting Rootless Docker unix socket, and it just works!</p>
+
+<h1 id="did-you-say-testcontainers">Did you say&hellip; Testcontainers?</h1>
+
+<p>If you&rsquo;re reading this article, most probably you came here to learn how Testcontainers works with Rootless Docker.</p>
+
+<p>I knew that a change would be required in Testcontainers to make it work, but apparently it is rather trivial:
+<a href="https://github.com/testcontainers/testcontainers-java/pull/2985" target="_blank">https://github.com/testcontainers/testcontainers-java/pull/2985</a></p>
+
+<p>The cherry on the cake is that Testcontainers will automatically detect the presence of <code>XDG_RUNTIME_DIR</code>,
+which is already set by modern login managers (e.g. <code>pam_systemd</code>).</p>
+
+<p>To demonstrate that, I restated the shell:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ env | grep DOCKER_
+$ </code></pre></div>
+<p>One of my favorite modules to test is <a href="https://www.testcontainers.org/modules/kafka/" target="_blank">Kafka</a>.<br />
+It is heavyweight, uses networks, etc etc.</p>
+
+<p>So&hellip; Can we get&hellip; Rootless Kafka?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ ../../gradlew cleanTest <span style="color:#8be9fd;font-style:italic">test</span>
+
+&gt; Task :kafka:test
+
+Gradle Test Executor <span style="color:#bd93f9">3</span> &gt; org.testcontainers.containers.KafkaContainerTest &gt; testExternalZookeeperWithExternalNetwork STARTED
+
+Gradle Test Executor <span style="color:#bd93f9">3</span> &gt; org.testcontainers.containers.KafkaContainerTest &gt; testExternalZookeeperWithExternalNetwork STANDARD_OUT
+    <span style="color:#bd93f9">13</span>:08:12.044 INFO  org.testcontainers.dockerclient.DockerClientProviderStrategy - Loaded org.testcontainers.dockerclient.RootlessDockerClientProviderStrategy from ~/.testcontainers.properties, will try it first
+    <span style="color:#bd93f9">13</span>:08:12.769 INFO  org.testcontainers.dockerclient.DockerClientProviderStrategy - Found Docker environment with Rootless Docker accessed via Unix socket <span style="color:#ff79c6">(</span>/run/user/1001/docker.sock<span style="color:#ff79c6">)</span>
+    <span style="color:#bd93f9">13</span>:08:12.771 INFO  org.testcontainers.DockerClientFactory - Docker host IP address is localhost
+    <span style="color:#bd93f9">13</span>:08:12.800 INFO  org.testcontainers.DockerClientFactory - Connected to docker:
+      Server Version: <span style="color:#bd93f9">19</span>.03.11
+      API Version: <span style="color:#bd93f9">1</span>.40
+      Operating System: Ubuntu <span style="color:#bd93f9">20</span>.04 LTS
+      Total Memory: <span style="color:#bd93f9">16009</span> MB
+    <span style="color:#bd93f9">13</span>:08:13.441 INFO  org.testcontainers.DockerClientFactory - Ryuk started - will monitor and terminate Testcontainers containers on JVM <span style="color:#8be9fd;font-style:italic">exit</span>
+    <span style="color:#bd93f9">13</span>:08:13.441 INFO  org.testcontainers.DockerClientFactory - Checking the system...
+    <span style="color:#bd93f9">13</span>:08:13.442 INFO  org.testcontainers.DockerClientFactory - ✔︎ Docker server version should be at least <span style="color:#bd93f9">1</span>.6.0
+    <span style="color:#bd93f9">13</span>:08:13.516 INFO  org.testcontainers.DockerClientFactory - ✔︎ Docker environment should have more than 2GB free disk space
+    <span style="color:#bd93f9">13</span>:08:13.526 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-kafka:5.2.1<span style="color:#ff79c6">]</span> - Creating container <span style="color:#ff79c6">for</span> image: confluentinc/cp-kafka:5.2.1
+    <span style="color:#bd93f9">13</span>:08:13.573 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-kafka:5.2.1<span style="color:#ff79c6">]</span> - Starting container with ID: 45be3c3b937cf4cc3bda7db03cf37b6fa77d5a61b8cb8926011973de60be47df
+    <span style="color:#bd93f9">13</span>:08:13.803 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-kafka:5.2.1<span style="color:#ff79c6">]</span> - Container confluentinc/cp-kafka:5.2.1 is starting: 45be3c3b937cf4cc3bda7db03cf37b6fa77d5a61b8cb8926011973de60be47df
+    <span style="color:#bd93f9">13</span>:08:20.635 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-kafka:5.2.1<span style="color:#ff79c6">]</span> - Container confluentinc/cp-kafka:5.2.1 started in PT8.623S
+    <span style="color:#bd93f9">13</span>:08:20.640 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-zookeeper:4.0.0<span style="color:#ff79c6">]</span> - Creating container <span style="color:#ff79c6">for</span> image: confluentinc/cp-zookeeper:4.0.0
+    <span style="color:#bd93f9">13</span>:08:20.758 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-zookeeper:4.0.0<span style="color:#ff79c6">]</span> - Starting container with ID: afed4f9041dc8b0dfcf3f675ef7ba28fd32d7e30d84285707e7a70f483eea3ad
+    <span style="color:#bd93f9">13</span>:08:21.179 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-zookeeper:4.0.0<span style="color:#ff79c6">]</span> - Container confluentinc/cp-zookeeper:4.0.0 is starting: afed4f9041dc8b0dfcf3f675ef7ba28fd32d7e30d84285707e7a70f483eea3ad
+    <span style="color:#bd93f9">13</span>:08:21.188 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-zookeeper:4.0.0<span style="color:#ff79c6">]</span> - Container confluentinc/cp-zookeeper:4.0.0 started in PT0.548S
+    <span style="color:#bd93f9">13</span>:08:21.189 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-kafka:5.2.1<span style="color:#ff79c6">]</span> - Creating container <span style="color:#ff79c6">for</span> image: confluentinc/cp-kafka:5.2.1
+    <span style="color:#bd93f9">13</span>:08:21.224 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-kafka:5.2.1<span style="color:#ff79c6">]</span> - Starting container with ID: 0599af42ab33d78f2cc7a16659a5682481627dd7c5e14a5658a8d398af5233c2
+    <span style="color:#bd93f9">13</span>:08:21.547 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-kafka:5.2.1<span style="color:#ff79c6">]</span> - Container confluentinc/cp-kafka:5.2.1 is starting: 0599af42ab33d78f2cc7a16659a5682481627dd7c5e14a5658a8d398af5233c2
+    <span style="color:#bd93f9">13</span>:08:28.873 INFO  🐳 <span style="color:#ff79c6">[</span>confluentinc/cp-kafka:5.2.1<span style="color:#ff79c6">]</span> - Container confluentinc/cp-kafka:5.2.1 started in PT7.684S
+    <span style="color:#bd93f9">13</span>:08:28.874 INFO  🐳 <span style="color:#ff79c6">[</span>alpine:latest<span style="color:#ff79c6">]</span> - Creating container <span style="color:#ff79c6">for</span> image: alpine:latest
+    <span style="color:#bd93f9">13</span>:08:28.914 INFO  🐳 <span style="color:#ff79c6">[</span>alpine:latest<span style="color:#ff79c6">]</span> - Starting container with ID: 9a20a13af178a5868291a7512bb856f919461ecf4304ec9f43705308d1a3a268
+    <span style="color:#bd93f9">13</span>:08:29.265 INFO  🐳 <span style="color:#ff79c6">[</span>alpine:latest<span style="color:#ff79c6">]</span> - Container alpine:latest is starting: 9a20a13af178a5868291a7512bb856f919461ecf4304ec9f43705308d1a3a268
+    <span style="color:#bd93f9">13</span>:08:29.271 INFO  🐳 <span style="color:#ff79c6">[</span>alpine:latest<span style="color:#ff79c6">]</span> - Container alpine:latest started in PT0.397S
+    <span style="color:#bd93f9">13</span>:08:29.480 INFO  org.apache.kafka.clients.consumer.KafkaConsumer - Subscribed to topic<span style="color:#ff79c6">(</span>s<span style="color:#ff79c6">)</span>: messages
+    <span style="color:#bd93f9">13</span>:08:30.285 INFO  org.apache.kafka.clients.consumer.KafkaConsumer - Unsubscribed all topics or patterns and assigned partitions
+    <span style="color:#bd93f9">13</span>:08:30.308 INFO  org.apache.kafka.clients.producer.KafkaProducer - Closing the Kafka producer with <span style="color:#8be9fd;font-style:italic">timeoutMillis</span> <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">9223372036854775807</span> ms.
+
+Gradle Test Executor <span style="color:#bd93f9">3</span> &gt; org.testcontainers.containers.KafkaContainerTest &gt; testExternalZookeeperWithExternalNetwork PASSED
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle <span style="color:#bd93f9">7</span>.0.
+Use <span style="color:#f1fa8c">&#39;--warning-mode all&#39;</span> to show the individual deprecation warnings.
+See https://docs.gradle.org/6.3/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 21s
+<span style="color:#bd93f9">8</span> actionable tasks: <span style="color:#bd93f9">3</span> executed, <span style="color:#bd93f9">5</span> up-to-date</code></pre></div>
+<p>Apparently we can!</p>
+
+<p>Let&rsquo;s focus on the most important parts:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">13:08:12.769 INFO  org.testcontainers.dockerclient.DockerClientProviderStrategy
+    - Found Docker environment with Rootless Docker 
+        accessed via Unix socket (/run/user/1001/docker.sock)</code></pre></div>
+<p>Although we did not set <code>DOCKER_HOST</code>, Testcontainers was able to detect the environment - this is one of my favorite features of Testcontainers!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#bd93f9">13</span>:08:12.771 INFO  org.testcontainers.DockerClientFactory
+    - Docker host IP address is localhost</code></pre></div>
+<p>The host IP was correctly detected as <code>localhost</code>.<br />
+Will it work when you run <a href="https://docs.docker.com/engine/security/rootless/#rootless-docker-in-docker" target="_blank">rootless docker-in-docker</a>?
+It will 😎</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#bd93f9">13</span>:08:12.800 INFO  org.testcontainers.DockerClientFactory - Connected to docker:
+      Server Version: <span style="color:#bd93f9">19</span>.03.11
+      API Version: <span style="color:#bd93f9">1</span>.40
+      Operating System: Ubuntu <span style="color:#bd93f9">20</span>.04 LTS
+      Total Memory: <span style="color:#bd93f9">16009</span> MB
+<span style="color:#bd93f9">13</span>:08:13.441 INFO  org.testcontainers.DockerClientFactory
+    - Ryuk started - will monitor and terminate Testcontainers containers on JVM exit</code></pre></div>
+<p>It should not surprise us that Ryuk works since we already checked it, but still good to know :)</p>
+
+<h1 id="limitations">Limitations</h1>
+
+<p>At this stage you must have a question: &ldquo;Okay, Kafka works, nice, but what are the limitations? <strong>Which Testcontainers&rsquo; features will NOT work?</strong>&rdquo;.</p>
+
+<p>I was as curious as you are! So I went ahead and added a CI job to test all Testcontainers&rsquo; Core tests.</p>
+
+<p><del>You won&rsquo;t believe what I saw</del> The result was more than satisfying - only one test failed, the one that tests the OOM killer! 🎉</p>
+
+<p>After checking the daemon logs, the reason was clear:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#8be9fd;font-style:italic">error</span><span style="color:#ff79c6">=</span>“cgroups: memory cgroup not supported on this system”</code></pre></div>
+<p>Luckily, this isn&rsquo;t a big deal, we do not implicitly apply the memory limits anywhere,
+and the only reason the test was failing is because it expected the OOM killer to terminate the container.</p>
+
+<p>After testing <code>core</code>, I went ahead and played with a few other modules, but even DB2 passed:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ ../../gradlew <span style="color:#8be9fd;font-style:italic">test</span>
+
+&gt; Task :db2:test
+
+Gradle Test Executor <span style="color:#bd93f9">4</span> &gt; org.testcontainers.jdbc.db2.DB2JDBCDriverTest &gt; test<span style="color:#ff79c6">[</span><span style="color:#bd93f9">0</span> - jdbc:tc:db2://hostname/databasename<span style="color:#ff79c6">]</span> STARTED
+
+Gradle Test Executor <span style="color:#bd93f9">4</span> &gt; org.testcontainers.jdbc.db2.DB2JDBCDriverTest &gt; test<span style="color:#ff79c6">[</span><span style="color:#bd93f9">0</span> - jdbc:tc:db2://hostname/databasename<span style="color:#ff79c6">]</span> PASSED
+
+Gradle Test Executor <span style="color:#bd93f9">4</span> &gt; org.testcontainers.junit.db2.SimpleDb2Test &gt; testWithAdditionalUrlParamInJdbcUrl STARTED
+
+Gradle Test Executor <span style="color:#bd93f9">4</span> &gt; org.testcontainers.junit.db2.SimpleDb2Test &gt; testWithAdditionalUrlParamInJdbcUrl PASSED
+
+Gradle Test Executor <span style="color:#bd93f9">4</span> &gt; org.testcontainers.junit.db2.SimpleDb2Test &gt; testSimple STARTED
+
+Gradle Test Executor <span style="color:#bd93f9">4</span> &gt; org.testcontainers.junit.db2.SimpleDb2Test &gt; testSimple PASSED</code></pre></div>
+<p>And trust me, DB2 is a big beast running in a priviledged mode!</p>
+
+<h1 id="shut-up-and-take-my-money">Shut Up And Take My Money!</h1>
+
+<blockquote>
+<p>Well, if you really want to give the Testcontainers project <em>some</em> money, you can sponsor us :)<br />
+<a href="http://github.com/sponsors/testcontainers" target="_blank">http://github.com/sponsors/testcontainers</a></p>
+</blockquote>
+
+<p>As always, this exciting &ldquo;feature&rdquo; will be coming in the next release of Testcontainers, 1.15.0, <em>very</em> soon.</p>
+
+<p>In Testcontainers, we trully believe that it will help adopting Docker in some CI environments, and, after the analysis,
+I think Docker team did an amazing job implementing the rootless mode without breaking the compatibility
+and keeping it the same Docker as we know it (at least from the API point of view 😅).</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2020
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
