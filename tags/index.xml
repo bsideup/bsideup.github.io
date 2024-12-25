@@ -93,6 +93,15 @@
     </item>
     
     <item>
+      <title>Homelab</title>
+      <link>https://bsideup.github.io/tags/homelab/</link>
+      <pubDate>Tue, 24 Dec 2024 13:43:58 -0700</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/homelab/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Jackson</title>
       <link>https://bsideup.github.io/tags/jackson/</link>
       <pubDate>Fri, 22 Nov 2019 08:13:08 +0100</pubDate>
@@ -183,11 +192,38 @@
     </item>
     
     <item>
+      <title>Nix</title>
+      <link>https://bsideup.github.io/tags/nix/</link>
+      <pubDate>Tue, 24 Dec 2024 13:43:58 -0700</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/nix/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Nixos</title>
+      <link>https://bsideup.github.io/tags/nixos/</link>
+      <pubDate>Tue, 24 Dec 2024 13:43:58 -0700</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/nixos/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Oss</title>
       <link>https://bsideup.github.io/tags/oss/</link>
       <pubDate>Wed, 23 Jan 2019 13:58:43 +0100</pubDate>
       
       <guid>https://bsideup.github.io/tags/oss/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Raspberypi</title>
+      <link>https://bsideup.github.io/tags/raspberypi/</link>
+      <pubDate>Tue, 24 Dec 2024 13:43:58 -0700</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/raspberypi/</guid>
       <description></description>
     </item>
     
@@ -206,6 +242,15 @@
       <pubDate>Wed, 10 Jun 2020 10:22:38 +0200</pubDate>
       
       <guid>https://bsideup.github.io/tags/reactor/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Rpi</title>
+      <link>https://bsideup.github.io/tags/rpi/</link>
+      <pubDate>Tue, 24 Dec 2024 13:43:58 -0700</pubDate>
+      
+      <guid>https://bsideup.github.io/tags/rpi/</guid>
       <description></description>
     </item>
     

@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://bsideup.github.io/posts/nixos_rpi/</loc>
+    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/rootless_docker/</loc>
     <lastmod>2020-07-10T14:22:31+02:00</lastmod>
   </url>
@@ -124,7 +129,7 @@
   
   <url>
     <loc>https://bsideup.github.io/</loc>
-    <lastmod>2020-07-10T14:22:31+02:00</lastmod>
+    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -194,6 +199,12 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/tags/homelab/</loc>
+    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/tags/jackson/</loc>
     <lastmod>2019-11-22T08:13:08+01:00</lastmod>
     <priority>0</priority>
@@ -254,6 +265,18 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/tags/nix/</loc>
+    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/nixos/</loc>
+    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/tags/oss/</loc>
     <lastmod>2019-01-23T13:58:43+01:00</lastmod>
     <priority>0</priority>
@@ -261,7 +284,13 @@
   
   <url>
     <loc>https://bsideup.github.io/posts/</loc>
-    <lastmod>2020-07-10T14:22:31+02:00</lastmod>
+    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/raspberypi/</loc>
+    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -274,6 +303,12 @@
   <url>
     <loc>https://bsideup.github.io/tags/reactor/</loc>
     <lastmod>2020-06-10T10:22:38+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/rpi/</loc>
+    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
     <priority>0</priority>
   </url>
   

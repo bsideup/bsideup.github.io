@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  NixOS on Raspberry Pi: The Good, the Bad and &#34;the Linux way&#34; · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/nixos_rpi/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">NixOS on Raspberry Pi: The Good, the Bad and &#34;the Linux way&#34;</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2024-12-24T13:43:58-07:00'>
+                December 24, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              16 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/nix/">nix</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/nixos/">nixos</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/raspberypi/">raspberypi</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/rpi/">rpi</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/homelab/">homelab</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p><center>
+<img src="https://bsideup.github.io/images/nixos_rpi/too_old.jpg" alt="Too old" /><br>
+<sub>Gran Torino (Film) © 2008 Warner Bros. Pictures</sub>
+</center></p>
+
+<p>Disclaimer: this is not a tutorial, but a story of me trying the new hype thing that I am probably too old for 😀</p>
+
+<p>I have a confession to start this article with: I have never enjoyed &ldquo;the Linux way&rdquo; of doing things:</p>
+
+<ul>
+<li>&ldquo;Everything at once&rdquo; package updates via distributives</li>
+<li>Having a strong allergy to binaries</li>
+<li>Piping like a 19 y.o. (Urban Dictionary is your friend)</li>
+<li>Being religious about everything and how things should be done (but always having 42 ways of achieving the same!)</li>
+</ul>
+
+<p>&ldquo;Do one thing, and do it well!&rdquo;. Ummm&hellip; if that &ldquo;one thing&rdquo; is &ldquo;arguing on Internet on why your way is the only way&rdquo; then yeah, well done!
+<center>
+<img src="https://bsideup.github.io/images/nixos_rpi/well_done.jpg" alt="Too old" /><br>
+</center></p>
+
+<p>And it comes with no surprise that I always tried to avoid &ldquo;the Linux way&rdquo;. Be it with WORA (&ldquo;Write Once Run Anywhere&rdquo;) in Java, static Go binaries, or&hellip; with Docker.</p>
+
+<p>Ever since discovering Docker in 2014 (a decade ago!), I was always consistent with my perception of this technology. No, Docker did not invent containers, they existed in many shapes or forms for many more decades.
+What they did is they broke the vicious circle of &ldquo;the Linux way&rdquo; and democratized Linux containers by <strong>finally</strong> providing a <del>user</del>developer-friendly tooling for building, distributing and running them. No more piping of the output of one command to another, tons of flags and outdated documentation (if any!).<br />
+Revolutionary! Why couldn&rsquo;t we have it from the beginning?
+<center>
+<img src="https://bsideup.github.io/images/nixos_rpi/pipe.jpg" alt="Piping is fun" /><br>
+</center></p>
+
+<p>But containers mean that you forcibly isolate processes from the rest of the system, by design.<br />
+There is nothing bad with it, just limiting.</p>
+
+<p>Sure, I can share filesystems and even networks between the containers.<br />
+There are even ways to make it <em>look</em> like everything is running in the same space.<br />
+But what if that&rsquo;s not enough? Or maybe I am not ready to pay the &ldquo;containerization tax&rdquo;?</p>
+
+<p>These questions were always bothering me, but I always paid the &ldquo;containerization tax&rdquo; because the benefits of immutability were outweighing the cost.
+And, to be fair, not like there were many (if any) alternatives.</p>
+
+<p>And those of you who are capable of writing a Hello World without Copilot&rsquo;s help may remember <a href="https://en.wikipedia.org/wiki/Container_Linux" target="_blank">CoreOS</a>
+- a package manager-less Linux distributive that doubled down on containers (although not with Docker, but with &ldquo;Prt Sc Sys Rq&rdquo; inspired <a href="https://www.cncf.io/projects/rkt/" target="_blank">rkt</a>).
+<center>
+<img src="https://bsideup.github.io/images/nixos_rpi/prtscsysrq.jpg" alt="Prt Sc Sys Rq" /><br>
+</center></p>
+
+<p>And while CoreOS has been discontinued in 2020, I did like the idea of the &ldquo;immutable&rdquo; Linux OS a lot.</p>
+
+<p>Imagine being able to read your server&rsquo;s configuration from a single source of truth?<br />
+<del>Almost as good as not having to pipe the outputs of commands to each other just to achieve a simple thing!</del></p>
+
+<p>And when I heard of NixOS for the first time, I couldn&rsquo;t stop thinking &ldquo;can it be it?&rdquo;.<br />
+It promises to have the immutable design, can be configured as code, reproducible, &ldquo;pure&rdquo; and &ldquo;hermetic&rdquo; - a property of Nix builds, which isolates them from the host system via various mechanisms.<br />
+Inherently, it helps to avoid <a href="https://en.wikipedia.org/wiki/DLL_hell" target="_blank">the &ldquo;DLL hell&rdquo;</a>, or at least claims to do so.</p>
+
+<p>So I&rsquo;ve decided to try it by learning on my most mission critical server - the homelab!<br />
+(because I need it, but never have enough time to fix it if it goes bad, nor am getting paid for working on it, despite the stuff I&rsquo;m doing being even more advanced than the things I <em>am</em> getting paid for, typically 😀)</p>
+
+<p>A brand new way of managing the OS, on an exotic hardware (ARM 64-bit via Raspberry Pi 400), what could go wrong?</p>
+
+<h1 id="the-good">The Good</h1>
+
+<p>When I was young, I tended to rush and try every new emerging technology.
+Well, I am not yet <em>old</em>, but I learned the power of letting the dust settle before trying something.
+iOS-like &ldquo;.1 version&rdquo; mentality, if I may.</p>
+
+<p><center>
+<img src="https://bsideup.github.io/images/nixos_rpi/waitforit.jpg" alt="Worth the wait" /><br>
+</center></p>
+
+<p>But, with Nix/NixOS, it totally went past me (and it let <strong>a lot</strong> of dust to settle since the invention in 2003).
+To be honest, I didn&rsquo;t even know about its existence up until 2020s 🤯 But, to be fair, many didn&rsquo;t.</p>
+
+<p>So I had to learn both Nix and NixOS at the same time to get going.
+And, if you are reading this article, there are likely only two reasons why:
+you either came here from Reddit/HN to cancel me for my Linux takes or you want to follow the same process for your own needs.
+And, if the latter, be prepared to learn both as well, although IMO NixOS adds only ~10% learning overhead on top.</p>
+
+<p>The good news is that NixOS was mature enough for me to get going, even in Raspberry PI.<br />
+The documentation exists, first and foremost, and is extensive (too extensive to the point of misleading, if you ask me, but better than no documentation at all). Here are the two starting links:</p>
+
+<ul>
+<li><a href="https://nixos.wiki/wiki/NixOS_on_ARM/Raspberry_Pi" target="_blank">https://nixos.wiki/wiki/NixOS_on_ARM/Raspberry_Pi</a></li>
+<li><a href="https://nixos.wiki/wiki/NixOS_on_ARM/Raspberry_Pi_4" target="_blank">https://nixos.wiki/wiki/NixOS_on_ARM/Raspberry_Pi_4</a></li>
+</ul>
+
+<p>If you are impatient like me, or prefer shorter quick start instructions, the tl;dr: is:</p>
+
+<ol>
+<li><p>Download the <a href="https://hydra.nixos.org/job/nixos/trunk-combined/nixos.sd_image.aarch64-linux" target="_blank">generic SD image</a></p>
+
+<blockquote>
+<p>⚠️ <strong>WARNING!</strong><br />
+The provided link (that I copied from the linked docs!) leads to&hellip; a build server.<br />
+I am not a CISO at a large Enterprise so I don&rsquo;t mind the latest and greatest, but &ldquo;the very latest and sometimes brokest&rdquo; is too much even for me, but I couldn&rsquo;t find a quick way to download the latest <strong>release</strong> build of the SD image.<br />
+<code>nixos-sd-image-25.05beta724962.d70bd19e0a38-aarch64-linux</code> worked fine for me, but oh my&hellip;</p>
+</blockquote></li>
+
+<li><p>Use your preferred way of burning the image onto the SD card (the good Raspberry Pi Imager (v1.8.5) worked just fine for me), like you would normally do with Raspbian</p></li>
+
+<li><p>Burn it onto the SD card and proceed booting Raspberry Pi as you would normally do</p></li>
+</ol>
+
+<p>Not much of an instruction but that&rsquo;s the point.</p>
+
+<p>But this is only where the fun starts!</p>
+
+<p>Because I am impatient, I totally borked my brand new system after attempting to <code>nixos-rebuild switch</code> it.<br />
+Why? Because the configuration was empty, and (I guess?) it deleted my <code>nixos</code> user!</p>
+
+<p>But don&rsquo;t worry, NixOS is very &ldquo;all thumbs&rdquo; friendly: just reboot your RPi and you will be presented with a selector of the latest builds.
+The one from 1970 (no, NixOS is not THAT old, we all know where this year is coming from) is the stock configuration that gives you a second chance.</p>
+
+<p>To fix it, you need to run <code>nixos-generate-config</code> (don&rsquo;t ask me why it is not generated by default. Just don&rsquo;t.),
+that will create the main configuration file <code>/etc/nixos/configuration.nix</code> <strong>and</strong> <code>/etc/nixos/hardware-configuration.nix</code> that it will import.
+But don&rsquo;t rush switching to it, let&rsquo;s create a user for ourselves and enable SSH so we don&rsquo;t have to edit it directly on RPi.</p>
+
+<p>I will not go deep into the Nix syntax and NixOS semantics.
+Can&rsquo;t say that it is easy to google and that the docs are easy to follow, but it is just too much to cover in this article.</p>
+
+<p>The simpliest config to start with would be something like this:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix"><span style="color:#6272a4"># /etc/nixos/configuration.nix</span>
+{ config<span style="color:#ff79c6">,</span> lib<span style="color:#ff79c6">,</span> pkgs<span style="color:#ff79c6">,</span> <span style="color:#ff79c6">...</span> }:
+
+{
+  system<span style="color:#ff79c6">.</span>stateVersion <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;25.05&#34;</span>;
+
+  imports <span style="color:#ff79c6">=</span> [
+    <span style="color:#f1fa8c">./hardware-configuration.nix</span>
+    <span style="color:#f1fa8c">./user.nix</span>
+  ];
+
+  boot<span style="color:#ff79c6">.</span>loader<span style="color:#ff79c6">.</span>grub<span style="color:#ff79c6">.</span>enable <span style="color:#ff79c6">=</span> false;
+  boot<span style="color:#ff79c6">.</span>loader<span style="color:#ff79c6">.</span>generic-extlinux-compatible<span style="color:#ff79c6">.</span>enable <span style="color:#ff79c6">=</span> true;
+
+  networking <span style="color:#ff79c6">=</span> {
+    hostName <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;raspberrypi&#34;</span>;
+    firewall <span style="color:#ff79c6">=</span> {
+      enable <span style="color:#ff79c6">=</span> true;
+      allowPing <span style="color:#ff79c6">=</span> true;
+    };
+  };
+
+  services <span style="color:#ff79c6">=</span> {
+    openssh<span style="color:#ff79c6">.</span>enable <span style="color:#ff79c6">=</span> true;
+  };
+}</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix"><span style="color:#6272a4"># /etc/nixos/user.nix</span>
+{ pkgs<span style="color:#ff79c6">,</span> <span style="color:#ff79c6">...</span> }:
+
+{
+  users<span style="color:#ff79c6">.</span>users<span style="color:#ff79c6">.</span>bsideup <span style="color:#ff79c6">=</span> {
+    isNormalUser <span style="color:#ff79c6">=</span> true; <span style="color:#6272a4"># lies...</span>
+    extraGroups <span style="color:#ff79c6">=</span> [ <span style="color:#f1fa8c">&#34;wheel&#34;</span> ]; <span style="color:#6272a4"># Enable ‘sudo’ for the user.</span>
+    openssh<span style="color:#ff79c6">.</span>authorizedKeys<span style="color:#ff79c6">.</span>keys <span style="color:#ff79c6">=</span> [
+    	<span style="color:#f1fa8c">&#34;ssh-ed25519 AAAASOMUCHTIMEWASTEDBECAUSEEXAMPLESSHOWPASSWORDBASEDAUTH/5Kf0zSINGbU3ZLU6nUNqsWimF52 bsideup@Non-Linux-Maybe-Next-Year-Desktop.local&#34;</span>
+    ];
+  };
+
+  security<span style="color:#ff79c6">.</span>sudo<span style="color:#ff79c6">.</span>extraRules <span style="color:#ff79c6">=</span> [
+    {
+      users <span style="color:#ff79c6">=</span> [ <span style="color:#f1fa8c">&#34;bsideup&#34;</span> ];
+      commands <span style="color:#ff79c6">=</span> [
+        {
+          command <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;ALL&#34;</span> ;
+          options <span style="color:#ff79c6">=</span> [ <span style="color:#f1fa8c">&#34;NOPASSWD&#34;</span> ];
+        }
+      ];
+    }
+  ];
+
+  <span style="color:#6272a4"># Surprise your CISO with this simple trick!</span>
+  services<span style="color:#ff79c6">.</span>getty<span style="color:#ff79c6">.</span>autologinUser <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;bsideup&#34;</span>;
+}</code></pre></div>
+<p>(Obviously replace <code>bsideup</code> with your username and authorize your own public key. Ironically, many examples on the internet suggest providing the seed password, despite the pubkey being easy to use -_-)</p>
+
+<p>Now if we <code>nixos-rebuild switch</code> it, the user will be created, SSH server activated, and we should be able to just <code>ssh raspberrypi.local</code> to it (or whatever the hostname you picked).</p>
+
+<p>I did break the leg multiple times going through the green path but you should have seen my excitement when I got <em>something</em> working for the first time 😀</p>
+
+<p>After a few hours, I could finally do something useful with it and replicate my old, pre-NixOS system.</p>
+
+<p>I&rsquo;ve decided to start with the Time Machine backup destination (Avahi + Samba), it was pretty easy:</p>
+
+<ol>
+<li><p>Mount the external USB SSD drive by adding the following or similar block to <code>configuration.nix</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">fileSystems<span style="color:#ff79c6">.</span><span style="color:#f1fa8c">&#34;/mnt/backups&#34;</span> = {
+    <span style="color:#6272a4"># Yours will be different</span>
+    device <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;/dev/disk/by-uuid/b773149d-bf3a-46b9-8a91-af4c3f7907fb&#34;</span>;
+    fsType <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;ext4&#34;</span>;
+    options <span style="color:#ff79c6">=</span> [ <span style="color:#f1fa8c">&#34;noexec&#34;</span> <span style="color:#f1fa8c">&#34;nodev&#34;</span> <span style="color:#f1fa8c">&#34;noatime&#34;</span> <span style="color:#f1fa8c">&#34;nodiratime&#34;</span> ];
+};</code></pre></div></li>
+
+<li><p>Create <code>time-machine.nix</code> (don&rsquo;t forget to import it from <code>configuration.nix</code>!) with something like this (where <code>bsideup</code> is your username):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">{ pkgs<span style="color:#ff79c6">,</span> <span style="color:#ff79c6">...</span> }:
+
+{
+    services <span style="color:#ff79c6">=</span> {
+        samba <span style="color:#ff79c6">=</span> {
+            package <span style="color:#ff79c6">=</span> pkgs<span style="color:#ff79c6">.</span>samba4Full;
+            <span style="color:#6272a4"># ^^ `samba4Full` is compiled with avahi, ldap, AD etc support</span>
+            <span style="color:#6272a4"># (compared to the default package, `samba`)</span>
+            <span style="color:#6272a4"># Required for samba to register mDNS records for auto discovery</span>
+            <span style="color:#6272a4"># See https://github.com/NixOS/nixpkgs/blob/592047fc9e4f7b74a4dc85d1b9f5243dfe4899e3/pkgs/top-level/all-packages.nix#L27268</span>
+            enable <span style="color:#ff79c6">=</span> true;
+            openFirewall <span style="color:#ff79c6">=</span> true;
+            settings<span style="color:#ff79c6">.</span>timemachine <span style="color:#ff79c6">=</span> {
+                path <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;/mnt/backups&#34;</span>;
+                browseable <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;yes&#34;</span>;
+                <span style="color:#f1fa8c">&#34;read only&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;no&#34;</span>;
+                <span style="color:#f1fa8c">&#34;guest ok&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;no&#34;</span>;
+                <span style="color:#f1fa8c">&#34;create mask&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;0600&#34;</span>;
+                <span style="color:#f1fa8c">&#34;directory mask&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;0700&#34;</span>;
+                comment <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;Raspberry Pi Time Capsule&#34;</span>;
+                <span style="color:#f1fa8c">&#34;writeable&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;yes&#34;</span>;
+                <span style="color:#f1fa8c">&#34;valid users&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;bsideup&#34;</span>;
+                <span style="color:#f1fa8c">&#34;write list&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;bsideup&#34;</span>;
+                <span style="color:#f1fa8c">&#34;force user&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;bsideup&#34;</span>;
+                <span style="color:#f1fa8c">&#34;vfs objects&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;catia fruit streams_xattr&#34;</span>;
+                <span style="color:#f1fa8c">&#34;fruit:aapl&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;yes&#34;</span>;
+                <span style="color:#f1fa8c">&#34;fruit:time machine&#34;</span> <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;yes&#34;</span>;
+            };
+        };
+
+        avahi <span style="color:#ff79c6">=</span> {
+            enable <span style="color:#ff79c6">=</span> true;
+            openFirewall <span style="color:#ff79c6">=</span> true;
+            nssmdns4 <span style="color:#ff79c6">=</span> true;
+            publish <span style="color:#ff79c6">=</span> {
+                enable <span style="color:#ff79c6">=</span> true;
+                addresses <span style="color:#ff79c6">=</span> true;
+                domain <span style="color:#ff79c6">=</span> true;
+                hinfo <span style="color:#ff79c6">=</span> true;
+                userServices <span style="color:#ff79c6">=</span> true;
+                workstation <span style="color:#ff79c6">=</span> true;
+            };
+
+            extraServiceFiles <span style="color:#ff79c6">=</span> {
+                smb <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#39;&#39;
+</span><span style="color:#f1fa8c">                &lt;?xml version=&#34;1.0&#34; standalone=&#39;no&#39;?&gt;&lt;!--*-nxml-*--&gt;
+</span><span style="color:#f1fa8c">                &lt;!DOCTYPE service-group SYSTEM &#34;avahi-service.dtd&#34;&gt;
+</span><span style="color:#f1fa8c">                &lt;service-group&gt;
+</span><span style="color:#f1fa8c">                    &lt;name replace-wildcards=&#34;yes&#34;&gt;%h&lt;/name&gt;
+</span><span style="color:#f1fa8c">                    &lt;service&gt;
+</span><span style="color:#f1fa8c">                    &lt;type&gt;_smb._tcp&lt;/type&gt;
+</span><span style="color:#f1fa8c">                    &lt;port&gt;445&lt;/port&gt;
+</span><span style="color:#f1fa8c">                    &lt;/service&gt;
+</span><span style="color:#f1fa8c">                    &lt;service&gt;
+</span><span style="color:#f1fa8c">                    &lt;type&gt;_device-info._tcp&lt;/type&gt;
+</span><span style="color:#f1fa8c">                    &lt;port&gt;9&lt;/port&gt;
+</span><span style="color:#f1fa8c">                    &lt;txt-record&gt;model=TimeCapsule8,119&lt;/txt-record&gt;
+</span><span style="color:#f1fa8c">                    &lt;/service&gt;
+</span><span style="color:#f1fa8c">                    &lt;service&gt;
+</span><span style="color:#f1fa8c">                    &lt;type&gt;_adisk._tcp&lt;/type&gt;
+</span><span style="color:#f1fa8c">                    &lt;port&gt;9&lt;/port&gt;
+</span><span style="color:#f1fa8c">                    &lt;txt-record&gt;dk0=adVN=backups,adVF=0x82&lt;/txt-record&gt;
+</span><span style="color:#f1fa8c">                    &lt;txt-record&gt;sys=adVF=0x100&lt;/txt-record&gt;
+</span><span style="color:#f1fa8c">                    &lt;/service&gt;
+</span><span style="color:#f1fa8c">                &lt;/service-group&gt;
+</span><span style="color:#f1fa8c">                &#39;&#39;</span>;
+            };
+        };
+    };
+}</code></pre></div></li>
+
+<li><p>Authorize your user with <code>smbpasswd -u bsideup</code> (where <code>bsideup</code> is your username)</p></li>
+</ol>
+
+<p>One more <code>nixos-rebuild switch</code> and my <del>precious files</del>junk is regularly backed up again, yay.</p>
+
+<p>In retrospective, that <code>samba4Full</code> instead of <code>samba</code> was already hinting at why this looked so simple so far&hellip;</p>
+
+<h1 id="the-bad">The Bad</h1>
+
+<p>While getting the Samba + Avahi running was easy, my next target was the Unifi Controller - Ubiquiti&rsquo;s free software that you can self host to control your Unifi (big fan!) network. And good news! It is <a href="https://search.nixos.org/packages?channel=24.11&amp;show=unifi&amp;from=0&amp;size=50&amp;sort=relevance&amp;type=packages&amp;query=unifi" target="_blank">available as a NixOS package</a>. Well&hellip; kinda.</p>
+
+<p>Starting with it was easy:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix"><span style="color:#6272a4"># unifi.nix</span>
+{ config<span style="color:#ff79c6">,</span> lib<span style="color:#ff79c6">,</span> pkgs<span style="color:#ff79c6">,</span> <span style="color:#ff79c6">...</span> }:
+
+{ 
+  <span style="color:#6272a4"># Poor FOSS kittens</span>
+  nixpkgs<span style="color:#ff79c6">.</span>config<span style="color:#ff79c6">.</span>allowUnfree <span style="color:#ff79c6">=</span> true;
+
+  networking<span style="color:#ff79c6">.</span>firewall<span style="color:#ff79c6">.</span>allowedTCPPorts <span style="color:#ff79c6">=</span> [ <span style="color:#bd93f9">8443</span> ];
+
+  fileSystems<span style="color:#ff79c6">.</span><span style="color:#f1fa8c">&#34;/var/lib/unifi/data/backup&#34;</span> <span style="color:#ff79c6">=</span> {
+    device <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;/mnt/backups/unifi&#34;</span>;
+    fsType <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;none&#34;</span>;
+    options <span style="color:#ff79c6">=</span> [ <span style="color:#f1fa8c">&#34;bind&#34;</span> ];
+  };
+
+  services<span style="color:#ff79c6">.</span>unifi <span style="color:#ff79c6">=</span> {
+    enable <span style="color:#ff79c6">=</span> true;
+    openFirewall <span style="color:#ff79c6">=</span> true;
+  };
+}</code></pre></div>
+<p>But, when I attempted to switch to it, I was presented with a surprise&hellip; MongoDB.</p>
+
+<p>I don&rsquo;t know who at Ubiquiti thought that it is a good idea to use MongoDB as a database for it, but it is what it is.
+And while it is not a huge (but big) deal anywhere else, on my Raspberry Pi 400 it would mean that I have to wait for many hours for it to compile.</p>
+
+<p>Not to mention that it made my RPi hang during the compilation, because apparently I forgot to configure the swap and no swap was configured by default!
+Fixed it with the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix"><span style="color:#6272a4">#hardware-configuration.nix</span>
+  swapDevices = [{
+    device <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;/swapfile&#34;</span>;
+    size <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">16</span> <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">1024</span>; <span style="color:#6272a4"># 16GB</span>
+  }];</code></pre></div>
+<p>Why compile? Because, unlike many other packages, the MongoDB package is not available as a pre-built package due to its non-OSS license.
+So I went down the rabbit hole&hellip;</p>
+
+<h2 id="so-close">So close&hellip;</h2>
+
+<p>After a quick scan on GitHub for the usage of the <code>unifi</code> package, I&rsquo;ve found the <a href="https://search.nixos.org/packages?channel=24.11&amp;show=mongodb-ce&amp;from=0&amp;size=50&amp;sort=relevance&amp;type=packages&amp;query=mongodb-ce" target="_blank"><code>mongodb-ce</code> package</a> that uses the pre-built binaries for MongoDB.</p>
+
+<p>I&rsquo;ve quickly changed the config to it:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">services<span style="color:#ff79c6">.</span>unifi = {
+    enable <span style="color:#ff79c6">=</span> true;
+    mongodbPackage <span style="color:#ff79c6">=</span> pkgs<span style="color:#ff79c6">.</span>mongodb-ce<span style="color:#ff79c6">.</span>overrideAttrs {
+        <span style="color:#6272a4"># Unifi Controller does not support MongoDB v8,</span>
+        <span style="color:#6272a4">#  and the latest NixOS distributive (why are we doing it again...)</span>
+        <span style="color:#6272a4">#  comes with 8.0.4 by default</span>
+        version <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;7.0.14&#34;</span>;
+    };
+    openFirewall <span style="color:#ff79c6">=</span> true;
+};</code></pre></div>
+<p>The build has passed and&hellip; nothing.
+I knew that the Unifi Controller starts MongoDB daemon as a subprocess from Java (yeah&hellip;),
+and a quick <code>htop</code> has identified that the MongoDB process crashes.</p>
+
+<p>Apparently, the MongoDB Community binaries do not support Raspberry Pi 4 / 400:
+<a href="https://www.umpah.net/install-mongodb-on-a-raspberry-pi/" target="_blank">https://www.umpah.net/install-mongodb-on-a-raspberry-pi/</a></p>
+
+<h2 id="awww-my-first-nix-package">Awww&hellip; my first Nix package</h2>
+
+<p>After giving up with available MongoDB options, I&rsquo;ve decided to bite the bullet and build my own Nix package for that MongoDB dependency.</p>
+
+<p>Luckily, there are pre-built MongoDB binaries from a MongoDB employee:
+<a href="https://github.com/themattman/mongodb-raspberrypi-binaries" target="_blank">https://github.com/themattman/mongodb-raspberrypi-binaries</a></p>
+
+<p>A quick read on how packages are structured gave me the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">services<span style="color:#ff79c6">.</span>unifi = {
+    enable <span style="color:#ff79c6">=</span> true;
+    mongodbPackage <span style="color:#ff79c6">=</span> pkgs<span style="color:#ff79c6">.</span>stdenv<span style="color:#ff79c6">.</span>mkDerivation <span style="color:#ff79c6">rec</span> {
+        pname <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;mongodb&#34;</span>;
+        version <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;7.0.14&#34;</span>;
+
+        src <span style="color:#ff79c6">=</span> pkgs<span style="color:#ff79c6">.</span>fetchurl {
+            url <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;https://github.com/themattman/mongodb-raspberrypi-binaries/releases/download/r7.0.14-rpi-unofficial/mongodb.ce.pi4.r7.0.14.tar.gz&#34;</span>;
+            hash <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;sha256-b0F8ihngN20CUc/tXFHao8JVroDiEfsSfDs2QErkma0=&#34;</span>;
+        };
+
+        installPhase <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#39;&#39;
+</span><span style="color:#f1fa8c">            mkdir -p $out/bin
+</span><span style="color:#f1fa8c">            install -Dm 755 mongod $out/bin/mongod
+</span><span style="color:#f1fa8c">
+</span><span style="color:#f1fa8c">            runHook postInstall
+</span><span style="color:#f1fa8c">        &#39;&#39;</span>;
+    };
+    openFirewall <span style="color:#ff79c6">=</span> true;
+};</code></pre></div>
+<p>Result? A failure. 15 minutes of googling later, I learned that Nix assumes a single sub-folder in the archive. <em>Obviously&hellip;</em></p>
+
+<p>So we need to specify <code>sourceRoot = &quot;.&quot;</code> to override that assumption.</p>
+
+<p>Result? Successful build! Hooray, champagne popping, Linux commands piping, everyone is happy&hellip; not. WTH?&hellip;</p>
+
+<p>That&rsquo;s how I learned another thing about Nix: it does not like dynamic libraries (neither do I!).
+But the MongoDB binaries were compiled with them in mind. NGL I was almost ready to give up, but then I looked at <a href="https://github.com/NixOS/nixpkgs/blob/6437a6b9b705c28904bfda98977a3f9fe451744c/pkgs/by-name/mo/mongodb-ce/package.nix" target="_blank">the <code>mongodb-ce</code> package</a> for inspiration, and a-ha! Nix build can patch the binaries with <code>autoPatchelfHook</code> and a bit of hinting with <code>buildInputs</code>. Sweet.</p>
+
+<p>So I copied their config and replaced the URL:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">services<span style="color:#ff79c6">.</span>unifi = {
+    enable <span style="color:#ff79c6">=</span> true;
+    mongodbPackage <span style="color:#ff79c6">=</span> pkgs<span style="color:#ff79c6">.</span>stdenv<span style="color:#ff79c6">.</span>mkDerivation <span style="color:#ff79c6">rec</span> {
+        pname <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;mongodb&#34;</span>;
+        version <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;7.0.14&#34;</span>;
+
+        src <span style="color:#ff79c6">=</span> pkgs<span style="color:#ff79c6">.</span>fetchurl {
+            url <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;https://github.com/themattman/mongodb-raspberrypi-binaries/releases/download/r7.0.14-rpi-unofficial/mongodb.ce.pi4.r7.0.14.tar.gz&#34;</span>;
+            hash <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;sha256-b0F8ihngN20CUc/tXFHao8JVroDiEfsSfDs2QErkma0=&#34;</span>;
+        };
+
+        sourceRoot <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;.&#34;</span>;
+
+        buildInputs <span style="color:#ff79c6">=</span> [
+            pkgs<span style="color:#ff79c6">.</span>curl<span style="color:#ff79c6">.</span>dev
+            pkgs<span style="color:#ff79c6">.</span>openssl<span style="color:#ff79c6">.</span>dev
+            (lib<span style="color:#ff79c6">.</span>getLib pkgs<span style="color:#ff79c6">.</span>stdenv<span style="color:#ff79c6">.</span>cc<span style="color:#ff79c6">.</span>cc)
+        ];
+        nativeBuildInputs <span style="color:#ff79c6">=</span> [ pkgs<span style="color:#ff79c6">.</span>autoPatchelfHook ];
+        dontStrip <span style="color:#ff79c6">=</span> true;
+
+        installPhase <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#39;&#39;
+</span><span style="color:#f1fa8c">            mkdir -p $out/bin
+</span><span style="color:#f1fa8c">            install -Dm 755 mongod $out/bin/mongod
+</span><span style="color:#f1fa8c">
+</span><span style="color:#f1fa8c">            runHook postInstall
+</span><span style="color:#f1fa8c">        &#39;&#39;</span>;
+    };
+    openFirewall <span style="color:#ff79c6">=</span> true;
+};</code></pre></div>
+<p>Resut? Build failure. What a great reminder that NixOS is still Linux - a never ending loop of trying and mostly failing&hellip;</p>
+
+<p>What this time? An obscure <code>Libssl.so.1 not found</code> error! But&hellip; don&rsquo;t we have it&hellip; there?</p>
+
+<p>Turns out that particular binaries need OpenSSL 1.1, and that <code>openssl.dev</code> isn&rsquo;t it -_-.<br />
+<del>Remind me again, what&rsquo;s wrong with Java?</del></p>
+
+<p>I will spare you another code snippet, because just adding <code>pkgs.openssl_1_1</code> will not work, because&hellip; it is deprecated due to vulnerabilities!</p>
+
+<p>But luckily there is a way to still use it by adding the package to <code>permittedInsecurePackages</code>. Phew!
+So here is my final, working (as of today, lol) config for Unifi on Raspberry Pi 4 / 400:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nix" data-lang="nix">{ config<span style="color:#ff79c6">,</span> lib<span style="color:#ff79c6">,</span> pkgs<span style="color:#ff79c6">,</span> <span style="color:#ff79c6">...</span> }:
+
+{
+  networking<span style="color:#ff79c6">.</span>firewall<span style="color:#ff79c6">.</span>allowedTCPPorts <span style="color:#ff79c6">=</span> [ <span style="color:#bd93f9">8443</span> ];
+
+  fileSystems<span style="color:#ff79c6">.</span><span style="color:#f1fa8c">&#34;/var/lib/unifi/data/backup&#34;</span> <span style="color:#ff79c6">=</span> {
+    device <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;/mnt/backups/unifi&#34;</span>;
+    fsType <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;none&#34;</span>;
+    options <span style="color:#ff79c6">=</span> [ <span style="color:#f1fa8c">&#34;bind&#34;</span> ];
+  };
+
+  nixpkgs<span style="color:#ff79c6">.</span>config<span style="color:#ff79c6">.</span>permittedInsecurePackages <span style="color:#ff79c6">=</span> [
+    <span style="color:#f1fa8c">&#34;openssl-1.1.1w&#34;</span>
+  ];
+
+  services<span style="color:#ff79c6">.</span>unifi <span style="color:#ff79c6">=</span> {
+    enable <span style="color:#ff79c6">=</span> true;
+    mongodbPackage <span style="color:#ff79c6">=</span> pkgs<span style="color:#ff79c6">.</span>stdenv<span style="color:#ff79c6">.</span>mkDerivation <span style="color:#ff79c6">rec</span> {
+      pname <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;mongodb&#34;</span>;
+      version <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;7.0.14&#34;</span>;
+
+      src <span style="color:#ff79c6">=</span> pkgs<span style="color:#ff79c6">.</span>fetchurl {
+        url <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;https://github.com/themattman/mongodb-raspberrypi-binaries/releases/download/r7.0.14-rpi-unofficial/mongodb.ce.pi4.r7.0.14.tar.gz&#34;</span>;
+        hash <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;sha256-b0F8ihngN20CUc/tXFHao8JVroDiEfsSfDs2QErkma0=&#34;</span>;
+      };
+
+      sourceRoot <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;.&#34;</span>;
+
+      buildInputs <span style="color:#ff79c6">=</span> [
+        pkgs<span style="color:#ff79c6">.</span>curl<span style="color:#ff79c6">.</span>dev
+        pkgs<span style="color:#ff79c6">.</span>openssl_1_1
+        (lib<span style="color:#ff79c6">.</span>getLib pkgs<span style="color:#ff79c6">.</span>stdenv<span style="color:#ff79c6">.</span>cc<span style="color:#ff79c6">.</span>cc)
+      ];
+      nativeBuildInputs <span style="color:#ff79c6">=</span> [ pkgs<span style="color:#ff79c6">.</span>autoPatchelfHook ];
+      dontStrip <span style="color:#ff79c6">=</span> true;
+
+      installPhase <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#39;&#39;
+</span><span style="color:#f1fa8c">        mkdir -p $out/bin
+</span><span style="color:#f1fa8c">        install -Dm 755 mongod $out/bin/mongod
+</span><span style="color:#f1fa8c">
+</span><span style="color:#f1fa8c">        runHook postInstall
+</span><span style="color:#f1fa8c">      &#39;&#39;</span>;
+    };
+    openFirewall <span style="color:#ff79c6">=</span> true;
+  };
+}</code></pre></div>
+<h1 id="the-ugly">The Ugly</h1>
+
+<p>While I did achieve the result that I wanted, I can&rsquo;t yet agree that Nix/NixOS is &ldquo;the next Docker&rdquo;, as some people say.</p>
+
+<p>It is definitely an improvement over the traditional Linux experience. That said, it is still very much &ldquo;the Linux way&rdquo; in many aspects:</p>
+
+<ol>
+<li>Poor documentation. I can&rsquo;t emphasize this enough!
+It is not non-existent, but oftentimes misleading, or outdated.
+Nix <em>feels</em> like a system where copy/pasting snippets from internet is how 90% of tasks will be achieved,
+so it <strong>has</strong> to be good.</li>
+<li>The syntax, while powerful, can be very confusing.
+I found this thread fascinating: <a href="https://discourse.nixos.org/t/what-is-the-added-benefit-of-let-in-compared-to-plain-with-with-rec/14248" target="_blank">https://discourse.nixos.org/t/what-is-the-added-benefit-of-let-in-compared-to-plain-with-with-rec/14248</a><br /></li>
+<li>idk, maybe it is a &ldquo;me&rdquo; issue, but the way it turned into a potato after I applied <code>nixos-rebuild switch</code> on a stock installation was really surprising!<br />
+It would be super cool to have a &ldquo;&ndash;safe&rdquo; flag in <code>nixos-rebuild switch</code> that will rollback to the previous configuration if no confirmation was received in 30s or like so (Display Settings-style), to avoid having to restart the machine if you loose the access.</li>
+<li>Not everything has to be FOSS: <a href="https://discourse.nixos.org/t/petition-to-build-and-cache-unfree-packages-on-cache-nixos-org/17440" target="_blank">https://discourse.nixos.org/t/petition-to-build-and-cache-unfree-packages-on-cache-nixos-org/17440</a><br />
+A regular user won&rsquo;t care about the legalities of distributing binaries, they just want to have <code>docker run mongo:7</code>-like experience</li>
+<li>Probably it made sense for &ldquo;traditional&rdquo; Linux distributives, but I don&rsquo;t see much value in having a distributive-like approach in NixOS, with over 100,000 packages in <a href="https://github.com/NixOS/nixpkgs" target="_blank">https://github.com/NixOS/nixpkgs</a> versioned under a single version.<br />
+I did learn how to use an older version of the package to pin <code>mongodb-ce</code> to the pre-24.05 implementation before discovering the attributes override and it was nowhere close to <code>docker run mongo:7</code>, sorry.</li>
+</ol>
+
+<p>I find the tech at the core of it to be very interesting but the UX could use a major improvement.
+Kinda reminds me of Linux containers and how Docker did it.<br />
+Maybe, similar to LXC, someone just needs to take the good parts and slap a fantastic UX/DX on it? 🤓</p>
+
+<p>You can find the final result as a Gist here:<br />
+<a href="https://gist.github.com/bsideup/8bb24c0c29d6329f70e55fe7ccb3e1e0" target="_blank">https://gist.github.com/bsideup/8bb24c0c29d6329f70e55fe7ccb3e1e0</a></p>
+
+<h1 id="bonuses">Bonuses</h1>
+
+<h2 id="bonus-1-edit-nixos-configuration-remotely-with-vscode-over-ssh">Bonus 1: edit NixOS configuration remotely with VSCode over SSH</h2>
+
+<p>As you probably have guessed, I am not a Vim ninja. So I wanted to be able to edit the Nix configuration with comfort of the IDE like VS Code.
+My initial attempt to use the VS Code Remote support has miserably failed, because it was unable to install the required components on the remote machine (NixOS is not a regular Linux distro!).</p>
+
+<p>I started looking for alternatives and discovered the <a href="https://marketplace.visualstudio.com/items?itemName=Kelvin.vscode-sshfs" target="_blank">SSH FS extension</a> that allows editing files over SSH. Almost perfect!</p>
+
+<p>It even supports elevating the permissions with <code>sudo</code>, to be able to edit the <code>root</code>-owned <code>configuration.nix</code>.
+The problem is that it uses the <code>sftp-server</code> binary that is not easily available on NixOS, and I couldn&rsquo;t understand why it fails, despite being able to establish an SSH connection.</p>
+
+<p>After some GitHub issues digging, I&rsquo;ve finally came up with a config that worked!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#f1fa8c">&#34;sshfs.configs&#34;</span>: [
+    {
+        <span style="color:#ff79c6">&#34;name&#34;</span>: <span style="color:#f1fa8c">&#34;raspberrypi-nixos&#34;</span>,
+        <span style="color:#ff79c6">&#34;host&#34;</span>: <span style="color:#f1fa8c">&#34;raspberrypi.local&#34;</span>,
+        <span style="color:#ff79c6">&#34;username&#34;</span>: <span style="color:#f1fa8c">&#34;$USERNAME&#34;</span>,
+        <span style="color:#ff79c6">&#34;debug&#34;</span>: <span style="color:#ff79c6">false</span>,
+        <span style="color:#ff79c6">&#34;privateKeyPath&#34;</span>: <span style="color:#f1fa8c">&#34;$HOME/.ssh/id_ed25519&#34;</span>,
+        <span style="color:#ff79c6">&#34;sftpCommand&#34;</span>: <span style="color:#f1fa8c">&#34;nix-shell -p openssh --run &#39;$buildInputs/libexec/sftp-server&#39;&#34;</span>,
+        <span style="color:#ff79c6">&#34;sftpSudo&#34;</span>: <span style="color:#ff79c6">true</span>
+    }
+]</code></pre></div>
+<p>It uses <code>nix-shell</code> with the <code>openssh</code> package, in which the <code>sftp-server</code> binary is available.<br />
+This enabled me to edit the config remotely from my MacBook as if it was available locally. Sweet!</p>
+
+<h2 id="bonus-2-how-to-modify-eeprom">Bonus 2: How to modify EEPROM</h2>
+
+<p>While it was <a href="https://nixos.wiki/wiki/NixOS_on_ARM/Raspberry_Pi_4#Updating_U-Boot.2FFirmware" target="_blank">literally in the docs</a>, I somehow missed it.</p>
+
+<p>But what made it worse is that the &ldquo;normal&rdquo; way (with <code>rpi-eeprom-update</code>) worked, but the result was never saved due to the way how NixOS works.</p>
+
+<p>So I will &ldquo;cheat&rdquo; and just copy/paste the docs here, to point your attention to the fact that you must point the tool to the &ldquo;right&rdquo; location, because the default <code>/boot/</code> is managed by NixOS and can&rsquo;t be changed with the tool:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ nix-shell -p raspberrypi-eeprom
+$ sudo mount /dev/disk/by-label/FIRMWARE /mnt/firmware
+$ sudo <span style="color:#8be9fd;font-style:italic">BOOTFS</span><span style="color:#ff79c6">=</span>/mnt/firmware <span style="color:#8be9fd;font-style:italic">FIRMWARE_RELEASE_STATUS</span><span style="color:#ff79c6">=</span>stable rpi-eeprom-update -d -a</code></pre></div>
+<h2 id="bonus-3-cloning-enlarging-the-sd-card">Bonus 3: cloning/enlarging the SD card</h2>
+
+<p>Quickly after starting to use NixOS I realized that the stock 32Gb SD Card may not be enough, lol.
+So I decided to order a <a href="https://www.amazon.com/dp/B09X7CRKRZ?ref=ppx_yo2ov_dt_b_fed_asin_title" target="_blank">V30 256Gb SD card</a> instead.</p>
+
+<p>I totally could have utilized the reproducible nature of NixOS and I even regret not doing so,
+but my <del>lazy ass</del> shortsightedness made me want to clone the old SD card instead.</p>
+
+<p>After a bit of googling, I&rsquo;ve found <a href="https://etcher.balena.io" target="_blank">balenaEtcher</a> to be the easiest solution to copy the card and keep it bootable.
+One big advantage of the tool is that it can copy from one card to another (if you have two card readers).</p>
+
+<p>Sure, you can use <code>dd</code> (you can even pipe its output! 🫠) but good luck getting a &ldquo;sparse&rdquo; image instead of the full 32Gb ISO, even if only 1-2Gb are taken.</p>
+
+<p>Then you can use <code>resize2fs /dev/mmcblk1p2</code> (where <code>mmcblk1p2</code> is your root partition, check with <code>df -H</code>) after booting into the system (yes, I did it live. YOLO when you have a reproducible system, I guess :)).</p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2024
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>

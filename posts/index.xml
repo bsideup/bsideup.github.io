@@ -6,10 +6,22 @@
     <description>Recent content in Posts on A guy with &#39;Ego&#39; in his name</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 10 Jul 2020 14:22:31 +0200</lastBuildDate>
+    <lastBuildDate>Tue, 24 Dec 2024 13:43:58 -0700</lastBuildDate>
     
 	<atom:link href="https://bsideup.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>NixOS on Raspberry Pi: The Good, the Bad and &#34;the Linux way&#34;</title>
+      <link>https://bsideup.github.io/posts/nixos_rpi/</link>
+      <pubDate>Tue, 24 Dec 2024 13:43:58 -0700</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/nixos_rpi/</guid>
+      <description>Gran Torino (Film) © 2008 Warner Bros. Pictures 
+Disclaimer: this is not a tutorial, but a story of me trying the new hype thing that I am probably too old for 😀
+I have a confession to start this article with: I have never enjoyed &amp;ldquo;the Linux way&amp;rdquo; of doing things:
+ &amp;ldquo;Everything at once&amp;rdquo; package updates via distributives Having a strong allergy to binaries Piping like a 19 y.</description>
+    </item>
     
     <item>
       <title>Trying Rootless Docker with Testcontainers</title>

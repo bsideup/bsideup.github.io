@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Raspberypi on A guy with &#39;Ego&#39; in his name</title>
+    <link>https://bsideup.github.io/tags/raspberypi/</link>
+    <description>Recent content in Raspberypi on A guy with &#39;Ego&#39; in his name</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 24 Dec 2024 13:43:58 -0700</lastBuildDate>
+    
+	<atom:link href="https://bsideup.github.io/tags/raspberypi/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>NixOS on Raspberry Pi: The Good, the Bad and &#34;the Linux way&#34;</title>
+      <link>https://bsideup.github.io/posts/nixos_rpi/</link>
+      <pubDate>Tue, 24 Dec 2024 13:43:58 -0700</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/nixos_rpi/</guid>
+      <description>Gran Torino (Film) © 2008 Warner Bros. Pictures 
+Disclaimer: this is not a tutorial, but a story of me trying the new hype thing that I am probably too old for 😀
+I have a confession to start this article with: I have never enjoyed &amp;ldquo;the Linux way&amp;rdquo; of doing things:
+ &amp;ldquo;Everything at once&amp;rdquo; package updates via distributives Having a strong allergy to binaries Piping like a 19 y.</description>
+    </item>
+    
+  </channel>
+</rss>
