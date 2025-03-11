@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://bsideup.github.io/posts/mcp_my_http-ass/</loc>
+    <lastmod>2025-03-11T10:24:05-06:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/posts/nixos_rpi/</loc>
     <lastmod>2024-12-24T13:43:58-07:00</lastmod>
   </url>
@@ -129,7 +134,13 @@
   
   <url>
     <loc>https://bsideup.github.io/</loc>
-    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
+    <lastmod>2025-03-11T10:24:05-06:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/ai/</loc>
+    <lastmod>2025-03-11T10:24:05-06:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -181,6 +192,12 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/tags/genai/</loc>
+    <lastmod>2025-03-11T10:24:05-06:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/tags/github/</loc>
     <lastmod>2019-01-23T13:58:43+01:00</lastmod>
     <priority>0</priority>
@@ -195,6 +212,12 @@
   <url>
     <loc>https://bsideup.github.io/tags/groovy/</loc>
     <lastmod>2019-05-07T17:37:23+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/grpc/</loc>
+    <lastmod>2025-03-11T10:24:05-06:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -247,6 +270,12 @@
   </url>
   
   <url>
+    <loc>https://bsideup.github.io/tags/llm/</loc>
+    <lastmod>2025-03-11T10:24:05-06:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://bsideup.github.io/tags/lombok/</loc>
     <lastmod>2019-05-07T17:37:23+02:00</lastmod>
     <priority>0</priority>
@@ -255,6 +284,12 @@
   <url>
     <loc>https://bsideup.github.io/tags/maven/</loc>
     <lastmod>2019-06-28T14:02:22+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://bsideup.github.io/tags/mcp/</loc>
+    <lastmod>2025-03-11T10:24:05-06:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -284,7 +319,7 @@
   
   <url>
     <loc>https://bsideup.github.io/posts/</loc>
-    <lastmod>2024-12-24T13:43:58-07:00</lastmod>
+    <lastmod>2025-03-11T10:24:05-06:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -320,7 +355,7 @@
   
   <url>
     <loc>https://bsideup.github.io/tags/</loc>
-    <lastmod>2019-05-28T18:12:32+02:00</lastmod>
+    <lastmod>2025-03-11T10:24:05-06:00</lastmod>
     <priority>0</priority>
   </url>
   

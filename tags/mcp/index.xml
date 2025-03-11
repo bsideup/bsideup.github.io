@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Mcp on A guy with &#39;Ego&#39; in his name</title>
+    <link>https://bsideup.github.io/tags/mcp/</link>
+    <description>Recent content in Mcp on A guy with &#39;Ego&#39; in his name</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 11 Mar 2025 10:24:05 -0600</lastBuildDate>
+    
+	<atom:link href="https://bsideup.github.io/tags/mcp/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>MCP my HTTP-ass!</title>
+      <link>https://bsideup.github.io/posts/mcp_my_http-ass/</link>
+      <pubDate>Tue, 11 Mar 2025 10:24:05 -0600</pubDate>
+      
+      <guid>https://bsideup.github.io/posts/mcp_my_http-ass/</guid>
+      <description>I get it. Every innovation requires a rewrite by a newer (and typically younger) generation.
+Containers, Blockchain, Crypto, WASM - they all could have been built on the existing tech (and, well, TLDs, lol).
+But hipsters gonna hip!
+But every now and then something truly bizarre happens. To me, that&amp;rsquo;s MCP.
+MC who? Model Context Protocol (MCP) is a &amp;ldquo;standard&amp;rdquo; (gone are the days of standard taking more than 5 prompts minutes to be developed).</description>
+    </item>
+    
+  </channel>
+</rss>

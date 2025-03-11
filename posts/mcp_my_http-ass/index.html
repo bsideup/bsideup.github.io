@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="author" content="Sergei Egorov">
+    <meta name="description" content="Sergei Egorov&#39;s personal website">
+    
+
+    <base href="https://bsideup.github.io">
+    <title>
+  MCP my HTTP-ass! · A guy with &#39;Ego&#39; in his name
+</title>
+
+    <link rel="canonical" href="https://bsideup.github.io/posts/mcp_my_http-ass/">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Merriweather:300,700|Source+Code+Pro:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" integrity="sha256-oSrCnRYXvHG31SBifqP2PM1uje7SJUyX0nTwO2RJV54=" crossorigin="anonymous" />
+
+    
+      
+      
+      <link rel="stylesheet" href="https://bsideup.github.io/css/coder.min.cd087ace86754b082dec94545567f8361cba42e84f8e15edbc4a9f6e52bd1f6a.css" integrity="sha256-zQh6zoZ1Swgt7JRUVWf4Nhy6QuhPjhXtvEqfblK9H2o=" crossorigin="anonymous" media="screen" />
+    
+
+    
+
+    
+
+    
+      <link rel="stylesheet" href="https://bsideup.github.io/css/code.css">
+    
+
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://bsideup.github.io/images/favicon-16x16.png" sizes="16x16">
+
+    
+
+    <meta name="generator" content="Hugo 0.53" />
+  </head>
+
+  <body class=" ">
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="https://bsideup.github.io">
+      A guy with &#39;Ego&#39; in his name
+    </a>
+    <input type="checkbox" id="menu-toggle" />
+    <label class="menu-button float-right" for="menu-toggle"><i class="fas fa-bars"></i></label>
+    <ul class="navigation-list">
+      
+        
+          <li class="navigation-item">
+            <a class="navigation-link" href="https://bsideup.github.io/posts/">Blog</a>
+          </li>
+        
+      
+      
+    </ul>
+  </section>
+</nav>
+
+
+      <div class="content">
+        
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">MCP my HTTP-ass!</h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fas fa-calendar"></i>
+              <time datetime='2025-03-11T10:24:05-06:00'>
+                March 11, 2025
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fas fa-clock"></i>
+              12 minutes read
+            </span>
+          </div>
+          
+          <div class="tags">
+  <i class="fas fa-tag"></i>
+    <a href="https://bsideup.github.io/tags/genai/">genai</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/llm/">llm</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/ai/">ai</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/mcp/">mcp</a>
+      <span class="separator">•</span>
+    <a href="https://bsideup.github.io/tags/grpc/">grpc</a></div>
+
+        </div>
+      </header>
+
+      <div>
+        
+
+<p>I get it. Every innovation requires a rewrite by a newer (and typically younger) generation.</p>
+
+<p>Containers, Blockchain, Crypto, WASM - they all could have been built on the existing tech (and, well, TLDs, lol).<br />
+But hipsters gonna hip!</p>
+
+<p>But every now and then something truly bizarre happens. To me, that&rsquo;s MCP.</p>
+
+<h2 id="mc-who">MC who?</h2>
+
+<p><a href="https://modelcontextprotocol.io/introduction" target="_blank">Model Context Protocol (MCP)</a> is a &ldquo;standard&rdquo; (gone are the days of standard taking more than 5 <del>prompts</del> minutes to be developed). Let me quote their website as I am already getting too snarky:</p>
+
+<blockquote>
+<p>MCP is an open protocol that standardizes how applications provide context to LLMs. <strong>Think of MCP like a USB-C port for AI applications.</strong> Just as USB-C provides a standardized way to connect your devices to various peripherals and accessories, MCP provides a standardized way to connect AI models to different data sources and tools.</p>
+</blockquote>
+
+<p>The best part of it is that it draws a parallel to USB-C. Let me just refer to another quote, from <a href="https://en.wikipedia.org/wiki/USB-C" target="_blank">Wikipedia&rsquo;s article on USB-C</a>:</p>
+
+<blockquote>
+<p>USB-C, or USB Type-C, is a 24-pin, reversible connector (<strong>not a protocol</strong>) that supersedes previous USB connectors and can carry audio, video, and other data, to connect to monitors, external drives, hubs/docking stations, mobile phones, and many more peripheral devices.</p>
+</blockquote>
+
+<p>So, lets get it staight. MCP is an open protocol, think of it like a USB-C port, which is <strong>not</strong> a protocol. Get it now? Good, let&rsquo;s continue!</p>
+
+<p>Why it exists? Well, the LLMs were moving so fast and were getting so good at doing human tasks and understanding existing tools like programming languages and APIs that humans have decided to create a whole new protocol for LLMs&hellip; to talk to APIs and do human tasks.</p>
+
+<p><center>
+<img src="https://bsideup.github.io/images/mcp_my_http-ass/soviet_union_llms.png" alt="So secure" /><br>
+</center></p>
+
+<p>Okay, okay, don&rsquo;t listen to the Ol&rsquo; Grumpy Sergei, let&rsquo;s just refer to the <a href="https://modelcontextprotocol.io/introduction#why-mcp%3F" target="_blank">holly specification</a>, paragraph by paragraph:</p>
+
+<blockquote>
+<p>MCP helps you build agents and complex workflows on top of LLMs. LLMs frequently need to integrate with data and tools, and MCP provides:</p>
+</blockquote>
+
+<p>Okay&hellip;</p>
+
+<blockquote>
+<ul>
+<li>A growing list of pre-built integrations that your LLM can directly plug into</li>
+</ul>
+</blockquote>
+
+<p>Hmmm, that reminds me of 2000s and HTML5 when websites started introducing REST APIs that you can &ldquo;directly plug into&rdquo; 👀</p>
+
+<blockquote>
+<ul>
+<li>The flexibility to switch between LLM providers and vendors</li>
+</ul>
+</blockquote>
+
+<p>Clouds with their virtualization and <code>s/LLM providers/Linux distributives/</code></p>
+
+<blockquote>
+<ul>
+<li>Best practices for securing your data within your infrastructure</li>
+</ul>
+</blockquote>
+
+<p>This one is interesting! Let&rsquo;s dive deeper and go straight to <a href="https://modelcontextprotocol.io/docs/concepts/architecture#core-components" target="_blank">the spec&rsquo;s Core Components</a>.</p>
+
+<h2 id="best-practices-for-securing-your-data-within-your-infrastructure">&ldquo;Best practices for securing your data within your infrastructure&rdquo;</h2>
+
+<p>The protocol layer is extremely well thoughtout (I will get back to it in a sec, bear with me).<br />
+Quoting the website, once again:</p>
+
+<blockquote>
+<p>Key classes include:
+- Protocol
+- Client
+- Server</p>
+</blockquote>
+
+<p>(I will not even start at the &ldquo;protocol&rdquo; defined as two code snippets, one in TypeScript and another one in Python)</p>
+
+<p>But clearly we can&rsquo;t find &ldquo;Best practices for securing your data within your infrastructure&rdquo; in the protocol. Let&rsquo;s keep going and look at the Transport Layer.</p>
+
+<p>The first and most common transport is&hellip; the Stdio transport. Not the best practices I would expect for a protocol that does not implement any security at the protocol level (meaning that it is delegated to the transport level), since STDIO can easily be hijacked:</p>
+
+<p><center>
+<img src="https://bsideup.github.io/images/mcp_my_http-ass/so_secure.png" alt="So secure" /><br>
+</center></p>
+
+<p>The second (and&hellip; last) option is&hellip; HTTP with SSE transport. Okay, finally something older than more than 50% of LLM innovators!</p>
+
+<p><center>
+<img src="https://bsideup.github.io/images/mcp_my_http-ass/sse.png" alt="SSE" /><br>
+</center></p>
+
+<p>And now comes the best part:</p>
+
+<blockquote>
+<p>All transports use JSON-RPC 2.0 to exchange messages. See the specification for detailed information about the Model Context Protocol message format.</p>
+</blockquote>
+
+<p>Please allow SergeiGPT to summarize all of this for you:</p>
+
+<blockquote>
+<p>MCP is a protocol-not-protocol that allows LLMs to completely ignore the decades of well thoughtout APIs and instead force humans to write API wrappers and expose them via either unantheticated STDIO or HTTP SSE without a single mention of the authentication methods (because that&rsquo;s what all protocols do, right? right?&hellip;) and gives you &ldquo;Best practices for securing your data within your infrastructure&rdquo;.</p>
+</blockquote>
+
+<p>And of course there is a second WebSocket-based protocol that isn&rsquo;t even mentioned in the spec.</p>
+
+<h2 id="okay-smart-a-errr-smart-https-can-you-do-better">&ldquo;Okay, smart-a.. errr&hellip; smart-https, can you do better?&rdquo;</h2>
+
+<p>(brb, changing all my Home Assistant pipelines to react to &ldquo;Okay, smart-ass!&rdquo;)</p>
+
+<p>You would be wondering, what&rsquo;s my beef with all of this. No, the protocol wasn&rsquo;t invented by my ex-colleague that ate my pudding that I forgot to label or anything like that. But I <strong>do</strong> have a personal beef with this space&hellip; kinda.</p>
+
+<p><strong>Spoiler</strong>: it is not even the ignorance of existing tech and the duplication of effort that will be obsolete once LLMs will become a fraction smarter and be able to call APIs without <code>rm -rf /</code>-ing every now and then.</p>
+
+<p><center>
+<img src="https://bsideup.github.io/images/mcp_my_http-ass/beef.png" alt="Beef" /><br>
+<sub>Original image by Beef (TV series) 2023 ©️ Netflix</sub>
+</center></p>
+
+<p>In fact, contradictionary to everything I said before, my beef with this is that we were so distracted with Blockchain, Crypto, Web3, GenAI that we kidna forgot to move the &ldquo;core protocols&rdquo; needle forward.</p>
+
+<p>Let me explain. HTTP was a truly revolutional protocol&hellip; for the request/response model.</p>
+
+<p>But the model world is all about streaming, and not only streaming of media chunks from Netflix when you watch Beef, but the data streaming in general.<br />
+And let&rsquo;s admit it, modern streaming protocols suck!</p>
+
+<p>I happened to know a thing or two about it because I was part of the Reactive Foundation and involved in <a href="https://rsocket.io" target="_blank">https://rsocket.io</a> - a modern protocol (started at Netflix, btw!) that would truly be a Streaming-first protocol. Here are some <strong>unique</strong> things about it:</p>
+
+<ul>
+<li>Built-in backpressure: not just gRPC&rsquo;s SHOULD-style &ldquo;ready / not ready&rdquo;, but a proper MUST-style backpressure that communicates the demand and fails if the producer does not respect it.</li>
+<li>Transport-agnostic: unlike over-HTTP2, RSocket was able to communicate over a variety of transports, be it TCP, WebSockets, QUIC or nearly anything else that supports bidirectional flow.</li>
+<li>No differentiation between the client &amp; server: you can easily start a request from the server.</li>
+</ul>
+
+<p>The first two are important but, in the context of MCP, let&rsquo;s focus on the last bulletpoint: direction independence.<br />
+Thinking of it as Push Notifications on your smartphone that allow you to receive a notification even before you open the app and pull to refresh.</p>
+
+<p>Let&rsquo;s imagine a world where in 2025 we were not using protocols from 2000s. And no, I am not saying that there isn&rsquo;t any progress, there is.<br />
+HTTP2 Server Push, WebSockets, RSocket, <a href="https://zeroc.com/icerpc" target="_blank">IceRPC</a> (similar to RSocket but tied to QUIC), and even the gRPC despite its major limitations.</p>
+
+<p>All of them allow replacing the inefficient polling (making a request every now and then to check if the status changed using the request/response model) with something better.</p>
+
+<p>But the way they achieve that is what defines the &ldquo;generation&rdquo; of such protocol.</p>
+
+<p>Let&rsquo;s say we want to build a Push Noficications service, that allows us to receive a server-defined event that we did not explicitly request.</p>
+
+<h3 id="2000s-http-polling">2000s (HTTP polling)</h3>
+
+<p>Here is how we would do it in 2000s (and, tech inflation adjusted, how some legacy Enterprises do it today):</p>
+
+<ol>
+<li>Define a &ldquo;/notifications&rdquo; HTTP endpoint that returns&hellip; well&hellip; let&rsquo;s be real, XML, because it is 2000s.</li>
+<li>Start a timer for every N seconds</li>
+<li>Make a request to that endpoint and expect 0..N notifications</li>
+<li><code>GOTO 2</code></li>
+</ol>
+
+<p>Pros:</p>
+
+<ul>
+<li>It is damn simple to do!</li>
+<li>Works over plan HTTP</li>
+<li>&ldquo;Stateless&rdquo; protocol, no need to maintain a connection</li>
+</ul>
+
+<p>Cons:</p>
+
+<ul>
+<li>Extremely expensive, basically DDoS-as-a-Service. Every client becomes a member of the botnet that attacks your servers, and <strong>you</strong> are responsible for it!</li>
+<li>Worst case scenario: N seconds delay where N is the timer interval. Imagine reading that &ldquo;someone opened the window&rdquo; notification 15 seconds later together with the burglar who is already giving you&hellip; err&hellip; headpats?</li>
+</ul>
+
+<h4 id="2010s-sse-grpc">2010s: SSE/gRPC</h4>
+
+<p>The cons were so important that we needed a different approach. And the approach is basically to not close the request to &ldquo;/notifications&rdquo; and disable buffering, so that we can &ldquo;listen&rdquo; to incoming events without re-requesting them over and over.</p>
+
+<p>Pros:</p>
+
+<ul>
+<li>Still HTTP (even with gRPC, which is HTTP2)</li>
+<li>&ldquo;Initiate-and-Listen&rdquo; instead of &ldquo;request/response&rdquo;</li>
+</ul>
+
+<p>Cons:</p>
+
+<ul>
+<li>Must be initiated by the client</li>
+<li>The client must know what to request upfront</li>
+<li>Push-based streaming that does not give the client a chance to do the backpressure and avoid the &ldquo;fast producer slow consumer&rdquo; scenario</li>
+</ul>
+
+<p>If you want to experience it yourself, try <a href="https://www.mediawiki.org/wiki/API:Recent_changes_stream" target="_blank">Wikipedia&rsquo;s changes stream</a> that is nearly impossible to follow!</p>
+
+<p>This works fine when you need to subscribe to events, but is it the right protocol to allow the server call a method on the client, which is exactly what MCP does?</p>
+
+<h4 id="2020s-rsocket-icerpc-websockets-and-grpc">2020s: RSocket/IceRPC/WebSockets&hellip; and gRPC?</h4>
+
+<p>So, how would you do that in 2020s? Let&rsquo;s finally abandon the client request/server response model and embrace bidirectional communication!</p>
+
+<ol>
+<li>Define <code>NotificationsService</code> <strong>on the initiator</strong> (think iPhone)</li>
+<li>Initiate (hence the initiator) the connection to the producer and &ldquo;remember&rdquo; it in the registry of connections</li>
+<li>When there is a new notification, the producer can call the <code>NotificationsService</code> directry on the initiator, as if it was the producer that opened a connection to the initiator</li>
+</ol>
+
+<p>Pros:</p>
+
+<ul>
+<li>No need for any polling, the producer can just call the initiator</li>
+<li>The initiator can respond with backpressure control on every request that the producer is making. In fact, even &ldquo;one off&rdquo; requests can be done in a way that the initiator must confirm that it is ready to accept data before the producer actually sends it after calling the method, Reactive-style</li>
+<li>QUIC and other modern stateless/semi-stateless protocols can be used</li>
+</ul>
+
+<p>Cons:</p>
+
+<ul>
+<li>New paradigm</li>
+<li>The connections need to be tracked on the producer side</li>
+<li>Semi-stateful protocol</li>
+</ul>
+
+<p>For many of you, this would sound a lot similar to gRPC, but can this be done with gRPC? Well&hellip; kinda.</p>
+
+<p>gRPC heavily utilizes HTTP/2 as its transport, which does support Server Push but is very limiting at the same time.<br />
+There is a conversation on the gRPC specification issue tracker about &ldquo;tunneling&rdquo; - an ability to establish a bi-directional tunnel over the existing gRPC connection:<br />
+<a href="https://github.com/grpc/grpc/issues/14101" target="_blank">https://github.com/grpc/grpc/issues/14101</a></p>
+
+<p>There was even a functional PoC in grpc-java that implements it:<br />
+<a href="https://github.com/grpc/grpc-java/pull/3987" target="_blank">https://github.com/grpc/grpc-java/pull/3987</a></p>
+
+<p>In fact, yours truly ended up evolving that PoC into a working solution running in production and serving FAANGs of this world!</p>
+
+<p><a href="https://github.com/bsideup/grpc-bidi" target="_blank">Currently implemented for Go and Java</a>, it allows calling gRPC services on connected clients as if the connection was done directly to them from the server using the client library.</p>
+
+<p>Let&rsquo;s say, we want to define a client-side health service using Go:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#ff79c6">package</span> main
+
+<span style="color:#ff79c6">import</span> (
+	<span style="color:#f1fa8c">&#34;context&#34;</span>
+	<span style="color:#f1fa8c">&#34;log&#34;</span>
+	<span style="color:#f1fa8c">&#34;time&#34;</span>
+
+	bidi <span style="color:#f1fa8c">&#34;github.com/bsideup/grpc-bidi/go&#34;</span>
+	<span style="color:#f1fa8c">&#34;google.golang.org/grpc&#34;</span>
+	<span style="color:#f1fa8c">&#34;google.golang.org/grpc/credentials/insecure&#34;</span>
+	health <span style="color:#f1fa8c">&#34;google.golang.org/grpc/health/grpc_health_v1&#34;</span>
+)
+
+<span style="color:#8be9fd;font-style:italic">type</span> simpleHealthService <span style="color:#8be9fd;font-style:italic">struct</span> {
+}
+
+<span style="color:#8be9fd;font-style:italic">func</span> (s <span style="color:#ff79c6">*</span>simpleHealthService) <span style="color:#50fa7b">Check</span>(context.Context, <span style="color:#ff79c6">*</span>health.HealthCheckRequest) (<span style="color:#ff79c6">*</span>health.HealthCheckResponse, <span style="color:#8be9fd">error</span>) {
+	<span style="color:#8be9fd;font-style:italic">panic</span>(<span style="color:#f1fa8c">&#34;unimplemented&#34;</span>)
+}
+
+<span style="color:#8be9fd;font-style:italic">func</span> (s <span style="color:#ff79c6">*</span>simpleHealthService) <span style="color:#50fa7b">Watch</span>(_ <span style="color:#ff79c6">*</span>health.HealthCheckRequest, watcher health.Health_WatchServer) <span style="color:#8be9fd">error</span> {
+	<span style="color:#ff79c6">for</span> {
+		<span style="color:#ff79c6">select</span> {
+		<span style="color:#ff79c6">case</span> <span style="color:#ff79c6">&lt;-</span>watcher.<span style="color:#50fa7b">Context</span>().<span style="color:#50fa7b">Done</span>():
+			<span style="color:#ff79c6">return</span> watcher.<span style="color:#50fa7b">Context</span>().<span style="color:#50fa7b">Err</span>()
+		<span style="color:#ff79c6">default</span>:
+			resp <span style="color:#ff79c6">:=</span> health.HealthCheckResponse{
+				Status: health.HealthCheckResponse_SERVING,
+			}
+			<span style="color:#ff79c6">if</span> err <span style="color:#ff79c6">:=</span> watcher.<span style="color:#50fa7b">Send</span>(<span style="color:#ff79c6">&amp;</span>resp); err <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">nil</span> {
+				<span style="color:#ff79c6">return</span> err
+			}
+
+			<span style="color:#ff79c6">&lt;-</span>time.<span style="color:#50fa7b">After</span>(time.Second)
+		}
+	}
+}
+
+<span style="color:#8be9fd;font-style:italic">func</span> <span style="color:#50fa7b">main</span>() {
+	conn, err <span style="color:#ff79c6">:=</span> grpc.<span style="color:#50fa7b">NewClient</span>(
+		<span style="color:#f1fa8c">&#34;localhost:50051&#34;</span>,
+		grpc.<span style="color:#50fa7b">WithTransportCredentials</span>(insecure.<span style="color:#50fa7b">NewCredentials</span>()),
+	)
+	<span style="color:#ff79c6">if</span> err <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">nil</span> {
+		log.<span style="color:#50fa7b">Fatalf</span>(<span style="color:#f1fa8c">&#34;fail to dial: %v&#34;</span>, err)
+	}
+	<span style="color:#ff79c6">defer</span> conn.<span style="color:#50fa7b">Close</span>()
+
+	server <span style="color:#ff79c6">:=</span> grpc.<span style="color:#50fa7b">NewServer</span>()
+	health.<span style="color:#50fa7b">RegisterHealthServer</span>(server, <span style="color:#ff79c6">&amp;</span>simpleHealthService{})
+
+	<span style="color:#6272a4">// bidi.NewListener(conn) will create a fully functional listener,
+</span><span style="color:#6272a4"></span>	<span style="color:#6272a4">// over the existing gRPC connection
+</span><span style="color:#6272a4"></span>	<span style="color:#ff79c6">if</span> err <span style="color:#ff79c6">:=</span> server.<span style="color:#50fa7b">Serve</span>(bidi.<span style="color:#50fa7b">NewListener</span>(conn)); err <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">nil</span> {
+		log.<span style="color:#50fa7b">Fatalf</span>(<span style="color:#f1fa8c">&#34;failed to serve: %v&#34;</span>, err)
+	}
+}</code></pre></div>
+<p>And now we can call it from the server. Let&rsquo;s say, in Java, to demonstrate it being cross-platform:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">package</span> com.example<span style="color:#ff79c6">;</span>
+
+<span style="color:#ff79c6">import</span> io.grpc.ManagedChannel<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">import</span> io.grpc.ManagedChannelBuilder<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">import</span> io.grpc.Metadata<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">import</span> io.grpc.ServerBuilder<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">import</span> io.grpc.bidi.ClientChannelService<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">import</span> io.grpc.health.v1.HealthCheckRequest<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">import</span> io.grpc.health.v1.HealthCheckResponse<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">import</span> io.grpc.health.v1.HealthGrpc<span style="color:#ff79c6">;</span>
+<span style="color:#ff79c6">import</span> io.grpc.stub.StreamObserver<span style="color:#ff79c6">;</span>
+
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">Server</span> <span style="color:#ff79c6">{</span>
+
+	<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> Exception <span style="color:#ff79c6">{</span>
+		io<span style="color:#ff79c6">.</span><span style="color:#50fa7b">grpc</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Server</span> server <span style="color:#ff79c6">=</span> createServer<span style="color:#ff79c6">(</span>50051<span style="color:#ff79c6">);</span>
+		server<span style="color:#ff79c6">.</span><span style="color:#50fa7b">start</span><span style="color:#ff79c6">();</span>
+		System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Server started on &#34;</span> <span style="color:#ff79c6">+</span> server<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getListenSockets</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">get</span><span style="color:#ff79c6">(</span>0<span style="color:#ff79c6">));</span>
+		server<span style="color:#ff79c6">.</span><span style="color:#50fa7b">awaitTermination</span><span style="color:#ff79c6">();</span>
+	<span style="color:#ff79c6">}</span>
+
+	<span style="color:#8be9fd;font-style:italic">static</span> io<span style="color:#ff79c6">.</span><span style="color:#50fa7b">grpc</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">Server</span> <span style="color:#50fa7b">createServer</span><span style="color:#ff79c6">(</span><span style="color:#8be9fd">int</span> port<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+		<span style="color:#ff79c6">return</span> ServerBuilder
+			<span style="color:#ff79c6">.</span><span style="color:#50fa7b">forPort</span><span style="color:#ff79c6">(</span>port<span style="color:#ff79c6">)</span>
+			<span style="color:#ff79c6">.</span><span style="color:#50fa7b">addService</span><span style="color:#ff79c6">(</span>
+				<span style="color:#ff79c6">new</span> ClientChannelService<span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+					@Override
+					<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">tune</span><span style="color:#ff79c6">(</span>ManagedChannelBuilder<span style="color:#ff79c6">&lt;?&gt;</span> builder<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+						builder<span style="color:#ff79c6">.</span><span style="color:#50fa7b">keepAliveWithoutCalls</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">true</span><span style="color:#ff79c6">);</span>
+					<span style="color:#ff79c6">}</span>
+
+					@Override
+					<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">onChannel</span><span style="color:#ff79c6">(</span>ManagedChannel channel<span style="color:#ff79c6">,</span> Metadata headers<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+						<span style="color:#6272a4">// The &#34;channel&#34; here is a &#34;normal&#34; ManagedChannel,
+</span><span style="color:#6272a4"></span>						<span style="color:#6272a4">// the same you would get by creating a direct connection to the client.
+</span><span style="color:#6272a4"></span>						<span style="color:#6272a4">// each connected client that supports bidi will trigger this method.
+</span><span style="color:#6272a4"></span>						<span style="color:#6272a4">// The &#34;headers&#34; metadata can be used to auth &amp; identify sessions, too!
+</span><span style="color:#6272a4"></span>						HealthGrpc<span style="color:#ff79c6">.</span><span style="color:#50fa7b">HealthStub</span> healthStub <span style="color:#ff79c6">=</span> HealthGrpc<span style="color:#ff79c6">.</span><span style="color:#50fa7b">newStub</span><span style="color:#ff79c6">(</span>channel<span style="color:#ff79c6">);</span>
+
+						healthStub<span style="color:#ff79c6">.</span><span style="color:#50fa7b">watch</span><span style="color:#ff79c6">(</span>
+							HealthCheckRequest<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getDefaultInstance</span><span style="color:#ff79c6">(),</span>
+							<span style="color:#ff79c6">new</span> StreamObserver<span style="color:#ff79c6">&lt;</span>HealthCheckResponse<span style="color:#ff79c6">&gt;()</span> <span style="color:#ff79c6">{</span>
+								@Override
+								<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">onNext</span><span style="color:#ff79c6">(</span>HealthCheckResponse healthCheckResponse<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+									System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Health response: &#34;</span> <span style="color:#ff79c6">+</span> healthCheckResponse<span style="color:#ff79c6">);</span>
+								<span style="color:#ff79c6">}</span>
+
+								@Override
+								<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">onError</span><span style="color:#ff79c6">(</span>Throwable e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+									e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+								<span style="color:#ff79c6">}</span>
+
+								@Override
+								<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">onCompleted</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+									System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Completed&#34;</span><span style="color:#ff79c6">);</span>
+								<span style="color:#ff79c6">}</span>
+							<span style="color:#ff79c6">}</span>
+						<span style="color:#ff79c6">);</span>
+					<span style="color:#ff79c6">}</span>
+				<span style="color:#ff79c6">}</span>
+			<span style="color:#ff79c6">)</span>
+			<span style="color:#ff79c6">.</span><span style="color:#50fa7b">build</span><span style="color:#ff79c6">();</span>
+	<span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span></code></pre></div>
+<p>As you can see, it is relatively easy in 2025 to break the request/response paradigm and build better APIs!</p>
+
+<h3 id="how-does-it-apply-to-mcp">How does it apply to MCP?</h3>
+
+<p>Instead of discussing how it applies <em>to</em> MCP, let&rsquo;s talk again about what MCP is:</p>
+
+<ol>
+<li>It is a network protocol</li>
+<li>&ldquo;Server&rdquo; is the main actor</li>
+<li>&ldquo;Client&rdquo; is a variety of devices, typically behind NAT so we can&rsquo;t easily establish a server-to-client connection</li>
+<li>Streaming-heavy protocol</li>
+</ol>
+
+<p>None of this really requires a new low/mid level protocol, in fact!</p>
+
+<p>If we weren&rsquo;t too busy vibe coding games and invested a bit more time in evolving low level protocols,
+MCP would not exist (at least in the current form) in the first place and instead would be a simple high level protocol, in gRPC or what&rsquo;s not,
+something like that:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-proto" data-lang="proto"> *crickets*</code></pre></div>
+<p>That&rsquo;s it!</p>
+
+<p>&ldquo;WTH?!&rdquo; you would say?<br />
+Well, guess what, there is already a protocol in gRPC that allows you to <a href="https://chromium.googlesource.com/external/github.com/grpc/grpc-go/+/HEAD/Documentation/server-reflection-tutorial.md" target="_blank">introspect defined services</a>!</p>
+
+<p>So we literally don&rsquo;t need to do anything to allow LLM to discover defined services, because the wheel was already invented long time ago.</p>
+
+<p>We can even use gRPC&rsquo;s annotations to provide more context to LLMs:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-proto" data-lang="proto"><span style="color:#8be9fd;font-style:italic">service</span> FileSystem {
+	<span style="color:#ff79c6">option</span> (llm_service) <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">true</span>;
+
+	<span style="color:#ff79c6">rpc</span> ListFiles(ListFilesRequest) <span style="color:#ff79c6">returns</span> (stream ListFilesResponse) {}
+
+	<span style="color:#ff79c6">rpc</span> ReadFile(ReadFileRequest) <span style="color:#ff79c6">returns</span> (stream ReadFileChunkResponse) {}
+
+	<span style="color:#ff79c6">rpc</span> WriteFile(WriteFileRequest) <span style="color:#ff79c6">returns</span> (WriteFileResponse) {}
+
+	<span style="color:#ff79c6">rpc</span> DeleteFile(DeleteFileRequest) <span style="color:#ff79c6">returns</span> (DeleteFileResponse) {}
+}</code></pre></div>
+<p>And btw it will already be infinitely better because it streams files instead of returning large JSONs ;)</p>
+
+<p>What else does it give us? Well, nothing, except the built-in security, load balancers support, SDKs in many popular languages,
+efficient binary-encoded messages, annotations and reflection for machine-readable introspection, more than a decade of the protocol shaping, and more!</p>
+
+<p>And that&rsquo;s just by using gRPC, not even the most efficient option for the job 🤷‍♂️</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>The hype is unavoidable, but <em>how</em> we navigate the hype typically defines whether we will actually move the needle forward for the industry or&hellip; create NFTs.</p>
+
+<p>Do I think that we need to allow LLMs perform actions on our behalf? Sure, why not.<br />
+But CTO in me screams at &ldquo;JSON RPC over SSE&rdquo; in the world where we can generate infinite cat images!<br />
+Here is one for you, btw:</p>
+
+<p><center>
+<img src="https://bsideup.github.io/images/mcp_my_http-ass/cato.png" alt="CATO" /><br>
+<sub>&ldquo;C&rdquo; in &ldquo;CTO&rdquo; stands for &ldquo;Cat&rdquo;</sub>
+</center></p>
+
+      </div>
+
+      <footer>
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "bsideup-github-io" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </footer>
+    </article>
+
+    
+  </section>
+
+      </div>
+
+      <footer class="footer">
+  <section class="container">
+    
+     © 2025
+    
+       · 
+      Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+    
+  </section>
+</footer>
+
+    </main>
+
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-131448346-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+  </body>
+
+</html>
