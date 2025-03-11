@@ -107,14 +107,14 @@
 
 <p>I get it. Every innovation requires a rewrite by a newer (and typically younger) generation.</p>
 
-<p>Containers, Blockchain, Crypto, WASM - they all could have been built on the existing tech (and, well, TLDs, lol).<br />
+<p>Containers, Blockchain, Crypto, WASM - they all could have been built on the existing tech (and, well, TLDs).<br />
 But hipsters gonna hip!</p>
 
 <p>But every now and then something truly bizarre happens. To me, that&rsquo;s MCP.</p>
 
 <h2 id="mc-who">MC who?</h2>
 
-<p><a href="https://modelcontextprotocol.io/introduction" target="_blank">Model Context Protocol (MCP)</a> is a &ldquo;standard&rdquo; (gone are the days of standard taking more than 5 <del>prompts</del> minutes to be developed). Let me quote their website as I am already getting too snarky:</p>
+<p><a href="https://modelcontextprotocol.io/introduction" target="_blank">Model Context Protocol (MCP)</a> is a &ldquo;standard&rdquo; (gone are the days of standards taking more than 5 <del>prompts</del> minutes to be developed). Let me quote their website as I am already getting too snarky:</p>
 
 <blockquote>
 <p>MCP is an open protocol that standardizes how applications provide context to LLMs. <strong>Think of MCP like a USB-C port for AI applications.</strong> Just as USB-C provides a standardized way to connect your devices to various peripherals and accessories, MCP provides a standardized way to connect AI models to different data sources and tools.</p>
@@ -172,10 +172,13 @@ But hipsters gonna hip!</p>
 Quoting the website, once again:</p>
 
 <blockquote>
-<p>Key classes include:
-- Protocol
-- Client
-- Server</p>
+<p>Key classes include:</p>
+
+<ul>
+<li>Protocol</li>
+<li>Client</li>
+<li>Server</li>
+</ul>
 </blockquote>
 
 <p>(I will not even start at the &ldquo;protocol&rdquo; defined as two code snippets, one in TypeScript and another one in Python)</p>
@@ -206,7 +209,7 @@ Quoting the website, once again:</p>
 <p>MCP is a protocol-not-protocol that allows LLMs to completely ignore the decades of well thoughtout APIs and instead force humans to write API wrappers and expose them via either unantheticated STDIO or HTTP SSE without a single mention of the authentication methods (because that&rsquo;s what all protocols do, right? right?&hellip;) and gives you &ldquo;Best practices for securing your data within your infrastructure&rdquo;.</p>
 </blockquote>
 
-<p>And of course there is a second WebSocket-based protocol that isn&rsquo;t even mentioned in the spec.</p>
+<p>And of course there is a third, WebSocket-based protocol that isn&rsquo;t even mentioned in the spec.</p>
 
 <h2 id="okay-smart-a-errr-smart-https-can-you-do-better">&ldquo;Okay, smart-a.. errr&hellip; smart-https, can you do better?&rdquo;</h2>
 
@@ -214,21 +217,21 @@ Quoting the website, once again:</p>
 
 <p>You would be wondering, what&rsquo;s my beef with all of this. No, the protocol wasn&rsquo;t invented by my ex-colleague that ate my pudding that I forgot to label or anything like that. But I <strong>do</strong> have a personal beef with this space&hellip; kinda.</p>
 
-<p><strong>Spoiler</strong>: it is not even the ignorance of existing tech and the duplication of effort that will be obsolete once LLMs will become a fraction smarter and be able to call APIs without <code>rm -rf /</code>-ing every now and then.</p>
+<p><strong>Spoiler</strong>: it is not even the ignorance of existing tech and the duplication of effort that will be obsolete once LLMs will become a tad smarter and be able to call APIs without <code>rm -rf /</code>-ing every now and then.</p>
 
 <p><center>
 <img src="https://bsideup.github.io/images/mcp_my_http-ass/beef.png" alt="Beef" /><br>
 <sub>Original image by Beef (TV series) 2023 ©️ Netflix</sub>
 </center></p>
 
-<p>In fact, contradictionary to everything I said before, my beef with this is that we were so distracted with Blockchain, Crypto, Web3, GenAI that we kidna forgot to move the &ldquo;core protocols&rdquo; needle forward.</p>
+<p>In fact, contradictionary to everything I said before, my beef with this is that we were so distracted with Blockchain, Crypto, Web3, NFTs and GenAI that we kidna forgot to move the &ldquo;core protocols&rdquo; needle forward.</p>
 
 <p>Let me explain. HTTP was a truly revolutional protocol&hellip; for the request/response model.</p>
 
-<p>But the model world is all about streaming, and not only streaming of media chunks from Netflix when you watch Beef, but the data streaming in general.<br />
+<p>But the modern world is all about streaming, and not only streaming of media chunks from Netflix when you watch great TV shows like the Beef, but the data streaming in general.<br />
 And let&rsquo;s admit it, modern streaming protocols suck!</p>
 
-<p>I happened to know a thing or two about it because I was part of the Reactive Foundation and involved in <a href="https://rsocket.io" target="_blank">https://rsocket.io</a> - a modern protocol (started at Netflix, btw!) that would truly be a Streaming-first protocol. Here are some <strong>unique</strong> things about it:</p>
+<p>I happened to know a thing or two about it because I was part of the Reactive Foundation (sub-foundation of the Linux Foundation) and involved in <a href="https://rsocket.io" target="_blank">https://rsocket.io</a> - a modern protocol (started at Netflix, btw!) that would truly be a Streaming-native protocol. Here are some <strong>unique</strong> things about it:</p>
 
 <ul>
 <li>Built-in backpressure: not just gRPC&rsquo;s SHOULD-style &ldquo;ready / not ready&rdquo;, but a proper MUST-style backpressure that communicates the demand and fails if the producer does not respect it.</li>
@@ -236,8 +239,8 @@ And let&rsquo;s admit it, modern streaming protocols suck!</p>
 <li>No differentiation between the client &amp; server: you can easily start a request from the server.</li>
 </ul>
 
-<p>The first two are important but, in the context of MCP, let&rsquo;s focus on the last bulletpoint: direction independence.<br />
-Thinking of it as Push Notifications on your smartphone that allow you to receive a notification even before you open the app and pull to refresh.</p>
+<p>The first two are important but, in the context of MCP, let&rsquo;s focus on the last bulletpoint: directional independence.<br />
+Think of it as the Push Notifications on your smartphone that allow you to receive a notification even before you open the app and pull to refresh.</p>
 
 <p>Let&rsquo;s imagine a world where in 2025 we were not using protocols from 2000s. And no, I am not saying that there isn&rsquo;t any progress, there is.<br />
 HTTP2 Server Push, WebSockets, RSocket, <a href="https://zeroc.com/icerpc" target="_blank">IceRPC</a> (similar to RSocket but tied to QUIC), and even the gRPC despite its major limitations.</p>
@@ -246,11 +249,11 @@ HTTP2 Server Push, WebSockets, RSocket, <a href="https://zeroc.com/icerpc" targe
 
 <p>But the way they achieve that is what defines the &ldquo;generation&rdquo; of such protocol.</p>
 
-<p>Let&rsquo;s say we want to build a Push Noficications service, that allows us to receive a server-defined event that we did not explicitly request.</p>
+<p>Let&rsquo;s say we want to build a Push Noficications service that allows us to receive a server-issued event that we did not explicitly request.</p>
 
 <h3 id="2000s-http-polling">2000s (HTTP polling)</h3>
 
-<p>Here is how we would do it in 2000s (and, tech inflation adjusted, how some legacy Enterprises do it today):</p>
+<p>Here is how we would do it in 2000s (and, tech deflation adjusted, how some legacy Enterprises do it today):</p>
 
 <ol>
 <li>Define a &ldquo;/notifications&rdquo; HTTP endpoint that returns&hellip; well&hellip; let&rsquo;s be real, XML, because it is 2000s.</li>
@@ -270,7 +273,7 @@ HTTP2 Server Push, WebSockets, RSocket, <a href="https://zeroc.com/icerpc" targe
 <p>Cons:</p>
 
 <ul>
-<li>Extremely expensive, basically DDoS-as-a-Service. Every client becomes a member of the botnet that attacks your servers, and <strong>you</strong> are responsible for it!</li>
+<li>Extremely expensive, basically DDoS-as-a-Service. Every client becomes a member of the botnet that attacks your servers, and <strong>you</strong> are responsible for creating it!</li>
 <li>Worst case scenario: N seconds delay where N is the timer interval. Imagine reading that &ldquo;someone opened the window&rdquo; notification 15 seconds later together with the burglar who is already giving you&hellip; err&hellip; headpats?</li>
 </ul>
 
@@ -290,10 +293,11 @@ HTTP2 Server Push, WebSockets, RSocket, <a href="https://zeroc.com/icerpc" targe
 <ul>
 <li>Must be initiated by the client</li>
 <li>The client must know what to request upfront</li>
+<li>Resumption is&hellip; tricky.</li>
 <li>Push-based streaming that does not give the client a chance to do the backpressure and avoid the &ldquo;fast producer slow consumer&rdquo; scenario</li>
 </ul>
 
-<p>If you want to experience it yourself, try <a href="https://www.mediawiki.org/wiki/API:Recent_changes_stream" target="_blank">Wikipedia&rsquo;s changes stream</a> that is nearly impossible to follow!</p>
+<p>If you want to experience it yourself, try <a href="https://www.mediawiki.org/wiki/API:Recent_changes_stream" target="_blank">Wikipedia&rsquo;s changes stream</a> that is nearly impossible to follow given the amount!</p>
 
 <p>This works fine when you need to subscribe to events, but is it the right protocol to allow the server call a method on the client, which is exactly what MCP does?</p>
 
@@ -311,7 +315,8 @@ HTTP2 Server Push, WebSockets, RSocket, <a href="https://zeroc.com/icerpc" targe
 
 <ul>
 <li>No need for any polling, the producer can just call the initiator</li>
-<li>The initiator can respond with backpressure control on every request that the producer is making. In fact, even &ldquo;one off&rdquo; requests can be done in a way that the initiator must confirm that it is ready to accept data before the producer actually sends it after calling the method, Reactive-style</li>
+<li>The initiator can respond with backpressure control on every request that the producer is making.<br />
+In fact, even &ldquo;one off&rdquo; requests can be done in a way that the initiator must confirm that it is ready to accept data before the producer actually sends it after calling the method, Reactive-style</li>
 <li>QUIC and other modern stateless/semi-stateless protocols can be used</li>
 </ul>
 
@@ -327,8 +332,9 @@ HTTP2 Server Push, WebSockets, RSocket, <a href="https://zeroc.com/icerpc" targe
 
 <h4 id="2025-bi-directional-grpc">2025(?): bi-directional gRPC</h4>
 
-<p>gRPC heavily utilizes HTTP/2 as its transport, which does support Server Push but is very limiting at the same time.<br />
-There is a conversation on the gRPC specification issue tracker about &ldquo;tunneling&rdquo; - an ability to establish a bi-directional tunnel over the existing gRPC connection:<br />
+<p>gRPC heavily utilizes HTTP/2 as its transport, which does support Server Push but not used by gRPC.</p>
+
+<p>There is a conversation on the gRPC specification issue tracker about &ldquo;tunneling&rdquo; - an ability to establish a bi-directional tunnel over the existing gRPC connection:<br />
 <a href="https://github.com/grpc/grpc/issues/14101" target="_blank">https://github.com/grpc/grpc/issues/14101</a></p>
 
 <p>There was even a functional PoC in grpc-java that implements it:<br />
@@ -336,7 +342,7 @@ There is a conversation on the gRPC specification issue tracker about &ldquo;tun
 
 <p>In fact, yours truly ended up evolving that PoC into a working solution running in production and serving FAANGs of this world!</p>
 
-<p><a href="https://github.com/bsideup/grpc-bidi" target="_blank">Currently implemented for Go and Java</a>, it allows calling gRPC services on connected clients as if the connection was done directly to them from the server using the client library.</p>
+<p><a href="https://github.com/bsideup/grpc-bidi" target="_blank">Currently implemented for Go and Java</a> (but not limited to, any gRPC impl would do), it allows calling gRPC services on connected clients as if the connection was done directly to them from the server using the client library.</p>
 
 <p>Let&rsquo;s say, we want to define a client-side health service using Go:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#ff79c6">package</span> main
@@ -465,7 +471,7 @@ There is a conversation on the gRPC specification issue tracker about &ldquo;tun
 
 <h3 id="how-does-it-apply-to-mcp">How does it apply to MCP?</h3>
 
-<p>Instead of discussing how it applies <em>to</em> MCP, let&rsquo;s talk again about what MCP is:</p>
+<p>Instead of discussing how it <em>applies</em> to MCP, let&rsquo;s talk again about what MCP is:</p>
 
 <ol>
 <li>It is a network protocol</li>
@@ -479,7 +485,11 @@ There is a conversation on the gRPC specification issue tracker about &ldquo;tun
 <p>If we weren&rsquo;t too busy vibe coding games and invested a bit more time in evolving low level protocols,
 MCP would not exist (at least in the current form) in the first place and instead would be a simple high level protocol, in gRPC or what&rsquo;s not,
 something like that:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-proto" data-lang="proto"> *crickets*</code></pre></div>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-proto" data-lang="proto"><span style="color:#8be9fd;font-style:italic">extend</span> <span style="color:#50fa7b">google</span><span style="color:#ff79c6">.</span>protobuf.ServiceOptions {
+  <span style="color:#8be9fd">bool</span> llm_service <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">50000</span>;
+}
+
+ *crickets*</code></pre></div>
 <p>That&rsquo;s it!</p>
 
 <p>&ldquo;WTH?!&rdquo; you would say?<br />
@@ -487,31 +497,31 @@ Well, guess what, there is already a protocol in gRPC that allows you to <a href
 
 <p>So we literally don&rsquo;t need to do anything to allow LLM to discover defined services, because the wheel was already invented long time ago.</p>
 
-<p>We can even use gRPC&rsquo;s annotations to provide more context to LLMs:</p>
+<p>So it can (but does not have to) be as easy as hinting which service is an &ldquo;LLM service&rdquo;:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-proto" data-lang="proto"><span style="color:#8be9fd;font-style:italic">service</span> FileSystem {
 	<span style="color:#ff79c6">option</span> (llm_service) <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">true</span>;
 
 	<span style="color:#ff79c6">rpc</span> ListFiles(ListFilesRequest) <span style="color:#ff79c6">returns</span> (stream ListFilesResponse) {}
 
-	<span style="color:#ff79c6">rpc</span> ReadFile(ReadFileRequest) <span style="color:#ff79c6">returns</span> (stream ReadFileChunkResponse) {}
+	<span style="color:#ff79c6">rpc</span> ReadFile(ReadFileRequest) <span style="color:#ff79c6">returns</span> (stream ReadFileResponse) {}
 
-	<span style="color:#ff79c6">rpc</span> WriteFile(WriteFileRequest) <span style="color:#ff79c6">returns</span> (WriteFileResponse) {}
+	<span style="color:#ff79c6">rpc</span> WriteFile(stream WriteFileRequest) <span style="color:#ff79c6">returns</span> (WriteFileResponse) {}
 
 	<span style="color:#ff79c6">rpc</span> DeleteFile(DeleteFileRequest) <span style="color:#ff79c6">returns</span> (DeleteFileResponse) {}
 }</code></pre></div>
 <p>And btw it will already be infinitely better because it streams files instead of returning large JSONs ;)</p>
 
 <p>What else does it give us? Well, nothing, except the built-in security, load balancers support, SDKs in many popular languages,
-efficient binary-encoded messages, annotations and reflection for machine-readable introspection, more than a decade of the protocol shaping, and more!</p>
+efficient binary-encoded messages, annotations and reflection for machine-readable introspection, a decade+ of the protocol shaping, and more!</p>
 
 <p>And that&rsquo;s just by using gRPC, not even the most efficient option for the job 🤷‍♂️</p>
 
 <h1 id="conclusion">Conclusion</h1>
 
-<p>The hype is unavoidable, but <em>how</em> we navigate the hype typically defines whether we will actually move the needle forward for the industry or&hellip; create NFTs.</p>
+<p>The hype is unavoidable, but <em>how</em> we navigate the hype typically defines whether we will actually move the needle forward for the industry (like Docker/Kubernetes did with popularizing Go) or we will simply&hellip; create NFTs.</p>
 
 <p>Do I think that we need to allow LLMs perform actions on our behalf? Sure, why not.<br />
-But CTO in me screams at &ldquo;JSON RPC over SSE&rdquo; in the world where we can generate infinite cat images!<br />
+But CTO in me screams at &ldquo;JSON RPC over SSE&rdquo; in the world where we have the power to generate infinite cat images!<br />
 Here is one for you, btw:</p>
 
 <p><center>
