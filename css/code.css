@@ -1,0 +1,5 @@
+div.highlight pre {
+    -moz-tab-size: 2 !important;
+    -o-tab-size: 2 !important;
+    tab-size: 2 !important;
+  }
