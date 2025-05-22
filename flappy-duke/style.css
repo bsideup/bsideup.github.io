@@ -41,10 +41,15 @@ canvas {
 #footer {
     background-color: #1F2124;
     padding: 5px 20px;
-    text-align: right;
+    text-align: center;
     border-top: 1px solid #333;
     font-size: 14px;
     color: #999;
+}
+
+#footer a {
+    color: #E0E0E0; /* Light grey */
+    text-decoration: none;
 }
 
 #score {
