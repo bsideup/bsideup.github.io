@@ -4,9 +4,9 @@ const ctx = canvas.getContext('2d');
 const characterImg = new Image();
 characterImg.src = 'CloudSurf.png';
 
-const GRAVITY = 0.3; /* Adjusted gravity */
-const JUMP_STRENGTH = -8; /* Increased jump strength */
-const PIPE_SPEED = 2;
+const GRAVITY = 24 * 100; /* Adjusted gravity */
+const JUMP_STRENGTH = -8 * 100; /* Increased jump strength */
+const PIPE_SPEED = 2 * 100;
 const PIPE_WIDTH = 80;
 const PIPE_GAP = 250; // Gap between upper and lower pipes
 
@@ -26,6 +26,7 @@ let gameOver = false;
 let gameStarted = false; /* New variable to control game start */
 let frame = 0;
 let animationFrameId = null; // Store animation frame ID
+let lastTime = 0; // Store the time of the last frame
 
 // Grafana-like chart background
 let chartData = [];
@@ -51,22 +52,22 @@ function drawChart() {
     ctx.lineWidth = 0.5;
 
     // Horizontal grid lines
+    ctx.beginPath();
     for (let i = 0; i <= 10; i++) {
         let y = (canvas.height / 10) * i;
-        ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(canvas.width, y);
-        ctx.stroke();
     }
+    ctx.stroke();
 
     // Vertical grid lines (time-based, less frequent) across the full canvas width
+    ctx.beginPath();
     for (let i = 0; i <= 8; i++) { // Roughly every 100px
         let x = (canvas.width / 8) * i;
-        ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvas.height);
-        ctx.stroke();
     }
+    ctx.stroke();
 
     // Draw chart line following the character, positioned to the left of Duke
     ctx.beginPath();
@@ -125,12 +126,12 @@ function drawPipes() {
     }
 }
 
-function update() {
+function update(dt) {
     if (gameOver || !gameStarted) return;
 
     // Update character
-    character.velocityY += GRAVITY;
-    character.y += character.velocityY;
+    character.velocityY += GRAVITY * dt;
+    character.y += character.velocityY * dt;
 
     // Prevent character from going off screen
     if (character.y + character.height > canvas.height) {
@@ -147,7 +148,7 @@ function update() {
     // Update pipes
     for (let i = 0; i < pipes.length; i++) {
         let p = pipes[i];
-        p.x -= PIPE_SPEED;
+        p.x -= PIPE_SPEED * dt;
 
         // Collision detection
         if (character.x < p.x + PIPE_WIDTH &&
@@ -294,8 +295,11 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-function gameLoop() {
-    update();
+function gameLoop(currentTime) {
+    const dt = (currentTime - lastTime) / 1000; // Convert to seconds
+    lastTime = currentTime;
+
+    update(dt);
     draw();
     animationFrameId = requestAnimationFrame(gameLoop);
 }
