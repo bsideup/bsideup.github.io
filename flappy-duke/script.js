@@ -1,187 +1,222 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const gameArea = document.getElementById('gameArea');
+const characterElement = document.getElementById('character');
+const pipesContainer = document.getElementById('pipesContainer');
+const chartContainer = document.getElementById('chartContainer');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const gameOverMessageElement = document.createElement('div');
+gameOverMessageElement.id = 'game-over-message';
+document.body.appendChild(gameOverMessageElement);
 
-const characterImg = new Image();
-characterImg.src = 'CloudSurf.png';
-
-const GRAVITY = 24 * 100; /* Adjusted gravity */
-const JUMP_STRENGTH = -8 * 100; /* Increased jump strength */
-const PIPE_SPEED = 2 * 100;
+const GRAVITY = 24 * 100;
+const JUMP_STRENGTH = -8 * 100;
+const PIPE_SPEED = 2 * 100; // pixels per second
 const PIPE_WIDTH = 80;
-const PIPE_GAP = 250; // Gap between upper and lower pipes
+const PIPE_GAP = 300;
+const PIPE_HORIZONTAL_GAP = 400; // Static horizontal gap between pipes
+const GAME_AREA_HEIGHT = 800; // Fixed height
 
-const INITIAL_X = 200; // Static position ~200px from the left
-
-let character = {
-    x: INITIAL_X,
-    y: canvas.height / 3, /* Adjusted initial position */
-    width: 40,  /* Further reduced width for smaller hitbox */
-    height: 40, /* Further reduced height for smaller hitbox */
+let characterState = {
+    x: 0, // Will be set dynamically in initializeGame
+    y: GAME_AREA_HEIGHT / 3,
+    width: 40,
+    height: 40,
     velocityY: 0
 };
 
-let pipes = [];
+let pipes = []; // Array to store pipe DOM elements and their state
 let score = 0;
 let gameOver = false;
-let gameStarted = false; /* New variable to control game start */
+let gameStarted = false;
 let frame = 0;
-let animationFrameId = null; // Store animation frame ID
-let lastTime = 0; // Store the time of the last frame
+let animationFrameId = null;
+let lastTime = 0;
+let lastPipeX = 0; // To keep track of the last pipe's x position
 
-// Grafana-like chart background
+// Chart data
 let chartData = [];
 const MAX_DATA_POINTS = 100;
-const CHART_LINE_COLOR = '#629E51'; // Grafana green
-const CHART_LINE_WIDTH = 2;
+const CHART_LINE_COLOR = '#629E51';
+const CHART_DISPLAY_WIDTH = 300; // Fixed width for the chart display
+
+function getGameAreaWidth() {
+    return gameArea.offsetWidth;
+}
+// GAME_AREA_HEIGHT is a constant
 
 function generateChartData() {
     if (chartData.length >= MAX_DATA_POINTS) {
         chartData.shift();
     }
-    // Map character's y-position to a value suitable for the chart
-    // Lower y (higher on screen) should mean lower memory usage for correct representation
-    const mappedY = character.y;
-    // Scale mappedY to fit the canvas height for the graph
-    const scaledY = (mappedY / canvas.height) * canvas.height;
+    const mappedY = characterState.y;
+    // Ensure scaledY calculation uses GAME_AREA_HEIGHT and handles potential division by zero if needed, though GAME_AREA_HEIGHT is constant.
+    const scaledY = (mappedY / GAME_AREA_HEIGHT) * GAME_AREA_HEIGHT; 
     chartData.push(scaledY);
 }
 
 function drawChart() {
-    // Draw grid lines (Grafana style) across the full canvas width
-    ctx.strokeStyle = '#333'; // Darker grey for grid
-    ctx.lineWidth = 0.5;
+    chartContainer.innerHTML = ''; // Clear previous chart elements
 
-    // Horizontal grid lines
-    ctx.beginPath();
+    // Draw grid lines
     for (let i = 0; i <= 10; i++) {
-        let y = (canvas.height / 10) * i;
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
+        let y = (GAME_AREA_HEIGHT / 10) * i;
+        const hGridLine = document.createElement('div');
+        hGridLine.className = 'grid-line horizontal-grid-line';
+        hGridLine.style.top = `${y}px`;
+        hGridLine.style.left = '0px';
+        chartContainer.appendChild(hGridLine);
     }
-    ctx.stroke();
-
-    // Vertical grid lines (time-based, less frequent) across the full canvas width
-    ctx.beginPath();
-    for (let i = 0; i <= 8; i++) { // Roughly every 100px
-        let x = (canvas.width / 8) * i;
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
+    for (let i = 0; i <= 8; i++) {
+        let x = (getGameAreaWidth() / 8) * i; // Use dynamic width
+        const vGridLine = document.createElement('div');
+        vGridLine.className = 'grid-line vertical-grid-line';
+        vGridLine.style.left = `${x}px`;
+        vGridLine.style.top = '0px';
+        chartContainer.appendChild(vGridLine);
     }
-    ctx.stroke();
 
-    // Draw chart line following the character, positioned to the left of Duke
-    ctx.beginPath();
-    ctx.strokeStyle = CHART_LINE_COLOR;
-    ctx.lineWidth = CHART_LINE_WIDTH;
+    // Draw chart line
+    const chartRightX = characterState.x;
+    const chartStartX = 0; // Always start at x=0 as per user feedback
 
-    const chartDisplayWidth = 300; // Fixed width for the chart display
-    const chartRightX = character.x; // The right edge of the chart is at the character's x
-    const chartStartX = chartRightX - chartDisplayWidth; // Calculate the starting x-position
-
-    if (chartData.length > 0) {
-        // Calculate the starting index for drawing based on the number of data points
-        const startIndex = Math.max(0, chartData.length - MAX_DATA_POINTS);
-
-        // Calculate the x-position for the first data point
-        const firstDataPointX = chartStartX + (chartDisplayWidth / MAX_DATA_POINTS) * startIndex;
-        ctx.moveTo(firstDataPointX, chartData[startIndex]);
+    if (chartData.length > 1) {
+        // Calculate the number of data points to display based on CHART_DISPLAY_WIDTH
+        const dataPointsToDisplay = Math.min(MAX_DATA_POINTS, chartData.length);
+        const startIndex = Math.max(0, chartData.length - dataPointsToDisplay);
 
         for (let i = startIndex + 1; i < chartData.length; i++) {
-            const dataIndex = i - startIndex;
-            const x = chartStartX + dataIndex * (chartDisplayWidth / MAX_DATA_POINTS);
-            ctx.lineTo(x, chartData[i]);
+            // Calculate x positions relative to chartStartX and scale to CHART_DISPLAY_WIDTH
+            // The line should extend from x=0 to characterState.x
+            const x1 = (i - 1 - startIndex) * (chartRightX / dataPointsToDisplay);
+            const y1 = chartData[i-1];
+            const x2 = (i - startIndex) * (chartRightX / dataPointsToDisplay);
+            const y2 = chartData[i];
+
+            // Create a div for each line segment (can be optimized)
+            const segment = document.createElement('div');
+            segment.className = 'chart-line-segment';
+            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            
+            segment.style.width = `${length}px`;
+            segment.style.left = `${x1}px`;
+            segment.style.top = `${y1}px`;
+            segment.style.transform = `rotate(${angle}rad)`;
+            segment.style.transformOrigin = '0 0';
+            segment.style.backgroundColor = CHART_LINE_COLOR; // Already in CSS, but for clarity
+            chartContainer.appendChild(segment);
         }
     }
-    ctx.stroke();
-
-    // Draw Y-axis labels (simplified) - Keep static for now
-    ctx.fillStyle = '#E0E0E0'; // Light grey for labels
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('100%', 30, 30);
-    ctx.fillText('50%', 30, canvas.height / 2);
-    ctx.fillText('0%', 30, canvas.height - 30);
-
-    // Draw X-axis label (simplified) - Keep static for now
-    // ctx.textAlign = 'center';
-    // ctx.textBaseline = 'bottom';
-    // ctx.fillText('Time', canvas.width / 2, canvas.height - 10);
 }
 
 function drawCharacter() {
-    ctx.drawImage(characterImg, character.x, character.y, character.width, character.height);
+    characterElement.style.left = `${characterState.x}px`;
+    characterElement.style.top = `${characterState.y}px`;
+    characterElement.style.width = `${characterState.width}px`;
+    characterElement.style.height = `${characterState.height}px`;
+}
+
+function createPipeElement(x, height, isTop) {
+    const pipeElement = document.createElement('div');
+    pipeElement.className = 'pipe';
+    pipeElement.style.left = `${x}px`;
+    pipeElement.style.width = `${PIPE_WIDTH}px`;
+    pipeElement.style.height = `${height}px`;
+    if (isTop) {
+        pipeElement.style.top = '0px';
+    } else {
+        pipeElement.style.bottom = '0px';
+    }
+    pipesContainer.appendChild(pipeElement);
+    return pipeElement;
 }
 
 function drawPipes() {
-    for (let i = 0; i < pipes.length; i++) {
-        let p = pipes[i];
-
-        // Upper pipe
-        ctx.fillStyle = '#EAB839'; // Grafana yellow/orange
-        ctx.fillRect(p.x, 0, PIPE_WIDTH, p.top);
-
-        // Lower pipe
-        ctx.fillRect(p.x, canvas.height - p.bottom, PIPE_WIDTH, p.bottom);
-    }
+    // Pipes are now DOM elements, their position is updated in the updatePipes function
+    // This function could be used if we needed to redraw all pipes from state, but it's handled by updatePipes
 }
 
-function update(dt) {
-    if (gameOver || !gameStarted) return;
+function updatePipes(dt) {
+    for (let i = pipes.length - 1; i >= 0; i--) {
+        let pState = pipes[i];
+        pState.x -= PIPE_SPEED * dt;
 
-    // Update character
-    character.velocityY += GRAVITY * dt;
-    character.y += character.velocityY * dt;
-
-    // Prevent character from going off screen
-    if (character.y + character.height > canvas.height) {
-        character.y = canvas.height - character.height;
-        character.velocityY = 0;
-        endGame("Stop-the-world pause!");
-    }
-    if (character.y < 0) {
-        character.y = 0;
-        character.velocityY = 0;
-        endGame("java.lang.OutOfMemoryError");
-    }
-
-    // Update pipes
-    for (let i = 0; i < pipes.length; i++) {
-        let p = pipes[i];
-        p.x -= PIPE_SPEED * dt;
+        pState.topElement.style.left = `${pState.x}px`;
+        pState.bottomElement.style.left = `${pState.x}px`;
 
         // Collision detection
-        if (character.x < p.x + PIPE_WIDTH &&
-            character.x + character.width > p.x &&
-            (character.y < p.top || character.y + character.height > canvas.height - p.bottom)) {
-            
-            if (character.y < p.top) {
+        if (
+            characterState.x < pState.x + PIPE_WIDTH &&
+            characterState.x + characterState.width > pState.x &&
+            (characterState.y < pState.topHeight || characterState.y + characterState.height > GAME_AREA_HEIGHT - pState.bottomHeight)
+        ) {
+            if (characterState.y < pState.topHeight) {
                 endGame("java.lang.OutOfMemoryError");
             } else {
                 endGame("Stop-the-world pause!");
             }
+            return; // Stop further processing if game over
         }
 
         // Check if pipe is off screen
-        if (p.x + PIPE_WIDTH < 0) {
-            pipes.shift(); // Remove pipe
-            score++; // Increment score when pipe passes
+        if (pState.x + PIPE_WIDTH < 0) {
+            pipesContainer.removeChild(pState.topElement);
+            pipesContainer.removeChild(pState.bottomElement);
+            pipes.splice(i, 1);
+            if (!gameOver) { // Only increment score if game is not over
+                score++;
+            }
         }
     }
+}
 
-    // Generate new pipes (only after game starts and with a delay for the first pipe)
-    if (gameStarted && frame % 150 === 0 && frame > 0) {
-        let topHeight = Math.random() * (canvas.height - PIPE_GAP - 100) + 50;
-        let bottomHeight = canvas.height - topHeight - PIPE_GAP;
-        pipes.push({
-            x: canvas.width,
-            top: topHeight,
-            bottom: bottomHeight
-        });
+
+function update(dt) {
+    if (gameOver || !gameStarted) {
+        return;
     }
 
-    // Update chart data with character's y position
-    if (frame % 5 === 0) { // Update chart data more frequently
+    // Update character
+    characterState.velocityY += GRAVITY * dt;
+    characterState.y += characterState.velocityY * dt;
+
+    // Prevent character from going off screen (bottom)
+    if (characterState.y + characterState.height > GAME_AREA_HEIGHT) {
+        characterState.y = GAME_AREA_HEIGHT - characterState.height;
+        characterState.velocityY = 0;
+        endGame("Stop-the-world pause!");
+    }
+    // Prevent character from going off screen (top)
+    if (characterState.y < 0) {
+        characterState.y = 0;
+        characterState.velocityY = 0;
+        endGame("java.lang.OutOfMemoryError");
+    }
+
+    updatePipes(dt);
+
+    // Generate new pipes based on horizontal gap
+    // Only generate if game has started and there's enough space from the last pipe
+    if (gameStarted && (pipes.length === 0 || pipes[pipes.length - 1].x <= getGameAreaWidth() - PIPE_HORIZONTAL_GAP)) {
+        let gameH = GAME_AREA_HEIGHT; // Use fixed height
+        let topHeight = Math.random() * (gameH - PIPE_GAP - 100) + 50;
+        let bottomHeight = gameH - topHeight - PIPE_GAP;
+        
+        const newPipeX = getGameAreaWidth(); // New pipes always start from the right edge
+        const topPipeElement = createPipeElement(newPipeX, topHeight, true);
+        const bottomPipeElement = createPipeElement(newPipeX, bottomHeight, false);
+
+        pipes.push({
+            x: newPipeX,
+            topHeight: topHeight,
+            bottomHeight: bottomHeight,
+            topElement: topPipeElement,
+            bottomElement: bottomPipeElement
+        });
+        lastPipeX = newPipeX; // Update lastPipeX after generating a new pipe
+    }
+
+    // Update chart data
+    if (frame % 5 === 0) {
         generateChartData();
     }
 
@@ -189,127 +224,164 @@ function update(dt) {
 }
 
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Clear relevant containers if needed (pipesContainer is managed by adding/removing)
+    // chartContainer.innerHTML = ''; // Done in drawChart
 
-    drawChart(); // Draw Grafana chart background
-    drawPipes();
+    drawChart();
+    // Pipes are drawn/updated via DOM manipulation in updatePipes and createPipeElement
     drawCharacter();
 
-    // Display legend on the right side
-    const legendStartX = canvas.width - 180; // Starting x-position for the legend
-    const legendWidth = 160; // Estimated width of the legend area
-    const legendStartY = 10; // Starting y-position for the legend background
-    const legendHeight = 120; // Estimated height of the legend area
-    const legendLineHeight = 25; // Vertical spacing between legend items
-
-    // Draw semi-transparent background for the legend
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'; // Dark grey with 80% opacity
-    ctx.fillRect(legendStartX - 10, legendStartY, legendWidth + 20, legendHeight); // Add some padding
-
-    ctx.fillStyle = '#E0E0E0'; // Light grey for legend text
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'left'; // Align text to the left for labels
-    ctx.textBaseline = 'top';
-
-    ctx.fillText('Legend:', legendStartX, 20);
-
-    // Memory Usage legend item
-    ctx.fillStyle = CHART_LINE_COLOR;
-    ctx.fillRect(legendStartX, 20 + legendLineHeight, 15, 15); // Color box
-    ctx.fillStyle = '#E0E0E0';
-    ctx.fillText('Memory Usage', legendStartX + 25, 20 + legendLineHeight); // Text label
-
-    // Pipes legend item
-    ctx.fillStyle = '#EAB839';
-    ctx.fillRect(legendStartX, 20 + 2 * legendLineHeight, 15, 15); // Color box
-    ctx.fillStyle = '#E0E0E0';
-    ctx.fillText('Pipes', legendStartX + 25, 20 + 2 * legendLineHeight); // Text label
-
-    // GC cycles score
-    ctx.fillStyle = '#E0E0E0';
-    ctx.fillText('GC cycles: ' + score, legendStartX, 20 + 3 * legendLineHeight);
+    scoreDisplay.textContent = 'GC cycles: ' + score;
 
     if (gameOver) {
-        document.getElementById('game-over-message').style.display = 'block';
+        gameOverMessageElement.style.display = 'block';
     } else {
-        document.getElementById('game-over-message').style.display = 'none';
+        gameOverMessageElement.style.display = 'none';
     }
 }
 
-let gameOverMessage = "";
-const gameOverMessageElement = document.createElement('div');
-gameOverMessageElement.id = 'game-over-message';
-document.body.appendChild(gameOverMessageElement);
-
+let currentGameOverMessage = "";
 
 function endGame(message) {
+    if (gameOver) return; // Prevent multiple calls
     gameOver = true;
-    gameOverMessage = message;
+    currentGameOverMessage = message;
     gameOverMessageElement.innerHTML = `
-        ${gameOverMessage}<br>
+        ${currentGameOverMessage}<br>
         <span style="font-size: 20px;">Click or Space to Restart</span><br>
         <span style="font-size: 16px;">Share your score on socials! :)</span>
     `;
+    gameOverMessageElement.style.display = 'block'; // Ensure it's visible
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId); // Stop the game loop
+        animationFrameId = null;
+    }
 }
 
 function restartGame() {
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
     }
-    character.x = INITIAL_X; // Reset character x position
-    character.y = canvas.height / 3; /* Consistent initial position */
-    character.velocityY = 0;
+
+    lastPipeX = getGameAreaWidth(); // Initialize lastPipeX on restart
+
+    // Clear existing pipes from DOM and array
+    pipes.forEach(p => {
+        if (p.topElement.parentNode === pipesContainer) pipesContainer.removeChild(p.topElement);
+        if (p.bottomElement.parentNode === pipesContainer) pipesContainer.removeChild(p.bottomElement);
+    });
     pipes = [];
+
+    characterState.x = getGameAreaWidth() / 3; // Set character X on restart
+    characterState.y = GAME_AREA_HEIGHT / 3;
+    characterState.velocityY = 0;
     score = 0;
     gameOver = false;
-    gameStarted = false; /* Reset gameStarted on restart */
+    gameStarted = false;
     frame = 0;
-    chartData = []; // Reset chart data on restart
-    // Re-initialize chart data for a fresh start
+    chartData = [];
+    gameOverMessageElement.style.display = 'none';
+
+    // Re-initialize chart data
     for (let i = 0; i < MAX_DATA_POINTS; i++) {
-        generateChartData();
+        // Initialize with character's initial position
+        chartData.push(GAME_AREA_HEIGHT / 3); 
     }
-    gameLoop();
+    
+    // Ensure character is reset visually
+    drawCharacter();
+    scoreDisplay.textContent = 'GC cycles: 0';
+
+    lastTime = performance.now(); // Reset lastTime for dt calculation
+    gameLoop(lastTime);
 }
 
-canvas.addEventListener('click', () => {
+function handleInput() {
     if (gameOver) {
         restartGame();
     } else if (!gameStarted) {
         gameStarted = true;
-        character.velocityY = JUMP_STRENGTH;
+        characterState.velocityY = JUMP_STRENGTH;
+        lastTime = performance.now(); // Initialize lastTime here
+        lastPipeX = getGameAreaWidth(); // Initialize lastPipeX when game starts
+        if (!animationFrameId) { // Only start a new loop if one isn't already running
+            gameLoop(lastTime);
+        }
     } else {
-        character.velocityY = JUMP_STRENGTH;
+        characterState.velocityY = JUMP_STRENGTH;
     }
-});
+}
 
+gameArea.addEventListener('click', handleInput);
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
-        if (gameOver) {
-            restartGame();
-        } else if (!gameStarted) {
-            gameStarted = true;
-            character.velocityY = JUMP_STRENGTH;
-        } else {
-            character.velocityY = JUMP_STRENGTH;
-        }
+        e.preventDefault(); // Prevent page scrolling
+        handleInput();
     }
 });
 
 function gameLoop(currentTime) {
-    const dt = (currentTime - lastTime) / 1000; // Convert to seconds
+    if (gameOver && !gameStarted) {
+        // This state can happen after a restart if the game ends immediately.
+        // Ensure the game over message is shown and animation stops.
+        gameOverMessageElement.style.display = 'block';
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+        return; // Stop the loop
+    }
+
+    const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
-    update(dt);
-    draw();
-    animationFrameId = requestAnimationFrame(gameLoop);
+    // It's crucial that dt is a valid number. If currentTime or lastTime is undefined/NaN, dt can be problematic.
+    if (isNaN(dt) || dt < 0 || dt > 1) { // dt > 1 might indicate a very long pause or issue
+        // Potentially reset lastTime or handle this scenario.
+        // If it's the very first frame after a restart and lastTime wasn't set by handleInput, dt could be large.
+    }
+
+
+    if (!gameOver) {
+        update(dt); // Pass valid dt
+        draw();
+        animationFrameId = requestAnimationFrame(gameLoop);
+    } else {
+        gameOverMessageElement.style.display = 'block';
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+    }
 }
 
-// Initial chart data generation
-for (let i = 0; i < MAX_DATA_POINTS; i++) {
-    generateChartData();
+// Initial setup
+function initializeGame() {
+    characterState.x = getGameAreaWidth() / 3; // Set initial X based on game area width
+    characterState.y = GAME_AREA_HEIGHT / 3; // Set initial Y based on actual height
+    drawCharacter(); // Position character initially
+    
+    // Initial chart data generation
+    for (let i = 0; i < MAX_DATA_POINTS; i++) {
+         chartData.push(GAME_AREA_HEIGHT / 3); // Initialize with character's initial position
+    }
+    drawChart(); // Draw initial chart state
+    scoreDisplay.textContent = 'GC cycles: 0';
+    gameOverMessageElement.style.display = 'none'; // Ensure it's hidden initially
+
+    // Don't start gameLoop immediately, wait for user input.
+    // Display a "Click or Space to Start" message or similar if desired.
+    // For now, it starts on first click/space.
 }
 
-characterImg.onload = () => {
-    gameLoop();
-};
+// Call initializeGame once the DOM is ready and image is notionally "loaded" (not waiting for image anymore)
+// We need to ensure gameArea has dimensions.
+window.addEventListener('load', () => {
+    // A small delay to ensure layout is complete, especially for offsetHeight
+    setTimeout(initializeGame, 100); 
+});
+
+// If CloudSurf.png is essential for character appearance, ensure it's handled.
+// Since it's a background image in CSS, it will load asynchronously.
+// For this DOM version, we don't need an explicit characterImg.onload.

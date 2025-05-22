@@ -1,23 +1,16 @@
-body {
+html, body {
+    height: 100%;
     margin: 0;
-    overflow: hidden;
+    padding: 0;
+}
+
+body {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    flex-direction: column;
     background-color: #202226; /* Grafana dark theme background */
     font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     color: #E0E0E0; /* Light grey for text */
-}
-
-#dashboard-container {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #333;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    background-color: #161719; /* Grafana panel background */
-    border-radius: 5px;
-    overflow: hidden; /* To contain canvas and other elements */
+    overflow: hidden; /* Prevent scrollbars during gameplay */
 }
 
 #header {
@@ -33,10 +26,104 @@ body {
     color: #E0E0E0;
 }
 
-canvas {
-    display: block; /* Remove extra space below canvas */
+#gameArea {
+    position: relative;
+    width: 100%;  /* Stretch to full width */
+    height: 800px; /* Fixed height */
+    margin: 0 auto; /* Center the game area if body allows, but width is 100% */
     background-color: #161719; /* Grafana panel background */
+    overflow: hidden; /* Keep game elements contained */
 }
+
+#character {
+    position: absolute;
+    width: 40px; /* Same as canvas version */
+    height: 40px; /* Same as canvas version */
+    background-image: url('CloudSurf.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 10;
+}
+
+#pipesContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+}
+
+.pipe {
+    position: absolute;
+    background-color: #EAB839; /* Grafana yellow/orange */
+    width: 80px; /* Same as canvas version */
+}
+
+#chartContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.chart-line-segment {
+    position: absolute;
+    background-color: #629E51; /* Grafana green */
+    height: 2px; /* CHART_LINE_WIDTH */
+}
+
+.grid-line {
+    position: absolute;
+    background-color: #333; /* Darker grey for grid */
+}
+
+.horizontal-grid-line {
+    width: 100%;
+    height: 0.5px;
+}
+
+.vertical-grid-line {
+    width: 0.5px;
+    height: 100%;
+}
+
+#legendContainer {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 100;
+    color: #E0E0E0;
+    font-size: 16px;
+}
+
+#legendContent p {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+#legendContent div {
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.legend-color-box {
+    width: 15px;
+    height: 15px;
+    margin-right: 10px;
+    display: inline-block;
+}
+
+#scoreDisplay {
+    margin-top: 10px;
+}
+
 
 #footer {
     background-color: #1F2124;
