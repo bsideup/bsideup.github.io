@@ -1,0 +1,77 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #202226; /* Grafana dark theme background */
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #E0E0E0; /* Light grey for text */
+}
+
+#dashboard-container {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #333;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    background-color: #161719; /* Grafana panel background */
+    border-radius: 5px;
+    overflow: hidden; /* To contain canvas and other elements */
+}
+
+#header {
+    background-color: #1F2124; /* Slightly lighter than panel background */
+    padding: 10px 20px;
+    text-align: center;
+    border-bottom: 1px solid #333;
+}
+
+#header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #E0E0E0;
+}
+
+canvas {
+    display: block; /* Remove extra space below canvas */
+    background-color: #161719; /* Grafana panel background */
+}
+
+#footer {
+    background-color: #1F2124;
+    padding: 5px 20px;
+    text-align: right;
+    border-top: 1px solid #333;
+    font-size: 14px;
+    color: #999;
+}
+
+#score {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 100;
+}
+
+#game-over-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #f00;
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    display: none; /* Hidden by default */
+    z-index: 200;
+}
