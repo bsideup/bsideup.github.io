@@ -247,7 +247,8 @@ function endGame(message) {
     gameOverMessage = message;
     gameOverMessageElement.innerHTML = `
         ${gameOverMessage}<br>
-        <span style="font-size: 20px;">Click or Space to Restart</span>
+        <span style="font-size: 20px;">Click or Space to Restart</span><br>
+        <span style="font-size: 16px;">Share your score on socials! :)</span>
     `;
 }
 
