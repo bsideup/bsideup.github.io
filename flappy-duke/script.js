@@ -323,6 +323,7 @@ function generatePun(type, score = 0) {
         "Your throughput is off the charts!",
         "You're a concurrent superstar!",
         "Making memory management look easy!",
+        "You're my 'ë'!",
         "Your game is a work of art, efficiently crafted!",
         "You're the envy of all other garbage collectors!",
         "Flawless execution, minimal pauses!",
@@ -349,7 +350,7 @@ function generatePun(type, score = 0) {
         "Your game is a masterpiece of memory control!",
         "The true champion of garbage collection!",
         "You're a memory god!",
-        "Achieving immortality through efficient memory!"
+        "Achieving immortality through efficient memory!",
     ];
 
     if (type === 'bad') {
