@@ -232,10 +232,18 @@ function update(dt) {
         punBannerElement.textContent = goodPun;
         punBannerElement.classList.add('visible');
 
-        // Hide the banner after 3 seconds
-        setTimeout(() => {
-            punBannerElement.classList.remove('visible');
-        }, 3000);
+        // Clear any existing timeout to prevent it from hiding while paused
+        if (punBannerTimeoutId) {
+            clearTimeout(punBannerTimeoutId);
+            punBannerTimeoutId = null;
+        }
+        // Set a new timeout only if not paused
+        if (!isPaused) {
+            punBannerTimeoutId = setTimeout(() => {
+                punBannerElement.classList.remove('visible');
+                punBannerTimeoutId = null;
+            }, 3000);
+        }
     }
 
     frame++;
@@ -379,6 +387,7 @@ document.body.appendChild(punBannerElement);
 let currentGameOverMessage = "";
 let lastPunScoreTier = -1; // To track when to show a new good pun
 let lastGoodPunIndex = -1; // To track the index of the last good pun shown
+let punBannerTimeoutId = null; // To store the timeout ID for the pun banner
 
 function endGame(message) {
     if (gameOver) return; // Prevent multiple calls
@@ -458,11 +467,30 @@ function togglePause() {
         }
         pauseIcon.classList.add('hidden');
         playIcon.classList.remove('hidden');
+
+        // If the score-based pun banner is visible, clear its timeout so it stays
+        if (punBannerElement.classList.contains('visible')) {
+            if (punBannerTimeoutId) {
+                clearTimeout(punBannerTimeoutId);
+                punBannerTimeoutId = null;
+            }
+            punBannerElement.dataset.wasVisibleBeforePause = 'true'; // Remember its state
+        } else {
+            punBannerElement.dataset.wasVisibleBeforePause = 'false';
+        }
     } else {
         lastTime = performance.now(); // Reset lastTime to prevent large dt on resume
         gameLoop(lastTime);
         pauseIcon.classList.remove('hidden');
         playIcon.classList.add('hidden');
+
+        // If the score-based pun banner was visible before pause, make it visible again and restart its timeout
+        if (punBannerElement.dataset.wasVisibleBeforePause === 'true') {
+            punBannerTimeoutId = setTimeout(() => {
+                punBannerElement.classList.remove('visible');
+                punBannerTimeoutId = null;
+            }, 3000);
+        }
     }
 }
 

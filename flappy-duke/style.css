@@ -268,6 +268,9 @@ body {
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.7); /* More prominent shadow */
     border: 2px solid #629E51; /* Green border */
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Text shadow for readability */
+    display: flex; /* Ensure it's displayed as a flex container */
+    align-items: center; /* Center content vertically */
+    justify-content: center; /* Center content horizontally */
 }
 
 .banner p {
