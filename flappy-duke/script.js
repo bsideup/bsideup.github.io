@@ -526,7 +526,7 @@ function handleInput(event) { // Accept event object
 
 document.addEventListener('click', handleInput);
 document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') {
+    if (e.code === 'Space' || e.key === ' ') { // Add e.key check
         e.preventDefault(); // Prevent page scrolling
         handleInput(e); // Pass event object for consistency
     } else if (e.code === 'KeyP') { // Handle 'P' key for pause
