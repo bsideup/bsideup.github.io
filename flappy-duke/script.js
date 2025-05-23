@@ -414,6 +414,7 @@ function restartGame() {
     gameStarted = false;
     frame = 0;
     chartData = [];
+    lastPunScoreTier = -1; // Reset for new game
     gameOverMessageElement.classList.remove('visible'); // Remove visible class
 
     // Re-initialize chart data
