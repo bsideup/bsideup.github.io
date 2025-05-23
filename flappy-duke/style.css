@@ -107,11 +107,11 @@ body {
     top: 70px; /* Adjusted to be below the header */
     right: 10px;
     background-color: rgba(0, 0, 0, 0.8);
-    padding: 10px;
+    padding: 5px; /* Reduced padding */
     border-radius: 5px;
     z-index: 100;
     color: #E0E0E0;
-    font-size: 16px;
+    font-size: 12px; /* Reduced font size */
 }
 
 #legendContent p {
@@ -126,9 +126,9 @@ body {
 }
 
 .legend-color-box {
-    width: 15px;
-    height: 15px;
-    margin-right: 10px;
+    width: 12px; /* Reduced size */
+    height: 12px; /* Reduced size */
+    margin-right: 5px; /* Reduced margin */
     display: inline-block;
 }
 
