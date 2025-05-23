@@ -203,9 +203,9 @@ body {
     margin-top: 10px;
 }
 
-.game-over-content span:first-of-type {
+.game-over-content .pun-message {
     font-size: 32px; /* Larger for the main message */
-    color: #F00; /* Red color for the main message */
+    color: #E0E0E0; /* Light grey for the pun message */
     margin-bottom: 15px;
 }
 

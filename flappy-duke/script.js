@@ -227,15 +227,48 @@ function draw() {
     scoreDisplay.textContent = 'GC cycles: ' + score;
 }
 
+function generatePun(score) {
+    if (score < 50) {
+        const badGCPuns = [
+            "Looks like you're stuck in a Full GC pause!",
+            "Your performance is like a Stop-the-World collector!",
+            "You're more like a Serial GC, single-threaded and slow!",
+            "Did you just hit an OutOfMemoryError?",
+            "Your GC cycles are as low as a CMS collector's throughput!",
+            "You're not collecting, you're just... pausing.",
+            "Is that a PermGen space issue I see?",
+            "You're running on fumes, like a JVM without enough heap!",
+            "Your game is as fragmented as a heap after too many minor GCs!",
+            "You're the old generation that just won't clear out!"
+        ];
+        return badGCPuns[Math.floor(Math.random() * badGCPuns.length)];
+    } else {
+        const goodGCPuns = [
+            "You're the Shenandoah of this world! Fast and concurrent!",
+            "Your performance is as smooth as ZGC!",
+            "You're a true Garbage Collector virtuoso, like a G1 in action!",
+            "You're so efficient, you must be using generational GC!",
+            "Your score is as high as a well-tuned JVM's throughput!",
+            "You're collecting like a pro, no pauses in sight!",
+            "You're optimizing memory like a champ!",
+            "You're the future of garbage collection!",
+            "Your game is as clean as a freshly swept heap!",
+            "You're a concurrent marker and a concurrent collector!"
+        ];
+        return goodGCPuns[Math.floor(Math.random() * goodGCPuns.length)];
+    }
+}
+
 let currentGameOverMessage = "";
 
 function endGame(message) {
     if (gameOver) return; // Prevent multiple calls
     gameOver = true;
     currentGameOverMessage = message;
+    const punMessage = generatePun(score); // Generate pun based on current score
     gameOverMessageElement.innerHTML = `
         <div class="game-over-content">
-            <span>${currentGameOverMessage}</span>
+            <span class="pun-message">${punMessage}</span>
             <span>Click or Space to Restart</span>
             <span>Share your score on socials! :)</span>
         </div>
