@@ -356,7 +356,12 @@ function generatePun(type, score = 0) {
     if (type === 'bad') {
         return badGCPuns[Math.floor(Math.random() * badGCPuns.length)];
     } else if (type === 'good') {
-        return goodGCPuns[Math.floor(Math.random() * goodGCPuns.length)];
+        let newPunIndex;
+        do {
+            newPunIndex = Math.floor(Math.random() * goodGCPuns.length);
+        } while (newPunIndex === lastGoodPunIndex && goodGCPuns.length > 1); // Ensure not the same as last, if there's more than one pun
+        lastGoodPunIndex = newPunIndex;
+        return goodGCPuns[newPunIndex];
     }
     return ""; // Should not happen
 }
@@ -367,6 +372,7 @@ document.body.appendChild(punBannerElement);
 
 let currentGameOverMessage = "";
 let lastPunScoreTier = -1; // To track when to show a new good pun
+let lastGoodPunIndex = -1; // To track the index of the last good pun shown
 
 function endGame(message) {
     if (gameOver) return; // Prevent multiple calls
@@ -415,6 +421,7 @@ function restartGame() {
     frame = 0;
     chartData = [];
     lastPunScoreTier = -1; // Reset for new game
+    lastGoodPunIndex = -1; // Reset for new game
     gameOverMessageElement.classList.remove('visible'); // Remove visible class
 
     // Re-initialize chart data
