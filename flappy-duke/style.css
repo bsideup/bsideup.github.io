@@ -209,9 +209,40 @@ body {
     margin-bottom: 15px;
 }
 
-.game-over-content span:nth-of-type(2) {
+.game-over-content .good-pun-message {
+    font-size: 24px; /* Slightly smaller than main pun, larger than instructions */
+    color: #629E51; /* Green for good puns */
+    margin-top: 5px; /* Small margin above it */
+    margin-bottom: 10px; /* Margin below it */
+}
+
+.game-over-content span:nth-of-type(2) { /* This will now target the "Click or Space to Restart" span */
     font-size: 20px; /* For restart instruction */
     color: #629E51; /* Green for action prompt */
+}
+
+#pun-banner {
+    position: fixed;
+    top: 50%; /* Center vertically */
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center both horizontally and vertically */
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark background */
+    color: #E0E0E0; /* Light text color */
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 999; /* Below game over modal, but above game elements */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s; /* Fade out after 0.5s */
+}
+
+#pun-banner.visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease-in-out; /* Fade in */
 }
 
 .game-over-content span:nth-of-type(3) {

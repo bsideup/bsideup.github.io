@@ -218,6 +218,20 @@ function update(dt) {
         generateChartData();
     }
 
+    // Check for good pun display
+    const currentScoreTier = Math.floor(score / 5);
+    if (score > 0 && currentScoreTier > lastPunScoreTier) {
+        lastPunScoreTier = currentScoreTier;
+        const goodPun = generatePun('good', score);
+        punBannerElement.textContent = goodPun;
+        punBannerElement.classList.add('visible');
+
+        // Hide the banner after 3 seconds
+        setTimeout(() => {
+            punBannerElement.classList.remove('visible');
+        }, 3000);
+    }
+
     frame++;
 }
 
@@ -227,48 +241,142 @@ function draw() {
     scoreDisplay.textContent = 'GC cycles: ' + score;
 }
 
-function generatePun(score) {
-    if (score < 50) {
-        const badGCPuns = [
-            "Looks like you're stuck in a Full GC pause!",
-            "Your performance is like a Stop-the-World collector!",
-            "You're more like a Serial GC, single-threaded and slow!",
-            "Did you just hit an OutOfMemoryError?",
-            "Your GC cycles are as low as a CMS collector's throughput!",
-            "You're not collecting, you're just... pausing.",
-            "Is that a PermGen space issue I see?",
-            "You're running on fumes, like a JVM without enough heap!",
-            "Your game is as fragmented as a heap after too many minor GCs!",
-            "You're the old generation that just won't clear out!"
-        ];
+function generatePun(type, score = 0) {
+    const badGCPuns = [
+        "Looks like you're stuck in a Full GC pause!",
+        "Your performance is like a Stop-the-World collector!",
+        "You're more like a Serial GC, single-threaded and slow!",
+        "Did you just hit an OutOfMemoryError?",
+        "Your GC cycles are as low as a CMS collector's throughput!",
+        "You're not collecting, you're just... pausing.",
+        "Is that a PermGen space issue I see?",
+        "You're running on fumes, like a JVM without enough heap!",
+        "Your game is as fragmented as a heap after too many minor GCs!",
+        "You're the old generation that just won't clear out!",
+        "Heap's a mess, just like your score!",
+        "Garbage in, garbage out... and you're out!",
+        "Failed to allocate more memory for your win!",
+        "Looks like a memory leak in your gameplay!",
+        "Your object graph is too complex for this game!",
+        "Stuck in a permanent generation space!",
+        "Did you forget to deallocate your mistakes?",
+        "Your game just crashed with a StackOverflowError!",
+        "Too many short-lived objects, just like your game!",
+        "You've been promoted to the old generation... of losers!",
+        "Your performance is as bad as a JVM with default settings!",
+        "You're not just losing, you're creating garbage!",
+        "Time for a major GC, because your game is full!",
+        "Your score is null, just like your chances!",
+        "Looks like you've hit the young generation ceiling!",
+        "You're experiencing high GC overhead!",
+        "Your game is suffering from excessive minor collections!",
+        "Did you forget to clear your cache of bad moves?",
+        "Your game is as slow as a synchronized block!",
+        "You're not just losing, you're causing a memory crisis!",
+        "Consider this a 'stop-the-world' moment for your ego!",
+        "Your game is fragmented, just like your hopes!",
+        "You've been de-referenced from the winner's list!",
+        "Looks like a 'concurrent mode failure' for your score!",
+        "Your game is as inefficient as manual memory management!",
+        "Did you forget to optimize your jumps?",
+        "You're stuck in a 'concurrent mark phase' of losing!",
+        "Your score is a 'weak reference' to success!",
+        "You're not just losing, you're causing a 'heap dump' of despair!",
+        "Consider this a 'concurrent sweep phase' of your dreams!",
+        "Your game is as unoptimized as a 'finalizer' queue!",
+        "You've been 'unreachable' from victory!",
+        "Looks like a 'metaspace' overflow for your skills!",
+        "Your game is as 'dirty' as a heap before a full GC!",
+        "You're not just losing, you're causing a 'GC log' of shame!",
+        "Consider this a 'concurrent pre-clean phase' of your defeat!",
+        "Your game is as 'stale' as an old object in the heap!",
+        "You've been 'evacuated' from the game!",
+        "Looks like a 'card table' overflow for your strategy!",
+        "Your game is as 'unmarked' as an object ready for collection!",
+        "You're not just losing, you're causing a 'GC pause' in reality!",
+        "Consider this a 'concurrent remark phase' of your failure!",
+        "Your game is as 'unpinned' as a bad memory address!",
+        "You've been 'reclaimed' by the game over screen!"
+    ];
+
+    const goodGCPuns = [
+        "Optimizing memory like a champ!",
+        "Collecting like a pro, no pauses in sight!",
+        "We have the next Shenandoah!",
+        "Performance as smooth as ZGC!",
+        "A true Garbage Collector virtuoso, like a G1 in action!",
+        "So efficient, must be using generational GC!",
+        "Score as high as a well-tuned JVM's throughput!",
+        "The future of garbage collection is here!",
+        "Game as clean as a freshly swept heap!",
+        "A concurrent marker and a concurrent collector!",
+        "You're a memory management master!",
+        "Your heap is perfectly defragmented!",
+        "Achieving peak performance, like a JIT compiler!",
+        "Your object allocation is flawless!",
+        "No memory leaks in your game!",
+        "You're a low-latency champion!",
+        "Garbage collection? What garbage collection?",
+        "Your game is running on all cylinders!",
+        "You're a true JVM whisperer!",
+        "Mastering the art of memory reclamation!",
+        "Your throughput is off the charts!",
+        "You're a concurrent superstar!",
+        "Making memory management look easy!",
+        "Your game is a work of art, efficiently crafted!",
+        "You're the envy of all other garbage collectors!",
+        "Flawless execution, minimal pauses!",
+        "Your memory footprint is tiny!",
+        "You're a memory optimization wizard!",
+        "The ultimate garbage collector!",
+        "Your game is a testament to efficient design!",
+        "You're a memory maestro!",
+        "Achieving maximum utilization!",
+        "No wasted bytes in your game!",
+        "You're a memory efficiency expert!",
+        "The pinnacle of garbage collection!",
+        "Your game is a lean, mean, memory machine!",
+        "You're a memory architect!",
+        "Building a perfect heap, one jump at a time!",
+        "Your game is a symphony of efficiency!",
+        "The gold standard of memory management!",
+        "You're a memory virtuoso!",
+        "Achieving optimal performance with ease!",
+        "Your game is a marvel of memory optimization!",
+        "The ultimate memory manager!",
+        "You're a memory legend!",
+        "Building a legacy of efficient gameplay!",
+        "Your game is a masterpiece of memory control!",
+        "The true champion of garbage collection!",
+        "You're a memory god!",
+        "Achieving immortality through efficient memory!"
+    ];
+
+    if (type === 'bad') {
         return badGCPuns[Math.floor(Math.random() * badGCPuns.length)];
-    } else {
-        const goodGCPuns = [
-            "You're the Shenandoah of this world! Fast and concurrent!",
-            "Your performance is as smooth as ZGC!",
-            "You're a true Garbage Collector virtuoso, like a G1 in action!",
-            "You're so efficient, you must be using generational GC!",
-            "Your score is as high as a well-tuned JVM's throughput!",
-            "You're collecting like a pro, no pauses in sight!",
-            "You're optimizing memory like a champ!",
-            "You're the future of garbage collection!",
-            "Your game is as clean as a freshly swept heap!",
-            "You're a concurrent marker and a concurrent collector!"
-        ];
+    } else if (type === 'good') {
         return goodGCPuns[Math.floor(Math.random() * goodGCPuns.length)];
     }
+    return ""; // Should not happen
 }
 
+const punBannerElement = document.createElement('div');
+punBannerElement.id = 'pun-banner';
+document.body.appendChild(punBannerElement);
+
 let currentGameOverMessage = "";
+let lastPunScoreTier = -1; // To track when to show a new good pun
 
 function endGame(message) {
     if (gameOver) return; // Prevent multiple calls
     gameOver = true;
     currentGameOverMessage = message;
-    const punMessage = generatePun(score); // Generate pun based on current score
+    
+    const badPun = generatePun('bad');
+
     gameOverMessageElement.innerHTML = `
         <div class="game-over-content">
-            <span class="pun-message">${punMessage}</span>
+            <span class="pun-message">${badPun}</span>
             <span>Click or Space to Restart</span>
             <span>Share your score on socials! :)</span>
         </div>
@@ -278,6 +386,8 @@ function endGame(message) {
         cancelAnimationFrame(animationFrameId); // Stop the game loop
         animationFrameId = null;
     }
+    // Hide pun banner if it's visible
+    punBannerElement.classList.remove('visible');
 }
 
 function restartGame() {
