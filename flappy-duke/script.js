@@ -301,7 +301,7 @@ function handleInput() {
     }
 }
 
-gameArea.addEventListener('click', handleInput);
+document.addEventListener('click', handleInput);
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         e.preventDefault(); // Prevent page scrolling
