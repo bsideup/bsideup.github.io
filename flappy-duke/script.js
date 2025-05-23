@@ -7,6 +7,8 @@ const gameOverMessageElement = document.createElement('div');
 gameOverMessageElement.id = 'game-over-message';
 document.body.appendChild(gameOverMessageElement);
 
+const initialBanner = document.getElementById('initialBanner');
+
 const GAME_AREA_BASE_WIDTH = 800; // Base width for game logic
 const GAME_AREA_BASE_HEIGHT = 500; // Base height for game logic (changed to rectangular)
 
@@ -442,6 +444,8 @@ function handleInput() {
         restartGame();
     } else if (!gameStarted) {
         gameStarted = true;
+        initialBanner.style.opacity = '0';
+        initialBanner.style.visibility = 'hidden';
         characterState.velocityY = JUMP_STRENGTH;
         lastTime = performance.now(); // Initialize lastTime here
         lastPipeX = getGameAreaWidth(); // Initialize lastPipeX when game starts

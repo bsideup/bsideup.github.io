@@ -250,3 +250,44 @@ body {
     font-size: 16px; /* For share message */
     color: #999; /* Subtler color */
 }
+
+/* Styles for the initial banner */
+.banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.85); /* Slightly darker background */
+    color: #E0E0E0;
+    padding: 30px 60px; /* Increased padding */
+    border-radius: 12px; /* Slightly larger border-radius */
+    font-size: 32px; /* Larger font size */
+    font-weight: bold;
+    text-align: center;
+    z-index: 100; /* Above game elements */
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.7); /* More prominent shadow */
+    border: 2px solid #629E51; /* Green border */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Text shadow for readability */
+}
+
+.banner p {
+    margin: 0; /* Remove default paragraph margin */
+    animation: pulse 2s infinite alternate; /* Apply pulsing animation */
+}
+
+#initialBanner {
+    visibility: visible; /* Initially visible */
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        color: #E0E0E0;
+    }
+    100% {
+        transform: scale(1.05);
+        color: #629E51; /* Pulse to green */
+    }
+}
