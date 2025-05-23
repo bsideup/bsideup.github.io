@@ -26,13 +26,25 @@ body {
     color: #E0E0E0;
 }
 
+#gameWrapper {
+    position: relative; /* Changed to relative to allow header/footer visibility */
+    flex-grow: 1; /* Allow it to take available space */
+    display: flex; /* Use flexbox to center content */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    overflow: hidden; /* Hide anything outside the scaled game area */
+    background-color: #202226; /* Match body background */
+    z-index: 1; /* Ensure it's above body content but below modal */
+}
+
 #gameArea {
     position: relative;
-    width: 100%;  /* Stretch to full width */
-    height: 800px; /* Fixed height */
-    margin: 0 auto; /* Center the game area if body allows, but width is 100% */
+    width: 800px;  /* Fixed width for internal game logic */
+    height: 500px; /* Fixed height for internal game logic (adjusted for rectangular) */
     background-color: #161719; /* Grafana panel background */
     overflow: hidden; /* Keep game elements contained */
+    /* Transform scale will be applied by JavaScript */
+    transform-origin: center center; /* Ensure scaling from center */
 }
 
 #character {
@@ -92,7 +104,7 @@ body {
 
 #legendContainer {
     position: absolute;
-    top: 10px;
+    top: 70px; /* Adjusted to be below the header */
     right: 10px;
     background-color: rgba(0, 0, 0, 0.8);
     padding: 10px;
@@ -153,17 +165,56 @@ body {
 }
 
 #game-over-message {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #f00;
-    font-size: 36px;
-    font-weight: bold;
+    position: fixed; /* Fixed position relative to the viewport */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
+    display: flex; /* Use flexbox to center content */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    z-index: 1000; /* Ensure it's on top of everything */
+    visibility: hidden; /* Hidden by default, controlled by script */
+    opacity: 0; /* Start fully transparent */
+    transition: visibility 0s, opacity 0.3s ease-in-out; /* Smooth transition */
+}
+
+#game-over-message.visible {
+    visibility: visible;
+    opacity: 1;
+}
+.game-over-content {
+    background-color: #1F2124; /* Dark background for the modal box */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     text-align: center;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 20px;
-    border-radius: 10px;
-    display: none; /* Hidden by default */
-    z-index: 200;
+    color: #E0E0E0; /* Light text color */
+    font-size: 24px;
+    font-weight: bold;
+    max-width: 90%; /* Max width to prevent overflow on small screens */
+    width: 500px; /* Increased width for the modal to fit long messages */
+    border: 1px solid #333; /* Subtle border */
+}
+
+.game-over-content span {
+    display: block; /* Make spans block-level for proper spacing */
+    margin-top: 10px;
+}
+
+.game-over-content span:first-of-type {
+    font-size: 32px; /* Larger for the main message */
+    color: #F00; /* Red color for the main message */
+    margin-bottom: 15px;
+}
+
+.game-over-content span:nth-of-type(2) {
+    font-size: 20px; /* For restart instruction */
+    color: #629E51; /* Green for action prompt */
+}
+
+.game-over-content span:nth-of-type(3) {
+    font-size: 16px; /* For share message */
+    color: #999; /* Subtler color */
 }
