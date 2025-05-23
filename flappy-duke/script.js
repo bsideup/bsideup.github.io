@@ -8,6 +8,9 @@ gameOverMessageElement.id = 'game-over-message';
 document.body.appendChild(gameOverMessageElement);
 
 const initialBanner = document.getElementById('initialBanner');
+const pauseButton = document.getElementById('pauseButton');
+const pauseIcon = document.getElementById('pauseIcon');
+const playIcon = document.getElementById('playIcon');
 
 const GAME_AREA_BASE_WIDTH = 800; // Base width for game logic
 const GAME_AREA_BASE_HEIGHT = 500; // Base height for game logic (changed to rectangular)
@@ -31,6 +34,7 @@ let pipes = []; // Array to store pipe DOM elements and their state
 let score = 0;
 let gameOver = false;
 let gameStarted = false;
+let isPaused = false; // New state variable for pause
 let frame = 0;
 let animationFrameId = null;
 let lastTime = 0;
@@ -172,7 +176,7 @@ function updatePipes(dt) {
 
 
 function update(dt) {
-    if (gameOver || !gameStarted) {
+    if (gameOver || !gameStarted || isPaused) { // Add isPaused to condition
         return;
     }
 
@@ -379,6 +383,8 @@ let lastGoodPunIndex = -1; // To track the index of the last good pun shown
 function endGame(message) {
     if (gameOver) return; // Prevent multiple calls
     gameOver = true;
+    isPaused = false; // Ensure game is not paused when game over
+    pauseButton.classList.remove('visible'); // Hide pause button on game over
     currentGameOverMessage = message;
     
     const badPun = generatePun('bad');
@@ -420,11 +426,13 @@ function restartGame() {
     score = 0;
     gameOver = false;
     gameStarted = false;
+    isPaused = false; // Reset pause state
     frame = 0;
     chartData = [];
     lastPunScoreTier = -1; // Reset for new game
     lastGoodPunIndex = -1; // Reset for new game
     gameOverMessageElement.classList.remove('visible'); // Remove visible class
+    pauseButton.classList.remove('visible'); // Hide pause button on restart
 
     // Re-initialize chart data
     for (let i = 0; i < MAX_DATA_POINTS; i++) {
@@ -439,20 +447,51 @@ function restartGame() {
     gameLoop(lastTime);
 }
 
-function handleInput() {
+function togglePause() {
+    console.log('togglePause called. isPaused:', isPaused); // Debugging line
+    if (gameOver || !gameStarted) return; // Cannot pause if game is over or not started
+    isPaused = !isPaused;
+    if (isPaused) {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+        pauseIcon.classList.add('hidden');
+        playIcon.classList.remove('hidden');
+    } else {
+        lastTime = performance.now(); // Reset lastTime to prevent large dt on resume
+        gameLoop(lastTime);
+        pauseIcon.classList.remove('hidden');
+        playIcon.classList.add('hidden');
+    }
+}
+
+function handleInput(event) { // Accept event object
+    // Check if the click originated from the pause button or its children
+    if (pauseButton.contains(event.target)) {
+        // If it's the pause button, let its own event listener handle it
+        // and prevent this global handler from processing it as a jump/start/restart
+        event.stopPropagation();
+        event.preventDefault();
+        return; 
+    }
+
     if (gameOver) {
         restartGame();
     } else if (!gameStarted) {
         gameStarted = true;
         initialBanner.style.opacity = '0';
         initialBanner.style.visibility = 'hidden';
+        pauseButton.classList.add('visible'); // Show pause button when game starts
         characterState.velocityY = JUMP_STRENGTH;
         lastTime = performance.now(); // Initialize lastTime here
         lastPipeX = getGameAreaWidth(); // Initialize lastPipeX when game starts
         if (!animationFrameId) { // Only start a new loop if one isn't already running
             gameLoop(lastTime);
         }
-    } else {
+    } else if (isPaused) { // If paused, unpause the game
+        togglePause();
+    } else { // Otherwise, perform the jump
         characterState.velocityY = JUMP_STRENGTH;
     }
 }
@@ -461,37 +500,42 @@ document.addEventListener('click', handleInput);
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         e.preventDefault(); // Prevent page scrolling
-        handleInput();
+        handleInput(e); // Pass event object for consistency
+    } else if (e.code === 'KeyP') { // Handle 'P' key for pause
+        togglePause();
     }
 });
 
 function gameLoop(currentTime) {
-    if (gameOver && !gameStarted) {
+    if (gameOver) { // If game is over, ensure game over message is visible and stop loop
         gameOverMessageElement.classList.add('visible');
         if (animationFrameId) {
             cancelAnimationFrame(animationFrameId);
             animationFrameId = null;
         }
-        return; // Stop the loop
+        return;
+    }
+
+    if (isPaused) { // If paused, do not update or draw, but keep loop running
+        animationFrameId = requestAnimationFrame(gameLoop);
+        return;
     }
 
     const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
+    // Basic sanity check for dt, can happen if tab is inactive for a long time
     if (isNaN(dt) || dt < 0 || dt > 1) {
+        // If dt is too large, reset it to a small value to prevent character from falling through pipes
+        // This can happen if the tab is in the background and then brought to foreground
+        lastTime = currentTime; // Reset lastTime to current time
+        animationFrameId = requestAnimationFrame(gameLoop); // Request next frame immediately
+        return; // Skip this frame's update
     }
 
-    if (!gameOver) {
-        update(dt);
-        draw();
-        animationFrameId = requestAnimationFrame(gameLoop);
-    } else {
-        gameOverMessageElement.classList.add('visible');
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = null;
-        }
-    }
+    update(dt);
+    draw();
+    animationFrameId = requestAnimationFrame(gameLoop);
 }
 
 // Scaling function
@@ -530,6 +574,7 @@ function initializeGame() {
     drawChart();
     scoreDisplay.textContent = 'GC cycles: 0';
     gameOverMessageElement.classList.remove('visible');
+    pauseButton.classList.remove('visible'); // Ensure pause button is hidden initially
 
     lastPipeX = getGameAreaWidth(); // Initialize lastPipeX when game starts
 
@@ -539,5 +584,8 @@ function initializeGame() {
 }
 
 window.addEventListener('load', () => {
-    setTimeout(initializeGame, 100); 
+    setTimeout(() => {
+        initializeGame();
+        pauseButton.addEventListener('click', togglePause); // Move click listener here
+    }, 100); 
 });

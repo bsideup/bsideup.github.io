@@ -104,14 +104,14 @@ body {
 
 #legendContainer {
     position: absolute;
-    top: 70px; /* Adjusted to be below the header */
-    right: 10px;
+    top: 20px; /* Aligned with top-right corner of gameArea */
+    right: 30px; /* Adjusted right margin */
     background-color: rgba(0, 0, 0, 0.8);
-    padding: 5px; /* Reduced padding */
+    padding: 15px; /* 50% increased padding */
     border-radius: 5px;
     z-index: 100;
     color: #E0E0E0;
-    font-size: 12px; /* Reduced font size */
+    font-size: 24px; /* 50% increased font size */
 }
 
 #legendContent p {
@@ -290,4 +290,49 @@ body {
         transform: scale(1.05);
         color: #629E51; /* Pulse to green */
     }
+}
+
+/* Styles for the pause button */
+.game-button {
+    position: absolute;
+    bottom: 20px; /* Adjusted distance from bottom of gameArea */
+    right: 30px; /* Adjusted right margin */
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #E0E0E0;
+    padding: 10px; /* Adjusted padding for 2x icons */
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 100; /* Above game elements */
+    border: 1px solid #333;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    visibility: hidden; /* Hidden by default */
+    opacity: 0;
+    display: flex; /* Use flexbox to center icons */
+    align-items: center;
+    justify-content: center;
+}
+
+.game-button:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+    border-color: #629E51;
+}
+
+.game-button .icon {
+    width: 48px; /* 2x bigger (24px * 2) */
+    height: 48px; /* 2x bigger (24px * 2) */
+    fill: currentColor; /* Use the parent's color */
+}
+
+.hidden {
+    display: none; /* Class to hide elements */
+}
+
+#pauseButton.visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Debugging: Force z-index for pause button */
+#pauseButton {
+    z-index: 9999 !important; 
 }

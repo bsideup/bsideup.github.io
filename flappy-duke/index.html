@@ -16,13 +16,21 @@
             <div id="character"></div>
             <div id="pipesContainer"></div>
             <div id="chartContainer"></div>
+            </div>
             <div id="legendContainer">
                 <div id="legendContent">
-                    <p>Legend:</p>
                     <div><span class="legend-color-box" style="background-color: #629E51;"></span> Memory Usage</div>
                     <div><span class="legend-color-box" style="background-color: #EAB839;"></span> Allocations</div>
                     <div id="scoreDisplay">GC cycles: 0</div>
                 </div>
+            </div>
+            <div id="pauseButton" class="game-button">
+                <svg id="pauseIcon" class="icon" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                    <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>
+                </svg>
+                <svg id="playIcon" class="icon hidden" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
             </div>
         </div>
     </div>
